@@ -1,0 +1,17 @@
+test_bot_sale (__main__.OwnershipTests.test_bot_sale) ... ok
+test_cumulative_updates (__main__.OwnershipTests.test_cumulative_updates) ... ok
+test_decreased_fill (__main__.OwnershipTests.test_decreased_fill) ... ok
+test_external_sale_not_bot_cash (__main__.OwnershipTests.test_external_sale_not_bot_cash) ... ok
+test_fractional_crypto (__main__.OwnershipTests.test_fractional_crypto) ... ok
+test_invalid (__main__.OwnershipTests.test_invalid) ... ok
+test_late_fee (__main__.OwnershipTests.test_late_fee) ... ok
+test_mixed_partial (__main__.OwnershipTests.test_mixed_partial) ... ok
+test_no_fill (__main__.OwnershipTests.test_no_fill) ... ok
+test_repeat_update (__main__.OwnershipTests.test_repeat_update) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK
+
+Offline arithmetic tests only. No journal integration, persistence or deployment.

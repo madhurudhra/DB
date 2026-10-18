@@ -1,0 +1,17 @@
+test_broker_recheck_failure_no_submit (offline_coordinator_tests.IntegrationTests.test_broker_recheck_failure_no_submit) ... ok
+test_duplicate_fill_and_late_fee (offline_coordinator_tests.IntegrationTests.test_duplicate_fill_and_late_fee) ... ok
+test_fractional_position (offline_coordinator_tests.IntegrationTests.test_fractional_position) ... ok
+test_pending_receipt_no_premature_credit (offline_coordinator_tests.IntegrationTests.test_pending_receipt_no_premature_credit) ... ok
+test_quantity_and_account_fail_closed (offline_coordinator_tests.IntegrationTests.test_quantity_and_account_fail_closed) ... ok
+test_restart_does_not_retry_uncertain (offline_coordinator_tests.IntegrationTests.test_restart_does_not_retry_uncertain) ... ok
+test_same_snapshot_not_resubmitted (offline_coordinator_tests.IntegrationTests.test_same_snapshot_not_resubmitted) ... ok
+test_sell_off_no_order_or_credit (offline_coordinator_tests.IntegrationTests.test_sell_off_no_order_or_credit) ... ok
+test_snapshot_blocks (offline_coordinator_tests.IntegrationTests.test_snapshot_blocks) ... ok
+test_three_bots_exit_and_external_accounting (offline_coordinator_tests.IntegrationTests.test_three_bots_exit_and_external_accounting) ... ok
+test_threshold_boundaries (offline_coordinator_tests.IntegrationTests.test_threshold_boundaries) ... ok
+test_timeout_blocks_retry_even_with_new_snapshot (offline_coordinator_tests.IntegrationTests.test_timeout_blocks_retry_even_with_new_snapshot) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.039s
+
+OK

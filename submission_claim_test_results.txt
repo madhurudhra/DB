@@ -1,0 +1,15 @@
+test_claim_once (offline_claim_tests.ClaimTests.test_claim_once) ... ok
+test_contradictory_broker_evidence_blocks (offline_claim_tests.ClaimTests.test_contradictory_broker_evidence_blocks) ... ok
+test_missing_database_not_created (offline_claim_tests.ClaimTests.test_missing_database_not_created) ... ok
+test_pending_uncertain_terminal_not_claimed (offline_claim_tests.ClaimTests.test_pending_uncertain_terminal_not_claimed) ... ok
+test_reopen_does_not_retry (offline_claim_tests.ClaimTests.test_reopen_does_not_retry) ... ok
+test_twenty_competing_workers (offline_claim_tests.ClaimTests.test_twenty_competing_workers) ... ok
+test_unknown_or_wrong_identity (offline_claim_tests.ClaimTests.test_unknown_or_wrong_identity) ... ok
+test_unknown_schema_blocks (offline_claim_tests.ClaimTests.test_unknown_schema_blocks) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.067s
+
+OK
+
+Offline temporary-database tests only. No live deployment or broker calls.

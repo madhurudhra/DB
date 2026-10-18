@@ -1,0 +1,98 @@
+--- original/live_reconciliation.py
++++ candidate/live_reconciliation.py
+@@ -5,6 +5,7 @@
+ from datetime import datetime, timezone
+ from pathlib import Path
+ from typing import Any
++from decimal import Decimal, InvalidOperation
+ 
+ from kiteconnect import KiteConnect
+ 
+@@ -120,26 +121,23 @@
+ 
+ def _open_orders(raw: Any) -> list[dict]:
+     if not isinstance(raw, list):
+-        return []
+-
+-    open_statuses = {
+-        "OPEN",
+-        "TRIGGER PENDING",
+-        "VALIDATION PENDING",
+-        "OPEN PENDING",
+-    }
++        raise RuntimeError("Invalid broker orders response")
++
++    terminal_statuses = {"COMPLETE", "CANCELLED", "REJECTED"}
+ 
+     result = []
+ 
+     for order in raw:
+         if not isinstance(order, dict):
+-            continue
++            raise RuntimeError("Invalid broker order row")
+ 
+         status = str(
+             order.get("status", "")
+         ).upper()
+ 
+-        if status not in open_statuses:
++        if not status.strip():
++            raise RuntimeError("Missing broker order status")
++        if status in terminal_statuses:
+             continue
+ 
+         result.append(
+@@ -230,6 +228,8 @@
+     trades = kite.trades()
+     positions = kite.positions()
+     holdings = kite.holdings()
++
++    _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings)
+ 
+     equity = {}
+ 
+@@ -352,3 +352,44 @@
+             f"LIVE RECONCILIATION FAILED: {exc}"
+         )
+         raise
++
++
++def _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings):
++    """Reject incomplete snapshots; never interpret unavailable data as empty."""
++    if not isinstance(profile, dict) or not profile:
++        raise RuntimeError("Invalid broker profile response")
++    if not isinstance(margins, dict):
++        raise RuntimeError("Invalid broker margins response")
++    equity = margins.get("equity")
++    if not isinstance(equity, dict):
++        raise RuntimeError("Invalid equity margin response")
++    available = equity.get("available")
++    if not isinstance(available, dict):
++        raise RuntimeError("Invalid available-margin response")
++    balance = available.get("live_balance")
++    if isinstance(balance, bool) or balance is None:
++        raise RuntimeError("Missing broker live balance")
++    try:
++        balance = Decimal(str(balance))
++    except (InvalidOperation, ValueError, TypeError):
++        raise RuntimeError("Invalid broker live balance") from None
++    if not balance.is_finite() or balance < 0:
++        raise RuntimeError("Invalid broker live balance")
++    for label, rows in (("orders", orders), ("trades", trades), ("holdings", holdings)):
++        if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
++            raise RuntimeError("Invalid broker " + label + " response")
++    if not isinstance(positions, dict) or not isinstance(positions.get("net"), list):
++        raise RuntimeError("Invalid broker net positions response")
++    for row in positions["net"]:
++        if not isinstance(row, dict):
++            raise RuntimeError("Invalid broker position row")
++        for field in ("quantity", "overnight_quantity"):
++            value = row.get(field, 0)
++            if isinstance(value, bool) or value is None:
++                raise RuntimeError("Invalid position quantity")
++            try:
++                quantity = Decimal(str(value))
++            except (InvalidOperation, ValueError, TypeError):
++                raise RuntimeError("Invalid position quantity") from None
++            if not quantity.is_finite() or quantity != quantity.to_integral_value():
++                raise RuntimeError("Non-integral position quantity")

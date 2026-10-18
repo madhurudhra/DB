@@ -1,0 +1,17 @@
+test_account_binding (offline_ledger_tests.LedgerTests.test_account_binding) ... ok
+test_broker_id_binding (offline_ledger_tests.LedgerTests.test_broker_id_binding) ... ok
+test_invalid_status_rolls_back (offline_ledger_tests.LedgerTests.test_invalid_status_rolls_back) ... ok
+test_late_fee (offline_ledger_tests.LedgerTests.test_late_fee) ... ok
+test_manual_sale_and_duplicate (offline_ledger_tests.LedgerTests.test_manual_sale_and_duplicate) ... ok
+test_overfill_and_decrease (offline_ledger_tests.LedgerTests.test_overfill_and_decrease) ... ok
+test_plan_idempotency (offline_ledger_tests.LedgerTests.test_plan_idempotency) ... ok
+test_restart_retains_split (offline_ledger_tests.LedgerTests.test_restart_retains_split) ... ok
+test_terminal_not_reopened (offline_ledger_tests.LedgerTests.test_terminal_not_reopened) ... ok
+test_unresolved_prevents_duplicate_exit (offline_ledger_tests.LedgerTests.test_unresolved_prevents_duplicate_exit) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.062s
+
+OK
+
+Offline SQLite tests only. Live executor/capital integration is not implemented.

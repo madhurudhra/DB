@@ -1,0 +1,12 @@
+test_all_bots_boundaries (__main__.PolicyTests.test_all_bots_boundaries) ... ok
+test_blockers (__main__.PolicyTests.test_blockers) ... ok
+test_fee_adjusted_cost (__main__.PolicyTests.test_fee_adjusted_cost) ... ok
+test_invalid_controls (__main__.PolicyTests.test_invalid_controls) ... ok
+test_invalid_money (__main__.PolicyTests.test_invalid_money) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK
+
+Scope: shared decision policy only; not broker integration or deployment.

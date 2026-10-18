@@ -1,0 +1,14 @@
+test_bad_available (__main__.ReductionTests.test_bad_available) ... ok
+test_bad_quantities (__main__.ReductionTests.test_bad_quantities) ... ok
+test_identity (__main__.ReductionTests.test_identity) ... ok
+test_pending (__main__.ReductionTests.test_pending) ... ok
+test_reconciliation_and_approval (__main__.ReductionTests.test_reconciliation_and_approval) ... ok
+test_valid_reductions (__main__.ReductionTests.test_valid_reductions) ... ok
+test_wrong_directions (__main__.ReductionTests.test_wrong_directions) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+OK
+
+Scope: pure integer-unit reduction checks only. Not broker integration or deployment.
