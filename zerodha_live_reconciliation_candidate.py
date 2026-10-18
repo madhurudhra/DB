@@ -338,22 +338,6 @@ def reconcile_live_broker() -> dict[str, Any]:
     return result
 
 
-if __name__ == "__main__":
-    try:
-        result = reconcile_live_broker()
-        print(
-            json.dumps(
-                _json_safe(result),
-                indent=2,
-            )
-        )
-    except Exception as exc:
-        print(
-            f"LIVE RECONCILIATION FAILED: {exc}"
-        )
-        raise
-
-
 def _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings):
     """Reject incomplete snapshots; never interpret unavailable data as empty."""
     if not isinstance(profile, dict) or not profile:
@@ -393,3 +377,19 @@ def _validate_exit_snapshot(profile, margins, orders, trades, positions, holding
                 raise RuntimeError("Invalid position quantity") from None
             if not quantity.is_finite() or quantity != quantity.to_integral_value():
                 raise RuntimeError("Non-integral position quantity")
+
+
+if __name__ == "__main__":
+    try:
+        result = reconcile_live_broker()
+        print(
+            json.dumps(
+                _json_safe(result),
+                indent=2,
+            )
+        )
+    except Exception as exc:
+        print(
+            f"LIVE RECONCILIATION FAILED: {exc}"
+        )
+        raise
