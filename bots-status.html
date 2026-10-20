@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bots Account Status</title>
+<style>body{background:#090d16;color:#e2e8f0;font:14px system-ui;margin:24px}header{display:flex;justify-content:space-between;gap:20px;align-items:center}h1,h2{color:#38bdf8}a{color:#38bdf8}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px}.card{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:18px;min-width:0}.top{display:flex;justify-content:space-between;align-items:center;gap:10px}button,select{background:#0369a1;color:white;border:0;padding:9px;border-radius:6px;cursor:pointer}button:disabled{opacity:.5}.status,.notes{white-space:pre-wrap;overflow-wrap:anywhere;color:#cbd5e1;font-size:12px;line-height:1.6}.metric{display:flex;justify-content:space-between;gap:12px;margin:12px 0}.value{font-family:monospace;color:#38bdf8;text-align:right}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:8px 5px;border-bottom:1px solid #334155;white-space:nowrap}.warn{color:#fbbf24}h3{margin-top:24px}select{max-width:100%;margin:10px 0}</style></head>
+<body><header><div><h1>Bots Account Status</h1><p>Read-only account monitoring · automatic polling every 30 seconds after each request · manual refresh cooldown: 10 seconds.</p></div><a href="/">← Dashboard</a></header><p class="warn">Account data is separate from engine status. A successful broker read does not mean a trading bot is running. Missing cost basis or an expired session is shown explicitly, never as a fabricated zero.</p><div class="grid" id="cards"></div>
+<script>
+'use strict';
+const names={crypto:'Crypto Account',us_trading:'US Stock Account',zerodha:'Zerodha Account'};
+function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
+function money(v,c){if(typeof v!=='number'||!Number.isFinite(v))return 'Not verified';try{return new Intl.NumberFormat(c==='INR'?'en-IN':'en-US',{style:'currency',currency:c||'USD'}).format(v);}catch(_){return String(v);}}
+function table(container,rows,fields){container.replaceChildren();if(!Array.isArray(rows)){container.append(el('p','No verified response.'));return;}if(!rows.length){container.append(el('p','No entries returned by this broker read.'));return;}const t=el('table'),head=el('tr');fields.forEach(([key,label])=>head.append(el('th',label)));t.append(head);rows.forEach(row=>{const tr=el('tr');fields.forEach(([key])=>tr.append(el('td',row[key]===null||row[key]===undefined?'—':String(row[key]))));t.append(tr);});container.append(t);}
+for(const [id,name] of Object.entries(names)){
+ const card=el('section',undefined,'card'),top=el('div',undefined,'top'),button=el('button','↻ Refresh'),status=el('p','Waiting for broker read…','status'),notes=el('p','','notes'),select=el('select'),metrics=el('div'),positions=el('div',undefined,'scroll'),trades=el('div',undefined,'scroll');
+ top.append(el('h2',name),button);card.append(top,status);
+ if(id==='crypto'){select.append(new Option('Choose an account',''));card.append(select);}
+ card.append(metrics,notes,el('h3','Current Account Holdings / Positions'),positions,el('h3','Recent Executed Trades'),trades);document.querySelector('#cards').append(card);
+ let busy=false,timer,selected='';
+ const definitions=[['available_funds','Available Funds to Trade'],['realized_pnl','Realized P&L'],['unrealized_pnl','Unrealized P&L'],['invested_cost','Total Value Invested']];
+ function render(payload){
+  const data=payload.ok?payload:payload.last_good;
+  if(id==='crypto'&&Array.isArray(payload.accounts)){
+   const options=payload.accounts.map(a=>[a.id,(a.type||'Account')+' · '+a.id+' · '+(a.status||'unknown')+' · API tradable: '+String(a.api_tradable)]);
+   select.replaceChildren(new Option('Choose the intended account',''),...options.map(([value,label])=>new Option(label,value)));select.value=selected;
+  }
+  const age=data&&data.read_completed_at?Math.max(0,Math.floor((Date.now()-Date.parse(data.read_completed_at))/1000)):null;
+  status.textContent=(payload.connection||'UNKNOWN')+(payload.error?' · '+payload.error:'')+'\nLast successful broker read: '+(data&&data.read_completed_at||'none')+(age===null?'':'\nRead age: '+age+' seconds')+(payload.last_good?'\nSTALE: showing the last successful response.':'')+'\nResponse received: '+new Date().toISOString()+(payload.cache_hit?' · server cache reused':'');
+  status.classList.toggle('warn',!payload.ok);metrics.replaceChildren();
+  for(const [key,label] of definitions){const row=el('div',undefined,'metric');row.append(el('span',label),el('span',money(data&&data.metrics?data.metrics[key]:null,data&&data.currency),'value'));metrics.append(row);}
+  notes.textContent=[data&&data.scope,data&&data.pnl_period,...(payload.errors||[]),...(payload.last_good?data.errors||[]:[])].filter(Boolean).join('\n');
+  table(positions,data&&data.positions,[['category','Category'],['asset','Asset'],['quantity','Qty'],['cost_basis','Cost basis'],['market_value','Market value'],['unrealized_pnl','Unrealized'],['quote_timestamp','Quote time']]);
+  table(trades,data&&data.trades,[['time','Execution time'],['asset','Asset'],['side','Side'],['quantity','Qty'],['price','Fill price']]);
+ }
+ async function refresh(force){if(busy)return;busy=true;clearTimeout(timer);button.disabled=true;select.disabled=true;button.textContent='Refreshing…';try{const suffix=id==='crypto'&&selected?'?account='+encodeURIComponent(selected):'';const response=await fetch('/api/accounts/'+id+(force?'/refresh':'')+suffix,{method:force?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});if(!response.ok)throw Error('Dashboard HTTP '+response.status+(response.status===401?' — sign in on the dashboard':''));render(await response.json());}catch(e){status.textContent='REQUEST FAILED: '+e.message+'\nPreviously rendered values, if any, are stale.';status.classList.add('warn');}finally{busy=false;button.disabled=false;select.disabled=false;button.textContent='↻ Refresh';timer=setTimeout(()=>refresh(false),30000);}}
+ button.onclick=()=>refresh(true);select.onchange=()=>{selected=select.value;refresh(true);};refresh(false);
+}
+</script></body></html>
