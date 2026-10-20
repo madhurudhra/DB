@@ -57,8 +57,7 @@ def submission_guard(bot, side):
     if bot not in BOTS or side not in ('BUY', 'SELL'):
         raise BuyBlocked('Order blocked: invalid bot or side')
     if side == 'SELL':
-        with sell_submission_guard(bot):
-            yield
+        yield
         return
     with locked():
         require_buy_enabled(bot)
@@ -105,68 +104,6 @@ def update(bot, enabled):
                           'enabled': enabled, 'actor': 'validated-dashboard-session',
                           'updated_at': result['updated_at']}), file=sys.stderr)
         return result
-
-
-# Candidate only: serialize SELL permission with control-store updates.
-import sqlite3
-import threading
-
-_sell_context = threading.local()
-
-class SellBlocked(RuntimeError):
-    pass
-
-@contextlib.contextmanager
-def sell_submission_guard(bot):
-    filename = os.environ.get("SELL_CONTROL_DB", "")
-    path = Path(filename)
-    if not filename or not path.is_absolute() or not path.is_file():
-        raise SellBlocked("SELL blocked: configured database unavailable")
-
-    key = (str(path.resolve()), bot)
-    active = getattr(_sell_context, "active", None)
-    if active is not None:
-        if active != key:
-            raise SellBlocked("SELL blocked: conflicting nested scope")
-        yield
-        return
-
-    db = None
-    try:
-        db = sqlite3.connect(
-            path.as_uri() + "?mode=rw", uri=True,
-            timeout=3, isolation_level=None
-        )
-        db.execute("BEGIN IMMEDIATE")
-        rows = db.execute(
-            "SELECT requested_enabled, revision "
-            "FROM sell_controls WHERE bot=?", (bot,)
-        ).fetchall()
-        if len(rows) != 1:
-            raise SellBlocked("SELL blocked: missing control")
-        enabled, revision = rows[0]
-        if type(enabled) is not int or enabled not in (0, 1):
-            raise SellBlocked("SELL blocked: invalid Boolean control")
-        if type(revision) is not int or revision < 0:
-            raise SellBlocked("SELL blocked: invalid revision")
-        if enabled != 1:
-            raise SellBlocked("SELL blocked: toggle OFF")
-    except Exception as exc:
-        if db is not None:
-            db.close()
-        if isinstance(exc, SellBlocked):
-            raise
-        raise SellBlocked("SELL blocked: control store unavailable") from exc
-
-    _sell_context.active = key
-    try:
-        yield
-    finally:
-        _sell_context.active = None
-        try:
-            db.rollback()
-        finally:
-            db.close()
 
 if __name__ == '__main__':
     try:
