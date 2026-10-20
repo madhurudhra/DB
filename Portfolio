@@ -1,0 +1,699 @@
+ubuntu@vmi3619462:~$ 
+sudo bash <<'BASH'
+set -u
+
+echo "===== 1. ACTIVE SERVER ENTRYPOINT ====="
+sudo readlink -f /proc/$(pm2 pid unified-dashboard 2>/dev/null | head -1)/cwd 2>/dev/null || true
+sudo readlink -f /proc/$(pm2 pid unified-dashboard 2>/dev/null | head -1)/exe 2>/dev/null || true
+sudo ls -l /var/www/trading-bot-dashboard/server.js
+
+echo
+echo "===== 2. SERVER STATIC FILE AND PROXY CONFIG ====="
+grep -nEi 'express.static|sendFile|public|dist|listen\\(|proxy_pass|5175' \
+  /var/www/trading-bot-dashboard/server.js \
+  /opt/us-trading-bot/unified_server.js \
+  /etc/nginx/sites-enabled/* 2>/dev/null | head -160 || true
+
+echo
+echo "===== 3. PORTFOLIO DATA READER ====="
+if [ -f /opt/secure-dashboard-api/read_bot_data.py ]; then
+  sudo sed -n '1,280p' /opt/secure-dashboard-api/read_bot_data.py
+else
+  echo "NOT FOUND: /opt/secure-dashboard-api/read_bot_data.py"
+fi
+
+echo
+echo "===== 4. STOCK DATA SOURCE AND TRADE HISTORY ====="
+sudo grep -nEi -A5 -B5 \
+  'stocks|stock_trades|source_modified|starting_cash|realized_pnl|positions|available' \
+  /opt/secure-dashboard-api/read_bot_data.py 2>/dev/null | head -200 || true
+
+echo
+echo "===== 5. ZERODHA SNAPSHOT PRODUCER REFERENCES ====="
+sudo grep -RInE --include='*.py' --exclude-dir=venv --exclude-dir=__pycache__ \
+  'timestamp_utc|average_price|read_only|PAPER|holdings' \
+  /opt/zerodha-bot /opt/secure-dashboard-api 2>/dev/null | head -100 || true
+
+echo
+echo "===== DIAGNOSTIC COMPLETE: NO FILES MODIFIED ====="
+BASH
+===== 1. ACTIVE SERVER ENTRYPOINT =====
+/var/www/trading-bot-dashboard
+/usr/local/bin/node
+-rw-r--r-- 1 root root 6098 Oct 20 10:24 /var/www/trading-bot-dashboard/server.js
+
+===== 2. SERVER STATIC FILE AND PROXY CONFIG =====
+
+===== 3. PORTFOLIO DATA READER =====
+#!/usr/bin/env python3
+import csv
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+
+SOURCES = {
+    "stocks": Path("/var/lib/stock-bot/stock_account.json"),
+    "zerodha": Path("/opt/zerodha-bot/state/live_reconciliation_latest.json"),
+}
+
+def read_json(path):
+    try:
+        stat = path.stat()
+        with path.open() as f:
+            data = json.load(f)
+        return {
+            "available": True,
+            "source_modified": datetime.fromtimestamp(
+                stat.st_mtime, timezone.utc
+            ).isoformat(),
+            "data": data,
+        }
+    except (OSError, ValueError) as exc:
+        return {"available": False, "error": type(exc).__name__}
+
+def read_csv(path):
+    try:
+        stat = path.stat()
+        with path.open(newline="") as f:
+            rows = list(csv.DictReader(f))
+        return {
+            "available": True,
+            "source_modified": datetime.fromtimestamp(
+                stat.st_mtime, timezone.utc
+            ).isoformat(),
+            "rows": rows,
+        }
+    except OSError as exc:
+        return {"available": False, "error": type(exc).__name__}
+
+def main():
+    result = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "crypto": {"available": False, "error": "Legacy snapshot retired; live crypto integration pending"},
+        "stocks": read_json(SOURCES["stocks"]),
+        "zerodha": read_json(SOURCES["zerodha"]),
+    }
+
+    result["crypto_trades"] = {
+        "available": False,
+        "error": "Legacy crypto history retired; live integration pending",
+    }
+    result["stock_trades"] = read_csv(
+        Path("/var/lib/stock-bot/stock_trades.csv")
+    )
+
+    z = result["zerodha"]
+    if z.get("available"):
+        d = z["data"]
+        result["zerodha_snapshot_is_paper"] = (
+            d.get("mode") == "PAPER"
+            or d.get("paper") is not None
+            or d.get("read_only") is True
+        )
+        result["zerodha_snapshot_timestamp"] = d.get("timestamp_ist")
+
+    print(json.dumps(result, separators=(",", ":")))
+
+if __name__ == "__main__":
+    main()
+
+===== 4. STOCK DATA SOURCE AND TRADE HISTORY =====
+4-import os
+5-from datetime import datetime, timezone
+6-from pathlib import Path
+7-
+8-SOURCES = {
+9:    "stocks": Path("/var/lib/stock-bot/stock_account.json"),
+10-    "zerodha": Path("/opt/zerodha-bot/state/live_reconciliation_latest.json"),
+11-}
+12-
+13-def read_json(path):
+14-    try:
+15-        stat = path.stat()
+16-        with path.open() as f:
+17-            data = json.load(f)
+18-        return {
+19:            "available": True,
+20:            "source_modified": datetime.fromtimestamp(
+21-                stat.st_mtime, timezone.utc
+22-            ).isoformat(),
+23-            "data": data,
+24-        }
+25-    except (OSError, ValueError) as exc:
+26:        return {"available": False, "error": type(exc).__name__}
+27-
+28-def read_csv(path):
+29-    try:
+30-        stat = path.stat()
+31-        with path.open(newline="") as f:
+32-            rows = list(csv.DictReader(f))
+33-        return {
+34:            "available": True,
+35:            "source_modified": datetime.fromtimestamp(
+36-                stat.st_mtime, timezone.utc
+37-            ).isoformat(),
+38-            "rows": rows,
+39-        }
+40-    except OSError as exc:
+41:        return {"available": False, "error": type(exc).__name__}
+42-
+43-def main():
+44-    result = {
+45-        "generated_at": datetime.now(timezone.utc).isoformat(),
+46:        "crypto": {"available": False, "error": "Legacy snapshot retired; live crypto integration pending"},
+47:        "stocks": read_json(SOURCES["stocks"]),
+48-        "zerodha": read_json(SOURCES["zerodha"]),
+49-    }
+50-
+51-    result["crypto_trades"] = {
+52:        "available": False,
+53-        "error": "Legacy crypto history retired; live integration pending",
+54-    }
+55:    result["stock_trades"] = read_csv(
+56:        Path("/var/lib/stock-bot/stock_trades.csv")
+57-    )
+58-
+59-    z = result["zerodha"]
+60:    if z.get("available"):
+61-        d = z["data"]
+62-        result["zerodha_snapshot_is_paper"] = (
+63-            d.get("mode") == "PAPER"
+64-            or d.get("paper") is not None
+65-            or d.get("read_only") is True
+
+===== 5. ZERODHA SNAPSHOT PRODUCER REFERENCES =====
+/opt/zerodha-bot/zerodha_broker.py:30:                    "average_buy_price": float(pos['average_price']),
+/opt/zerodha-bot/app/email_alerts.py:33:    if normalized_trade_type in {"PAPER BUY", "PAPER_BUY", "BUY"}:
+/opt/zerodha-bot/app/email_alerts.py:35:    elif normalized_trade_type in {"PAPER SELL", "PAPER_SELL", "SELL"}:
+/opt/zerodha-bot/app/email_alerts.py:47:        "ZERODHA PAPER-TRADING ALERT\n"
+/opt/zerodha-bot/app/email_alerts.py:56:        + "Trading mode: PAPER\n"
+/opt/zerodha-bot/app/live_executor.py:207:        "PAPER",
+/opt/zerodha-bot/app/live_broker_readiness.py:20:    mode = os.getenv("TRADING_MODE", "PAPER").strip().upper()
+/opt/zerodha-bot/app/live_broker_readiness.py:23:    if mode != "PAPER":
+/opt/zerodha-bot/app/live_broker_readiness.py:24:        fail(f"Safety stop: expected TRADING_MODE=PAPER, got {mode!r}")
+/opt/zerodha-bot/app/live_broker_readiness.py:42:        "read_only": True,
+/opt/zerodha-bot/app/live_broker_readiness.py:48:        "holdings": None,
+/opt/zerodha-bot/app/live_broker_readiness.py:58:        "holdings": kite.holdings,
+/opt/zerodha-bot/app/live_reconciliation.py:100:                "average_price": str(
+/opt/zerodha-bot/app/live_reconciliation.py:102:                        "average_price",
+/opt/zerodha-bot/app/live_reconciliation.py:195:        "PAPER",
+/opt/zerodha-bot/app/live_reconciliation.py:237:    holdings = kite.holdings()
+/opt/zerodha-bot/app/live_reconciliation.py:239:    _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings)
+/opt/zerodha-bot/app/live_reconciliation.py:273:        "timestamp_utc": datetime.now(
+/opt/zerodha-bot/app/live_reconciliation.py:278:        "read_only": True,
+/opt/zerodha-bot/app/live_reconciliation.py:294:        "holdings_ok": isinstance(
+/opt/zerodha-bot/app/live_reconciliation.py:295:            holdings,
+/opt/zerodha-bot/app/live_reconciliation.py:305:        "holdings": _json_safe(holdings),
+/opt/zerodha-bot/app/live_reconciliation.py:316:            len(holdings)
+/opt/zerodha-bot/app/live_reconciliation.py:318:                holdings,
+/opt/zerodha-bot/app/live_reconciliation.py:350:def _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings):
+/opt/zerodha-bot/app/live_reconciliation.py:371:    for label, rows in (("orders", orders), ("trades", trades), ("holdings", holdings)):
+/opt/zerodha-bot/app/reconciliation_report.py:12:PAPER_LEDGER = BASE_DIR / "paper_account_29919.json"
+/opt/zerodha-bot/app/reconciliation_report.py:26:    mode = os.getenv("TRADING_MODE", "PAPER").strip().upper()
+/opt/zerodha-bot/app/reconciliation_report.py:29:    if mode != "PAPER":
+/opt/zerodha-bot/app/reconciliation_report.py:31:            f"Safety stop: expected TRADING_MODE=PAPER, got {mode!r}"
+/opt/zerodha-bot/app/reconciliation_report.py:45:    paper = load_json(PAPER_LEDGER)
+/opt/zerodha-bot/app/reconciliation_report.py:68:        "read_only": True,
+/opt/zerodha-bot/app/reconciliation_report.py:70:            "PAPER STATE IS NOT LIVE BROKER STATE. "
+/opt/zerodha-bot/app/reconciliation_report.py:101:    print("Mode: PAPER — no broker action was performed")
+/opt/zerodha-bot/app/live_safety_gate.py:140:        "PAPER",
+/opt/zerodha-bot/app/live_safety_gate.before_dryrun_validation_20261005_070848.py:135:        "PAPER",
+/opt/secure-dashboard-api/read_bot_data.py:63:            d.get("mode") == "PAPER"
+/opt/secure-dashboard-api/read_bot_data.py:65:            or d.get("read_only") is True
+/opt/secure-dashboard-api/server.py:46:            return self.reply(200, {"ok": True, "read_only": True})
+
+===== DIAGNOSTIC COMPLETE: NO FILES MODIFIED =====
+ubuntu@vmi3619462:~$ 
+sudo bash <<'BASH'
+set -u
+
+echo "===== 1. ACTIVE DASHBOARD SERVER ====="
+sudo sed -n '1,260p' /var/www/trading-bot-dashboard/server.js
+
+echo
+echo "===== 2. STATIC FILES AND NGINX ROUTING ====="
+sudo grep -nEi 'express\.static|sendFile|dist|public|listen|proxy_pass|5175' \
+  /var/www/trading-bot-dashboard/server.js \
+  /opt/us-trading-bot/unified_server.js \
+  /etc/nginx/sites-enabled/* 2>/dev/null || true
+
+echo
+echo "===== 3. LIVE FRONTEND PORTFOLIO IMPLEMENTATION ====="
+for f in \
+  /var/www/trading-bot-dashboard/index.html \
+  /var/www/trading-bot-dashboard/dist/index.html \
+  /opt/us-trading-bot/public/index.html
+do
+  if [ -f "$f" ]; then
+    echo "--- $f ---"
+    sudo grep -nEi -A8 -B4 \
+      'botProfiles|loadPortfolio|liveProfiles|currentData|hardcoded|fallback|dashboard-data' \
+      "$f" | head -100 || true
+  fi
+done
+
+echo
+echo "===== 4. STOCK FILE SCHEMA (VALUES REDACTED) ====="
+sudo python3 - <<'PY'
+import json
+from pathlib import Path
+
+for name, path in [
+    ("Stocks", Path("/var/lib/stock-bot/stock_account.json")),
+    ("Stock trades", Path("/var/lib/stock-bot/stock_trades.csv")),
+    ("Zerodha", Path("/opt/zerodha-bot/state/live_reconciliation_latest.json")),
+]:
+    print(f"\n--- {name}: {path} ---")
+    try:
+        if path.suffix == ".json":
+            obj = json.loads(path.read_text())
+            print("File modified:", path.stat().st_mtime)
+            print("Root type:", type(obj).__name__)
+            if isinstance(obj, dict):
+                print("Root keys:", sorted(obj.keys()))
+                for k, v in obj.items():
+                    if isinstance(v, list):
+BASH "===== READ-ONLY DIAGNOSTIC COMPLETE ====="ue"name__) reader))()))
+===== 1. ACTIVE DASHBOARD SERVER =====
+
+
+app.get('/api/bot-data', (req, res) => {
+  const botType = req.query.bot || 'crypto';
+  const now = new Date();
+  const seed = now.getSeconds() + (now.getMilliseconds() / 1000);
+  const multiplier = 1 + (Math.sin(seed) * 0.001);
+
+  if (botType === 'zerodha') {
+    return res.json({
+      success: true,
+      bot: 'zerodha',
+      metrics: {
+        availableFunds: '₹1,42,500.00',
+        realizedPnl: '₹' + (4200 * multiplier).toFixed(2),
+        unrealizedPnl: '₹' + (1150 * multiplier).toFixed(2),
+        totalValue: '₹' + (356000 * multiplier).toFixed(2)
+      }
+    });
+  } else if (botType === 'us_trading') {
+    return res.json({
+      success: true,
+      bot: 'us_trading',
+      metrics: {
+        availableFunds: '$8,920.50',
+        realizedPnl: '$' + (1120 * multiplier).toFixed(2),
+        unrealizedPnl: '$' + (215 * multiplier).toFixed(2),
+        totalValue: '$' + (32150 * multiplier).toFixed(2)
+      }
+    });
+  } else {
+    return res.json({
+      success: true,
+      bot: 'crypto',
+      metrics: {
+        availableFunds: '$12,450.00',
+        realizedPnl: '$' + (342.50 * multiplier).toFixed(2),
+        unrealizedPnl: '$' + (-18.20 * multiplier).toFixed(2),
+        totalValue: '$' + (24890.10 * multiplier).toFixed(2)
+      }
+    });
+  }
+});
+
+
+app.get('/api/bot-data', (req, res) => {
+  const botType = req.query.bot || 'crypto';
+  
+  let limits = { crypto: { amount: 500 }, stocks: { amount: 1000 } };
+  try {
+    const limitsRaw = fs.readFileSync('/opt/us-trading-bot/data/trade-limits.json', 'utf8');
+    limits = JSON.parse(limitsRaw);
+  } catch (e) {}
+
+  if (botType === 'zerodha') {
+    return res.json({
+      success: true,
+      bot: 'zerodha',
+      metrics: {
+        availableFunds: '₹1,42,500.00',
+        realizedPnl: '+₹4,200.00',
+        unrealizedPnl: '+₹1,150.00',
+        totalValue: '₹3,56,000.00'
+      },
+      positions: [
+        { asset: 'RELIANCE', sharesCount: '50', buyPrice: '₹2,680.00', currentPrice: '₹2,710.00', diffAmt: '+₹1,500.00', investedValue: '₹1,34,000.00', currentValue: '₹1,35,500.00', status: 'RUNNING_STREAMING' }
+      ]
+    });
+  } else if (botType === 'us_trading') {
+    return res.json({
+      success: true,
+      bot: 'us_trading',
+      metrics: {
+        availableFunds: '$' + (limits.stocks.amount * 10),
+        realizedPnl: '+$1,120.00',
+        unrealizedPnl: '+$215.40',
+        totalValue: '$' + (limits.stocks.amount * 32)
+      },
+      positions: [
+        { asset: 'AAPL (Limit: $' + limits.stocks.amount + ')', sharesCount: '45.0', buyPrice: '$225.00', currentPrice: '$231.50', diffAmt: '+$292.50', investedValue: '$10,125.00', currentValue: '$10,417.50', status: 'MONITORING_ACTIVE' }
+      ]
+    });
+  } else {
+    return res.json({
+      success: true,
+      bot: 'crypto',
+      metrics: {
+        availableFunds: '$' + (limits.crypto.amount * 20),
+        realizedPnl: '+$342.50',
+        unrealizedPnl: '-$18.20',
+        totalValue: '$' + (limits.crypto.amount * 49)
+      },
+      positions: [
+        { asset: 'BTC-USD (Limit: $' + limits.crypto.amount + ')', sharesCount: '0.15', buyPrice: '$67,500.00', currentPrice: '$68,200.00', diffAmt: '+$105.00', investedValue: '$10,125.00', currentValue: '$10,230.00', status: 'MONITORING_ACTIVE' }
+      ]
+    });
+  }
+});
+
+// --- DETAILED LIVE BOT HOLDINGS & TRADES ENDPOINT ---
+app.get('/api/bot-data', (req, res) => {
+  const botType = req.query.bot || 'crypto';
+  
+  if (botType === 'zerodha') {
+    return res.json({
+      success: true,
+      bot: 'zerodha',
+      metrics: { availableFunds: '₹1,42,500.00', realizedPnl: '+₹4,200.00', unrealizedPnl: '+₹1,150.00', totalValue: '₹3,56,000.00' },
+      positions: [
+        { asset: 'RELIANCE', sharesCount: '50', buyPrice: '₹2,680.00', currentPrice: '₹2,710.00', diffAmt: '+₹30.00', investedValue: '₹1,34,000.00', buyFee: '₹12.50', currentValue: '₹1,35,500.00', totalRet: '+1.12%' },
+        { asset: 'INFY', sharesCount: '100', buyPrice: '₹1,850.00', currentPrice: '₹1,846.50', diffAmt: '-₹3.50', investedValue: '₹1,85,000.00', buyFee: '₹18.00', currentValue: '₹1,84,650.00', totalRet: '-0.18%' }
+      ],
+      pastTrades: [
+        { timestamp: '2026-10-20 01:15:30', symbol: 'TCS', type: 'SELL', qty: '25', invested: '₹1,02,000.00', sold: '₹1,06,200.00', pnl: '+₹4,200.00 (+4.12%)' }
+      ]
+    });
+  } else if (botType === 'us_trading') {
+    return res.json({
+      success: true,
+      bot: 'us_trading',
+      metrics: { availableFunds: '$8,920.50', realizedPnl: '+$1,120.00', unrealizedPnl: '+$215.40', totalValue: '$32,150.00' },
+      positions: [
+        { asset: 'AAPL', sharesCount: '45.0', buyPrice: '$225.00', currentPrice: '$231.50', diffAmt: '+$6.50', investedValue: '$10,125.00', buyFee: '$1.20', currentValue: '$10,417.50', totalRet: '+2.89%' },
+        { asset: 'NVDA', sharesCount: '30.0', buyPrice: '$135.00', currentPrice: '$132.40', diffAmt: '-$2.60', investedValue: '$4,050.00', buyFee: '$0.95', currentValue: '$3,972.00', totalRet: '-1.92%' }
+      ],
+      pastTrades: [
+        { timestamp: '2026-10-20 02:45:11', symbol: 'MSFT', type: 'SELL', qty: '20.0', invested: '$8,400.00', sold: '$8,850.00', pnl: '+$450.00 (+5.3%)' }
+      ]
+    });
+  } else {
+    return res.json({
+      success: true,
+      bot: 'crypto',
+      metrics: { availableFunds: '$12,450.00', realizedPnl: '+$342.50', unrealizedPnl: '-$18.20', totalValue: '$24,890.10' },
+      positions: [
+        { asset: 'BTC-USD', sharesCount: '0.15', buyPrice: '$67,500.00', currentPrice: '$68,128.08', diffAmt: '+$628.08', investedValue: '$10,125.00', buyFee: '$2.50', currentValue: '$10,219.21', totalRet: '+0.93%' },
+        { asset: 'ETH-USD', sharesCount: '2.50', buyPrice: '$2,410.00', currentPrice: '$2,463.68', diffAmt: '+$53.68', investedValue: '$6,025.00', buyFee: '$1.80', currentValue: '$6,159.20', totalRet: '+2.22%' }
+      ],
+      pastTrades: [
+        { timestamp: '2026-10-20 04:12:10', symbol: 'SOL-USD', type: 'SELL', qty: '12.0', invested: '$1,200.00', sold: '$1,310.00', pnl: '+$110.00 (+9.1%)' }
+      ]
+    });
+  }
+});
+
+===== 2. STATIC FILES AND NGINX ROUTING =====
+/opt/us-trading-bot/unified_server.js:13:const PORT = process.env.PORT || 5175;
+/opt/us-trading-bot/unified_server.js:16:app.use(express.static(path.join(__dirname, 'public')));
+/opt/us-trading-bot/unified_server.js:669:    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+/opt/us-trading-bot/unified_server.js:672:// PUBLIC_HTTPS_LOOPBACK_V1
+/opt/us-trading-bot/unified_server.js:674:// Dynamic World Stocks market data. Uses Yahoo Finance public chart/search endpoints.
+/opt/us-trading-bot/unified_server.js:803:app.listen(PORT, '127.0.0.1', () => {
+/etc/nginx/sites-enabled/trading-bot:1:# DASHBOARD_PUBLIC_HTTPS_V1
+/etc/nginx/sites-enabled/trading-bot:3:    listen 80;
+/etc/nginx/sites-enabled/trading-bot:15:    listen 443 ssl default_server;
+/etc/nginx/sites-enabled/trading-bot:35:        proxy_pass http://127.0.0.1:5175;
+/etc/nginx/sites-enabled/trading-bot:39:        proxy_pass http://127.0.0.1:5175;
+/etc/nginx/sites-enabled/trading-bot:48:        root /var/www/trading-bot-dashboard/dist;
+/etc/nginx/sites-enabled/trading-bot-dashboard:2:    listen 80;
+/etc/nginx/sites-enabled/trading-bot-dashboard:5:    root /var/www/trading-bot-dashboard/dist;
+/etc/nginx/sites-enabled/trading-bot-dashboard:15:        proxy_pass http://localhost:5000;
+
+===== 3. LIVE FRONTEND PORTFOLIO IMPLEMENTATION =====
+--- /var/www/trading-bot-dashboard/index.html ---
+--- /var/www/trading-bot-dashboard/dist/index.html ---
+297-                    });
+298-                }
+299-            };
+300-
+301:            const [liveProfiles, setLiveProfiles] = useState({});
+302-
+303:            const botProfiles = {
+304-                crypto: {
+305-                    name: 'Crypto Bot',
+306-                    portal: 'Robinhood.com',
+307-                    funds: '$94.10',
+308-                    realized: '+$24.50 (+26.04%)',
+309-                    unrealized: '+$8.18 (+11.75%)',
+310-                    totalValue: '$77.78',
+311-                    holdingsTitle: 'CRYPTO Active Holdings - Live Stream (Robinhood.com)',
+--
+397-                    holdings: [],
+398-                    closedTrades: []
+399-                });
+400-
+401:                const loadPortfolio = async () => {
+402-                    try {
+403:                        const response = await fetch('/api/dashboard-data', {
+404-                            credentials: 'same-origin',
+405-                            cache: 'no-store'
+406-                        });
+407-                        if (!response.ok) {
+408-                            throw new Error('Portfolio API returned HTTP ' + response.status);
+409-                        }
+410-
+411-                        const payload = await response.json();
+--
+562-                                closedTrades: []
+563-                            };
+564-                        }
+565-
+566:                        if (active) setLiveProfiles(profiles);
+567-                    } catch (error) {
+568-                        console.error('Portfolio data refresh failed:', error);
+569-                    }
+570-                };
+571-
+572:                window.__refreshPortfolio = loadPortfolio;
+573:                loadPortfolio();
+574:                const timer = setInterval(loadPortfolio, 30000);
+575-
+576-                return () => {
+577-                    active = false;
+578-                    clearInterval(timer);
+579:                    if (window.__refreshPortfolio === loadPortfolio) {
+580-                        delete window.__refreshPortfolio;
+581-                    }
+582-                };
+583-            }, []);
+584-
+585:            const currentData = liveProfiles[selectedBot] || {
+586:                name: botProfiles[selectedBot].name,
+587:                portal: botProfiles[selectedBot].portal,
+588-                funds: 'Unavailable',
+589-                realized: 'Unavailable',
+590-                unrealized: 'Unavailable',
+591-                totalValue: 'Unavailable',
+592-                holdingsTitle: 'Waiting for verified account data',
+593-                holdings: [],
+594-                closedTrades: []
+595-            };
+--
+737-                                </div>
+738-                            </div>
+739-
+740-                            <div className="panel-card">
+741:                                <MiniBarChart title={`1. ${currentData.name} Performance`} value="-5.68%" color="text-sky-400" period={p1} setPeriod={setP1} bars={[30,45,60,80,40,90,75,85]} />
+742-                                <MiniBarChart title="2. Amount Performance" value="$-4.40" color="text-pink-400" period={p2} setPeriod={setP2} bars={[20,35,50,70,95,60,80,90]} />
+743-
+744-                                <div className="bg-[#090D14] border border-[#1E293B] rounded-lg p-2.5 mb-2.5">
+745-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">3. Live Session</div>
+746-                                    <HorizontalBar label="Nikkei 225 (Japan)" value="+0.03%" percent={40} color="bg-emerald-500" />
+747-                                    <HorizontalBar label="S&P 500 (US)" value="+0.53%" percent={65} color="bg-emerald-500" />
+748-                                    <HorizontalBar label="STOXX 600 (Europe)" value="-0.10%" percent={30} color="bg-amber-500" />
+749-                                    <HorizontalBar label="Nifty 50 (India)" value="+0.44%" percent={55} color="bg-emerald-500" />
+--
+796-                                            {/* LEFT SIDE: Portal Status + StopBuy Toggle */}
+797-                                            <div className="flex items-center gap-3">
+798-                                                <div className="flex items-center gap-2 text-xs font-bold">
+799-                                                    <span className={`w-2.5 h-2.5 rounded-full ${currentState.status === 'RUNNING' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+800:                                                    <span>Portal: <span className="text-sky-400">{currentData.portal}</span></span>
+801-                                                    <span className="text-slate-500">|</span>
+802-                                                    <span className="text-slate-400">Status: <span className={currentState.status === 'RUNNING' ? 'text-emerald-400' : 'text-red-400'}>{currentState.status === 'RUNNING' ? 'RUNNING_STREAMING' : 'NOT_RUNNING'}</span></span>
+803-                                                </div>
+804-
+805-                                                {window.__TradeToggles && React.createElement(window.__TradeToggles, { bot: selectedBot, buyBlocked: currentState.buyBlocked, status: currentState.status })}
+806-                                            </div>
+807-
+808-                                            {/* RIGHT SIDE: Start Bot / Stop Bot Action Buttons (Reduced text size to text-[11px] / py-0.5) */}
+809-                                            
+810-                                        </div>
+811-
+812-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+813:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Available Funds</div><div className="text-lg font-bold text-white">{currentData.funds}</div></div>
+814:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Realized P&L</div><div className="text-lg font-bold text-emerald-400">{currentData.realized}</div></div>
+--- /opt/us-trading-bot/public/index.html ---
+297-                    });
+298-                }
+299-            };
+300-
+301:            const [liveProfiles, setLiveProfiles] = useState({});
+302-
+303:            const botProfiles = {
+304-                crypto: {
+305-                    name: 'Crypto Bot',
+306-                    portal: 'Robinhood.com',
+307-                    funds: '$94.10',
+308-                    realized: '+$24.50 (+26.04%)',
+309-                    unrealized: '+$8.18 (+11.75%)',
+310-                    totalValue: '$77.78',
+311-                    holdingsTitle: 'CRYPTO Active Holdings - Live Stream (Robinhood.com)',
+--
+397-                    holdings: [],
+398-                    closedTrades: []
+399-                });
+400-
+401:                const loadPortfolio = async () => {
+402-                    try {
+403:                        const response = await fetch('/api/dashboard-data', {
+404-                            credentials: 'same-origin',
+405-                            cache: 'no-store'
+406-                        });
+407-                        if (!response.ok) {
+408-                            throw new Error('Portfolio API returned HTTP ' + response.status);
+409-                        }
+410-
+411-                        const payload = await response.json();
+--
+562-                                closedTrades: []
+563-                            };
+564-                        }
+565-
+566:                        if (active) setLiveProfiles(profiles);
+567-                    } catch (error) {
+568-                        console.error('Portfolio data refresh failed:', error);
+569-                    }
+570-                };
+571-
+572:                window.__refreshPortfolio = loadPortfolio;
+573:                loadPortfolio();
+574:                const timer = setInterval(loadPortfolio, 30000);
+575-
+576-                return () => {
+577-                    active = false;
+578-                    clearInterval(timer);
+579:                    if (window.__refreshPortfolio === loadPortfolio) {
+580-                        delete window.__refreshPortfolio;
+581-                    }
+582-                };
+583-            }, []);
+584-
+585:            const currentData = liveProfiles[selectedBot] || {
+586:                name: botProfiles[selectedBot].name,
+587:                portal: botProfiles[selectedBot].portal,
+588-                funds: 'Unavailable',
+589-                realized: 'Unavailable',
+590-                unrealized: 'Unavailable',
+591-                totalValue: 'Unavailable',
+592-                holdingsTitle: 'Waiting for verified account data',
+593-                holdings: [],
+594-                closedTrades: []
+595-            };
+--
+737-                                </div>
+738-                            </div>
+739-
+740-                            <div className="panel-card">
+741:                                <MiniBarChart title={`1. ${currentData.name} Performance`} value="-5.68%" color="text-sky-400" period={p1} setPeriod={setP1} bars={[30,45,60,80,40,90,75,85]} />
+742-                                <MiniBarChart title="2. Amount Performance" value="$-4.40" color="text-pink-400" period={p2} setPeriod={setP2} bars={[20,35,50,70,95,60,80,90]} />
+743-
+744-                                <div className="bg-[#090D14] border border-[#1E293B] rounded-lg p-2.5 mb-2.5">
+745-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">3. Live Session</div>
+746-                                    <HorizontalBar label="Nikkei 225 (Japan)" value="+0.03%" percent={40} color="bg-emerald-500" />
+747-                                    <HorizontalBar label="S&P 500 (US)" value="+0.53%" percent={65} color="bg-emerald-500" />
+748-                                    <HorizontalBar label="STOXX 600 (Europe)" value="-0.10%" percent={30} color="bg-amber-500" />
+749-                                    <HorizontalBar label="Nifty 50 (India)" value="+0.44%" percent={55} color="bg-emerald-500" />
+--
+796-                                            {/* LEFT SIDE: Portal Status + StopBuy Toggle */}
+797-                                            <div className="flex items-center gap-3">
+798-                                                <div className="flex items-center gap-2 text-xs font-bold">
+799-                                                    <span className={`w-2.5 h-2.5 rounded-full ${currentState.status === 'RUNNING' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+800:                                                    <span>Portal: <span className="text-sky-400">{currentData.portal}</span></span>
+801-                                                    <span className="text-slate-500">|</span>
+802-                                                    <span className="text-slate-400">Status: <span className={currentState.status === 'RUNNING' ? 'text-emerald-400' : 'text-red-400'}>{currentState.status === 'RUNNING' ? 'RUNNING_STREAMING' : 'NOT_RUNNING'}</span></span>
+803-                                                </div>
+804-
+805-                                                {window.__TradeToggles && React.createElement(window.__TradeToggles, { bot: selectedBot, buyBlocked: currentState.buyBlocked, status: currentState.status })}
+806-                                            </div>
+807-
+808-                                            {/* RIGHT SIDE: Start Bot / Stop Bot Action Buttons (Reduced text size to text-[11px] / py-0.5) */}
+809-                                            
+810-                                        </div>
+811-
+812-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+813:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Available Funds</div><div className="text-lg font-bold text-white">{currentData.funds}</div></div>
+814:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Realized P&L</div><div className="text-lg font-bold text-emerald-400">{currentData.realized}</div></div>
+
+===== 4. STOCK FILE SCHEMA (VALUES REDACTED) =====
+
+--- Stocks: /var/lib/stock-bot/stock_account.json ---
+File modified: 1792515321.040382
+Root type: dict
+Root keys: ['cash', 'closed_trades', 'daily_loss_date', 'daily_loss_locked', 'daily_start_value', 'losses', 'positions', 'realized_pnl', 'starting_cash', 'total_fees', 'total_trades', 'wins']
+cash: type=float
+starting_cash: type=float
+positions: dict keys=['NVDA']
+total_trades: type=int
+closed_trades: type=int
+wins: type=int
+losses: type=int
+realized_pnl: type=float
+total_fees: type=float
+daily_start_value: type=float
+daily_loss_locked: type=bool
+daily_loss_date: type=str
+
+--- Stock trades: /var/lib/stock-bot/stock_trades.csv ---
+File exists: True
+CSV columns: ['timestamp', 'action', 'symbol', 'quantity', 'price', 'value', 'pnl']
+CSV row count: 195
+
+--- Zerodha: /opt/zerodha-bot/state/live_reconciliation_latest.json ---
+File modified: 1792357809.2145536
+Root type: dict
+Root keys: ['broker', 'broker_live_balance', 'holding_count', 'holdings', 'holdings_ok', 'inventory_ready_for_orders', 'kill_switch', 'margins_ok', 'mode', 'net_positions', 'open_orders', 'orders_ok', 'positions_ok', 'profile_ok', 'read_only', 'reconciled', 'timestamp_utc', 'trade_count', 'trades_ok']
+timestamp_utc: type=str
+mode: type=str
+kill_switch: type=str
+read_only: type=bool
+broker: type=str
+profile_ok: type=bool
+margins_ok: type=bool
+orders_ok: type=bool
+trades_ok: type=bool
+positions_ok: type=bool
+holdings_ok: type=bool
+broker_live_balance: type=str
+net_positions: list length=0
+open_orders: list length=0
+holdings: list length=5
+holdings[0] keys: ['authorisation', 'authorised_date', 'authorised_quantity', 'average_price', 'close_price', 'collateral_quantity', 'collateral_type', 'day_change', 'day_change_percentage', 'discrepancy', 'exchange', 'instrument_token', 'isin', 'las_quantity', 'last_price', 'mtf', 'opening_quantity', 'pnl', 'price', 'product', 'quantity', 'realised_quantity', 'short_quantity', 't1_quantity', 'tradingsymbol', 'used_quantity']
+inventory_ready_for_orders: type=bool
+trade_count: type=int
+holding_count: type=int
+reconciled: type=bool
+
+===== 5. DASHBOARD API RESPONSE STATUS =====
+dashboard-data HTTP 401
+
+===== READ-ONLY DIAGNOSTIC COMPLETE =====
+ubuntu@vmi3619462:~$ 
