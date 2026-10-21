@@ -1,699 +1,1143 @@
-ubuntu@vmi3619462:~$ 
-sudo bash <<'BASH'
-set -u
-
-echo "===== 1. ACTIVE SERVER ENTRYPOINT ====="
-sudo readlink -f /proc/$(pm2 pid unified-dashboard 2>/dev/null | head -1)/cwd 2>/dev/null || true
-sudo readlink -f /proc/$(pm2 pid unified-dashboard 2>/dev/null | head -1)/exe 2>/dev/null || true
-sudo ls -l /var/www/trading-bot-dashboard/server.js
-
-echo
-echo "===== 2. SERVER STATIC FILE AND PROXY CONFIG ====="
-grep -nEi 'express.static|sendFile|public|dist|listen\\(|proxy_pass|5175' \
-  /var/www/trading-bot-dashboard/server.js \
-  /opt/us-trading-bot/unified_server.js \
-  /etc/nginx/sites-enabled/* 2>/dev/null | head -160 || true
-
-echo
-echo "===== 3. PORTFOLIO DATA READER ====="
-if [ -f /opt/secure-dashboard-api/read_bot_data.py ]; then
-  sudo sed -n '1,280p' /opt/secure-dashboard-api/read_bot_data.py
-else
-  echo "NOT FOUND: /opt/secure-dashboard-api/read_bot_data.py"
-fi
-
-echo
-echo "===== 4. STOCK DATA SOURCE AND TRADE HISTORY ====="
-sudo grep -nEi -A5 -B5 \
-  'stocks|stock_trades|source_modified|starting_cash|realized_pnl|positions|available' \
-  /opt/secure-dashboard-api/read_bot_data.py 2>/dev/null | head -200 || true
-
-echo
-echo "===== 5. ZERODHA SNAPSHOT PRODUCER REFERENCES ====="
-sudo grep -RInE --include='*.py' --exclude-dir=venv --exclude-dir=__pycache__ \
-  'timestamp_utc|average_price|read_only|PAPER|holdings' \
-  /opt/zerodha-bot /opt/secure-dashboard-api 2>/dev/null | head -100 || true
-
-echo
-echo "===== DIAGNOSTIC COMPLETE: NO FILES MODIFIED ====="
-BASH
-===== 1. ACTIVE SERVER ENTRYPOINT =====
-/var/www/trading-bot-dashboard
-/usr/local/bin/node
--rw-r--r-- 1 root root 6098 Oct 20 10:24 /var/www/trading-bot-dashboard/server.js
-
-===== 2. SERVER STATIC FILE AND PROXY CONFIG =====
-
-===== 3. PORTFOLIO DATA READER =====
-#!/usr/bin/env python3
-import csv
-import json
-import os
-from datetime import datetime, timezone
+ubuntu@vmi3619462:~$ sudo python3 - <<'PY'
 from pathlib import Path
+import ast
+import re
 
-SOURCES = {
-    "stocks": Path("/var/lib/stock-bot/stock_account.json"),
-    "zerodha": Path("/opt/zerodha-bot/state/live_reconciliation_latest.json"),
-}
+files = [
+    "/home/ubuntu/crypto-bot/paper-trend-500/equal_allocation_bot.py",
+    "/home/ubuntu/bot-capital/capital_guard.py",
+    "/opt/stock-bot/decision_engine.py",
+    "/opt/us-trading-bot/buy_control_store.py",
+    "/opt/us-trading-bot/sell_control_store.py",
+    "/opt/zerodha-bot/exit_manager_live.py",
+    "/opt/zerodha-bot/run_zerodha_exits.py",
+]
 
-def read_json(path):
+pattern = re.compile(
+    r"reconcil|position|ownership|submit|exit|monitor|cycle|"
+    r"fee|capital|cash|reserv|signal|decision|permission|"
+    r"control|enabled|allow|guard|main|run",
+    re.I,
+)
+
+for filename in files:
+    path = Path(filename)
+    print("\n===== BEGIN:", filename, "=====")
+
+    if not path.is_file():
+        print("MISSING")
+        continue
+
+    text = path.read_text()
+    lines = text.splitlines()
+
     try:
-        stat = path.stat()
-        with path.open() as f:
-            data = json.load(f)
-        return {
-            "available": True,
-            "source_modified": datetime.fromtimestamp(
-                stat.st_mtime, timezone.utc
-            ).isoformat(),
-            "data": data,
-        }
-    except (OSError, ValueError) as exc:
-        return {"available": False, "error": type(exc).__name__}
+        tree = ast.parse(text)
+    except SyntaxError as exc:
+        print("SYNTAX ERROR:", exc)
+        continue
 
-def read_csv(path):
-    try:
-        stat = path.stat()
-        with path.open(newline="") as f:
-            rows = list(csv.DictReader(f))
-        return {
-            "available": True,
-            "source_modified": datetime.fromtimestamp(
-                stat.st_mtime, timezone.utc
-            ).isoformat(),
-            "rows": rows,
-        }
-    except OSError as exc:
-        return {"available": False, "error": type(exc).__name__}
+    selected = set()
+    functions = [
+        node for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
 
-def main():
-    result = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "crypto": {"available": False, "error": "Legacy snapshot retired; live crypto integration pending"},
-        "stocks": read_json(SOURCES["stocks"]),
-        "zerodha": read_json(SOURCES["zerodha"]),
-    }
+    for node in functions:
+        if pattern.search(node.name):
+            selected.update(range(node.lineno, node.end_lineno + 1))
 
-    result["crypto_trades"] = {
-        "available": False,
-        "error": "Legacy crypto history retired; live integration pending",
-    }
-    result["stock_trades"] = read_csv(
-        Path("/var/lib/stock-bot/stock_trades.csv")
-    )
+    # Include module-level setup without printing entire class definitions.
+PYint("\nREAD-ONLY INSPECTION COMPLETE."))- 1]}")de.end_lineno + 1))ef)
 
-    z = result["zerodha"]
-    if z.get("available"):
-        d = z["data"]
-        result["zerodha_snapshot_is_paper"] = (
-            d.get("mode") == "PAPER"
-            or d.get("paper") is not None
-            or d.get("read_only") is True
-        )
-        result["zerodha_snapshot_timestamp"] = d.get("timestamp_ist")
+===== BEGIN: /home/ubuntu/crypto-bot/paper-trend-500/equal_allocation_bot.py =====
+    ...
+    2: """
+    3: Equal-allocation Robinhood controller.
+    4: Default: GET-only preview.
+    5: Live: --live --acknowledge-risk
+    6: 
+    7: Separate journal; never uses the legacy paper cash balance.
+    8: New implementation, not a profitability or production-readiness guarantee.
+    9: """
+   10: import threading
+   11: import queue
+   12: import argparse
+   13: import fcntl
+   14: import json
+   15: import os
+   16: import sqlite3
+   17: import time
+   18: import uuid
+   19: from datetime import datetime, timezone
+   20: from decimal import Decimal, ROUND_DOWN
+   21: from pathlib import Path
+   22: from urllib.parse import urlsplit, parse_qs
+    ...
+   24: import pandas as pd
+   25: import requests
+   26: from robinhood_client import RobinhoodCryptoClient
+   27: from buy_control_store import BuyBlocked, require_buy_enabled, submission_guard
+    ...
+   29: import smtplib
+   30: import os
+   31: from email.message import EmailMessage
+   32: from datetime import datetime, timezone
+   33: import atexit
+    ...
+   35: import sys
+   36: sys.path.insert(0, '/home/ubuntu/bot-capital')
+   37: from capital_guard import crypto_cash, stock_cash
+    ...
+   84: ROOT = Path(__file__).resolve().parent
+   85: PREFIX = "/api/v2/crypto/"
+   86: JOURNAL = ROOT / "equal_allocation_v3.db"
+   87: TERMINAL = {"filled", "canceled", "failed"}
+   88: KNOWN_STATES = TERMINAL | {"open", "pending"}
+   89: BUDGET_FRACTION = Decimal("0.98")
+    ...
+  124: _cg_last_request = 0.0
+    ...
+  527: def _primary_cycle_heartbeat(method):
+  528:     import functools, hashlib, json, os, sqlite3, tempfile, time
+  529:     from pathlib import Path
+  530:     from decimal import Decimal
+  531:     scope = method.__globals__
+  532:     source = Path(scope["__file__"]).resolve()
+  533:     fingerprint = hashlib.sha256(source.read_bytes()).hexdigest()
+  534:     heartbeat = source.parent / "supervision" / "primary-heartbeat.json"
+  535:     events = {"OWNERSHIP MISMATCH", "SUBMISSIONS BLOCKED" "EXIT ASSET BLOCKED",
+  536:               "EXIT MONITOR ERROR", "EXIT RESEARCH UNAVAILABLE", "EMAIL WORKER FAILED"}
+  537:     @functools.wraps(method)
+  538:     def wrapped(engine, *args, **kwargs):
+  539:         issues = []
+  540:         original_log = scope["log"]
+  541:         def observed(*values):
+  542:             original_log(*values)
+  543:             if values and isinstance(values[0], str) and values[0] in events:
+  544:                 detail = " ".join(str(value) for value in values)[:1500]
+  545:                 if detail not in issues and len(issues) < 50:
+  546:                     issues.append(detail)
+  547:         scope["log"] = observed
+  548:         completed = False
+  549:         try:
+  550:             result = method(engine, *args, **kwargs)
+  551:             completed = True
+  552:             return result
+  553:         except BaseException as exc:
+  554:             issues.append("CYCLE_FAILED " + type(exc).__name__)
+  555:             raise
+  556:         finally:
+  557:             scope["log"] = original_log
+  558:             temporary = None
+  559:             try:
+  560:                 filename = os.environ.get("SELL_CONTROL_DB", "")
+  561:                 db = None
+  562:                 try:
+  563:                     path = Path(filename)
+  564:                     if not filename or not path.is_absolute() or not path.is_file():
+  565:                         raise ValueError("Unavailable SELL control")
+  566:                     db = sqlite3.connect(path.as_uri()+"?mode=ro", uri=True, timeout=3)
+  567:                     rows = db.execute("SELECT requested_enabled,revision FROM sell_controls WHERE bot=?", ("crypto",)).fetchall()
+  568:                     if (len(rows) != 1 or type(rows[0][0]) is not int
+  569:                         or rows[0][0] not in (0,1) or type(rows[0][1]) is not int
+  570:                         or rows[0][1] < 0):
+  571:                         raise ValueError("Invalid SELL control")
+  572:                     if rows[0][0] == 0:
+  573:                         issues.append("SELL_OFF")
+  574:                 except Exception:
+  575:                     issues.append("SELL_CONTROL_UNAVAILABLE")
+  576:                 finally:
+  577:                     if db is not None:
+  578:                         db.close()
+  579:                 if any(Decimal(str(value)) > 0 for value in getattr(engine,"baseline",{}).values()):
+  580:                     issues.append("EXCLUDED_BASELINE_REQUIRES_COVERAGE")
+  581:                 payload = {"schema":1, "service":"crypto-engine.service", "pid":os.getpid(),
+  582:                     "time":time.time(), "completed":completed,
+  583:                     "live":getattr(engine,"live",False) is True,
+  584:                     "journal_attached":getattr(engine,"db",None) is not None,
+  585:                     "code_sha256":fingerprint, "issues":issues}
+  586:                 fd, name = tempfile.mkstemp(prefix=".primary-beat-", dir=heartbeat.parent)
+  587:                 temporary = Path(name)
+  588:                 with os.fdopen(fd,"w") as stream:
+  589:                     os.fchmod(stream.fileno(),0o600)
+  590:                     json.dump(payload,stream,sort_keys=True)
+  591:                     stream.flush()
+  592:                     os.fsync(stream.fileno())
+  593:                 os.replace(temporary,heartbeat)
+  594:             except Exception as exc:
+  595:                 original_log("PRIMARY HEARTBEAT ERROR",type(exc).__name__)
+  596:             finally:
+  597:                 if temporary is not None:
+  598:                     try:
+  599:                         temporary.unlink(missing_ok=True)
+  600:                     except OSError:
+  601:                         pass
+  602:     return wrapped
+    ...
+  719:     def reconcile(self, history):
+  720:         remote = {}
+  721:         for order in history:
+  722:             cid = order.get("client_order_id")
+  723:             if cid:
+  724:                 require(cid not in remote, "Duplicate client order ID")
+  725:                 remote[cid] = order
+  726: 
+  727:         unknown = []
+  728:         for local in list(
+  729:             self.db.execute("SELECT * FROM orders ORDER BY rowid")
+  730:         ):
+  731:             order = remote.get(local["cid"])
+  732:             if order is None:
+  733:                 unknown.append(local["cid"])
+  734:                 continue
+  735: 
+  736:             require(
+  737:                 order["symbol"] == local["symbol"]
+  738:                 and order["side"] == local["side"],
+  739:                 "Broker/local order identity mismatch",
+  740:             )
+  741:             filled = numeric(order["filled_asset_quantity"])
+  742:             average = numeric(order.get("average_price") or 0)
+  743:             fee_raw = order.get("fee_charged")
+  744:             if fee_raw is None:
+  745:                 unknown.append(local["cid"])
+  746:                 log("RECONCILIATION BLOCKED", "missing broker fee", local["cid"])
+  747:                 continue
+  748:             else:
+  749:                 fee = numeric(fee_raw)
+  750:             require(
+  751:                 numeric(local["filled"]) <= filled
+  752:                 <= numeric(local["quantity"])
+  753:                 and fee >= 0
+  754:                 and (filled == 0 or average > 0),
+  755:                 "Invalid cumulative fill information",
+  756:             )
+  757:             with self.db:
+  758:                 self.db.execute(
+  759:                     """UPDATE orders SET state=?,filled=?,average=?,
+  760:                        fee=?,broker_id=?,response=? WHERE cid=?""",
+  761:                     (
+  762:                         order["state"],
+  763:                         str(filled),
+  764:                         str(average),
+  765:                         str(fee),
+  766:                         order["id"],
+  767:                         json.dumps(order),
+  768:                         local["cid"],
+  769:                     ),
+  770:                 )
+  771: 
+  772: 
+  773:                 if (
+  774:                     order["state"] == "filled"
+  775:                     and local["state"] != "filled"
+  776:                     and filled > 0
+  777:                 ):
+  778:                     subject = (
+  779:                         f"{local['side'].upper()} filled {local['symbol']}"
+  780:                     )
+  781:                     body = (
+  782:                         f"Side: {local['side']}\n"
+  783:                         f"Symbol: {local['symbol']}\n"
+  784:                         f"Filled quantity: {filled}\n"
+  785:                         f"Average fill price: {average}\n"
+  786:                         f"Broker-reported fee: {fee}\n"
+  787:                         f"Broker order ID: {order['id']}\n"
+  788:                         f"Client order ID: {local['cid']}\n"
+  789:                     )
+  790:                     self.db.execute(
+  791:                         """INSERT OR IGNORE INTO email_outbox
+  792:                            (cid, subject, body) VALUES (?, ?, ?)""",
+  793:                         (local["cid"], subject, body),
+  794:                     )
+  795: 
+  796:         own_ids = {
+  797:             row[0] for row in self.db.execute("SELECT cid FROM orders")
+  798:         }
+  799:         external_open = [
+  800:             order for order in history
+  801:             if order["state"] not in TERMINAL
+  802:             and order.get("client_order_id") not in own_ids
+  803:         ]
+  804:         return unknown, external_open
+    ...
+  806:     def positions(self):
+  807:         # Opening inventory is represented by baseline. Its historical cost
+  808:         # is unknown, so it is tracked at zero cost rather than fabricated.
+  809:         result = {}
+  810:         for asset, raw_qty in self.baseline.items():
+  811:             qty = numeric(raw_qty)
+  812:             if qty < 0:
+  813:                 raise RuntimeError("Negative opening inventory")
+  814:             if qty:
+  815:                 symbol = f"{asset}-USD"
+  816:                 result[symbol] = {
+  817:                     "quantity": qty,
+  818:                     "cost": numeric(0),
+  819:                     "coin": asset.lower(),
+  820:                     "stop": numeric(0),
+  821:                 }
+  822: 
+  823:         # Apply fills in execution-time order, not insertion/rowid order.
+  824:         rows = self.db.execute(
+  825:             "SELECT * FROM orders ORDER BY created, rowid"
+  826:         )
+  827:         for row in rows:
+  828:             quantity = numeric(row["filled"])
+  829:             if quantity == 0:
+  830:                 continue
+  831:             position = result.setdefault(
+  832:                 row["symbol"],
+  833:                 {"quantity": numeric(0), "cost": numeric(0),
+  834:                  "coin": row["coin"], "stop": numeric(0)},
+  835:             )
+  836:             require(position["coin"] == row["coin"], "Coin identity changed")
+  837: 
+  838:             if row["side"] == "buy":
+  839:                 average = numeric(row["average"])
+  840:                 fee = numeric(row["fee"])
+  841:                 require(average > 0 and fee >= 0, "Invalid buy cost")
+  842:                 position["cost"] += quantity * average + fee
+  843:                 position["quantity"] += quantity
+  844:                 position["stop"] = max(
+  845:                     position["stop"],
+  846:                     numeric(row["average"]) - numeric(row["distance"]),
+  847:                 )
+  848:             elif row["side"] == "sell":
+  849:                 require(
+  850:                     quantity <= position["quantity"],
+  851:                     "Journal contains an oversell",
+  852:                 )
+  853:                 if position["quantity"] > 0:
+  854:                     matched_cost = (
+  855:                         position["cost"] * quantity / position["quantity"]
+  856:                     )
+  857:                     position["cost"] -= matched_cost
+  858:                 position["quantity"] -= quantity
+  859:                 if position["quantity"] == 0:
+  860:                     position["cost"] = numeric(0)
+  861:                     position["stop"] = numeric(0)
+  862:             else:
+  863:                 raise RuntimeError("Unknown journal order side")
+  864: 
+  865:         return {
+  866:             symbol: position for symbol, position in result.items()
+  867:             if position["quantity"] > 0
+  868:         }
+    ...
+  870:     def ownership_matches(self, holdings, positions):
+  871:         # positions() already includes baseline opening inventory.
+  872:         expected = {
+  873:             symbol.removesuffix("-USD"): position["quantity"]
+  874:             for symbol, position in positions.items()
+  875:         }
+  876:         tolerance = numeric("0.00000001")
+  877:         differences = []
+  878:         for asset in set(expected) | set(holdings):
+  879:             held = numeric(holdings.get(
+  880:                 asset, (numeric(0), numeric(0))
+  881:             )[0])
+  882:             wanted = numeric(expected.get(asset, numeric(0)))
+  883:             allowed = max(tolerance, abs(wanted) * numeric("0.000001"))
+  884:             if abs(held - wanted) > allowed:
+  885:                 differences.append({
+  886:                     "asset": asset,
+  887:                     "broker_quantity": str(held),
+  888:                     "journal_quantity": str(wanted),
+  889:                     "difference": str(held - wanted),
+  890:                 })
+  891:         if differences:
+  892:             log("OWNERSHIP MISMATCH", differences)
+  893:             self.submissions_blocked = True
+  894:             print("SAFETY BLOCK: ownership mismatch; new buys remain blocked")
+  895:         return not differences
+    ...
+  897:     def signal(self, coin):
+  898:         # Allow publication time before adopting a new hourly boundary.
+  899:         # Pin the cutoff for this call, including cache lookup and validation.
+  900:         request_time = pd.Timestamp.now(tz="UTC")
+  901:         hour = (request_time - pd.Timedelta(minutes=5)).floor("h")
+  902:         expected_candle = (
+  903:             hour - pd.Timedelta(hours=1)
+  904:         ).isoformat()
+  905:         cached = self.cache.get(coin)
+  906:         if (
+  907:             cached
+  908:             and time.monotonic() - cached[0] < 300
+  909:             and cached[1]["candle"] == expected_candle
+  910:         ):
+  911:             return cached[1]
+  912: 
+  913:         response = paced_market_get(
+  914:             f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart",
+  915:             params={"vs_currency": "usd", "days": "30"},
+  916:             timeout=25,
+  917:         )
+  918:         response.raise_for_status()
+  919:         frame = pd.DataFrame(
+  920:             response.json()["prices"],
+  921:             columns=["time", "price"],
+  922:         )
+  923:         frame["time"] = pd.to_datetime(
+  924:             frame["time"], unit="ms", utc=True
+  925:         )
+  926:         import math
+  927: 
+  928:         # Do not advance the cutoff after the request.
+  929:         # A response crossing an hour boundary uses the pinned cutoff above.
+  930:         require(
+  931:             not frame["time"].duplicated().any(),
+  932:             "Duplicate market-data timestamps",
+  933:         )
+  934: 
+  935:         # Ignore the rolling current-time sample. Use exact UTC boundaries.
+  936:         boundary = frame[
+  937:             (frame["time"] <= hour)
+  938:             & (frame["time"] == frame["time"].dt.floor("h"))
+  939:         ].copy()
+  940:         boundary["price"] = pd.to_numeric(
+  941:             boundary["price"], errors="raise"
+  942:         )
+  943:         price = (
+  944:             boundary.set_index("time")["price"]
+  945:             .sort_index()
+  946:             .tail(720)
+  947:         )
+  948: 
+  949:         # Accept the latest available hourly boundary (grace already applied).
+  950:         # Allow up to 2 hours behind and tolerate minor gaps.
+  951:         last = price.index[-1] if len(price) else None
+  952:         require(
+  953:             len(price) >= 400
+  954:             and not price.isna().any()
+  955:             and price.map(math.isfinite).all()
+  956:             and (price > 0).all()
+  957:             and last is not None
+  958:             and (hour - pd.Timedelta(hours=2) <= last <= hour),
+  959:             "Missing, invalid, or stale hourly boundary samples",
+  960:         )
+  961: 
+  962:         # Boundary at 07:00 is the endpoint proxy for the 06:00 hour.
+  963:         price.index = price.index - pd.Timedelta(hours=1)
+  964: 
+  965:         fast = price.ewm(span=50, adjust=False).mean()
+  966:         slow = price.ewm(span=200, adjust=False).mean()
+  967:         distance = numeric(price.rolling(14).std().iloc[-1]) * 2
+  968:         require(
+  969:             0 < distance < numeric(price.iloc[-1]),
+  970:             "Invalid stop distance",
+  971:         )
+  972:         result = {
+  973:             "buy": bool(fast.iloc[-1] > slow.iloc[-1]),
+  974:             "sell": bool(
+  975:                 fast.iloc[-1] < slow.iloc[-1]
+  976:                 and fast.iloc[-2] >= slow.iloc[-2]
+  977:             ),
+  978:             "candle": price.index[-1].isoformat(),
+  979:             "distance": distance,
+  980:         }
+  981:         self.cache[coin] = (time.monotonic(), result)
+  982:         time.sleep(2)
+  983:         return result
+    ...
+ 1055:     def submit(
+ 1056:         self, symbol, coin, side, quantity, candle, distance,
+ 1057:         exit_reason=None, exit_details=None
+ 1058:     ):
+ 1059:         with submission_guard('crypto', side.upper()):
+ 1060:             require(side in ('buy', 'sell'), 'Invalid order side')
+ 1061:             if side == 'buy':
+ 1062:                 require_buy_enabled('crypto')
+ 1063:             require(self.live and self.db is not None, "Live journal required")
+ 1064:             require(
+ 1065:                 not (side == "buy" and getattr(self, "exits_only", False)),
+ 1066:                 "Buy blocked in exits-only mode",
+ 1067:             )
+ 1068:             cid = str(uuid.uuid4())
+ 1069:             capital_cost = None
+ 1070:             if side == "buy":
+ 1071:                 estimate = self.broker.estimated_side(symbol, quantity, "ask")
+ 1072:                 capital_cost = numeric(estimate["total"])
+ 1073:                 require(capital_cost > 0, "Invalid buy capital reservation")
+ 1074:                 fresh_account = self.broker.account()
+ 1075:                 require(
+ 1076:                     capital_cost <= min(
+ 1077:                         crypto_cash(self.db),
+ 1078:                         numeric(fresh_account["buying_power"]),
+ 1079:                     ),
+ 1080:                     "Buy exceeds crypto-only capital",
+ 1081:                 )
+ 1082: 
+ 1083:             with self.db:
+ 1084:                 if capital_cost is not None:
+ 1085:                     plan = self.db.execute(
+ 1086:                         "SELECT state FROM plans WHERE symbol=? AND candle=?", (symbol, candle)
+ 1087:                     ).fetchone()
+ 1088:                     require(plan is not None and plan[0] == "queued", "Buy requires an unsubmitted queued plan")
+ 1089:                     require(not self.db.execute(
+ 1090:                         "SELECT 1 FROM orders WHERE state NOT IN ('filled','canceled','failed') LIMIT 1"
+ 1091:                     ).fetchone(), "Buy blocked by unresolved journal order")
+ 1092:                     require(
+ 1093:                         capital_cost <= crypto_cash(self.db),
+ 1094:                         "Crypto capital changed before reservation",
+ 1095:                     )
+ 1096:                     self.db.execute(
+ 1097:                         "INSERT INTO capital_reservations(cid,amount) VALUES (?,?)",
+ 1098:                         (cid, str(capital_cost)),
+ 1099:                     )
+ 1100:                 self.db.execute(
+ 1101:                     """INSERT INTO orders
+ 1102:                        (cid,symbol,coin,side,quantity,candle,distance,
+ 1103:                         state,created)
+ 1104:                        VALUES (?,?,?,?,?,?,?,'uncertain',?)""",
+ 1105:                     (
+ 1106:                         cid, symbol, coin, side, str(quantity),
+ 1107:                         candle, str(distance), timestamp(),
+ 1108:                     ),
+ 1109:                 )
+ 1110:                 if side == "sell":
+ 1111:                     require(bool(exit_reason), "Sell requires an exit decision reason")
+ 1112:                     self.db.execute(
+ 1113:                         "INSERT INTO exit_decisions(cid,created,symbol,reason,details) VALUES (?,?,?,?,?)",
+ 1114:                         (cid, timestamp(), symbol, exit_reason,
+ 1115:                          json.dumps(exit_details or {}, sort_keys=True)),
+ 1116:                     )
+ 1117:                 if side == "buy":
+ 1118:                     self.db.execute(
+ 1119:                         """UPDATE plans SET state='submitted'
+ 1120:                            WHERE symbol=? AND candle=?""",
+ 1121:                         (symbol, candle),
+ 1122:                     )
+ 1123: 
+ 1124:             if side == "sell":
+ 1125:                 log("EXIT_DECISION", symbol, "reason", exit_reason,
+ 1126:                     "client_id", cid, "details", json.dumps(exit_details or {}, sort_keys=True))
+ 1127:             log("SUBMIT", side, symbol, quantity, "client_id", cid)
+ 1128:             response = self.broker.request(
+ 1129:                 PREFIX + "trading/orders/",
+ 1130:                 params={"account_number": self.broker.number},
+ 1131:                 payload={
+ 1132:                     "client_order_id": cid,
+ 1133:                     "side": side,
+ 1134:                     "type": "market",
+ 1135:                     "symbol": symbol,
+ 1136:                     "market_order_config": {
+ 1137:                         "asset_quantity": str(quantity)
+ 1138:                     },
+ 1139:                 },
+ 1140:             )
+ 1141:             require(
+ 1142:                 response.get("client_order_id") == cid
+ 1143:                 and response.get("id"),
+ 1144:                 "Unexpected submission response; intention remains uncertain",
+ 1145:             )
+ 1146:             with self.db:
+ 1147:                 self.db.execute(
+ 1148:                     """UPDATE orders SET broker_id=?,response=?
+ 1149:                        WHERE cid=?""",
+ 1150:                     (response["id"], json.dumps(response), cid),
+ 1151:                 )
+    ...
+ 1153:     def exit_research_worker(self):
+ 1154:         while True:
+ 1155:             coin = self.exit_research_queue.get()
+ 1156:             try:
+ 1157:                 with self.research_io_lock:
+ 1158:                     result = self.signal(coin)
+ 1159:                 error = None
+ 1160:             except Exception as exc:
+ 1161:                 result = None
+ 1162:                 error = type(exc).__name__ + ": " + str(exc)
+ 1163:             with self.exit_research_lock:
+ 1164:                 self.exit_research_results[coin] = (time.monotonic(), result, error)
+ 1165:                 self.exit_research_pending.discard(coin)
+ 1166:             self.exit_research_queue.task_done()
+    ...
+ 1168:     def exit_signal(self, coin):
+ 1169:         with self.exit_research_lock:
+ 1170:             cached = self.exit_research_results.get(coin)
+ 1171:             age = time.monotonic() - cached[0] if cached else float("inf")
+ 1172:             if age >= 60 and coin not in self.exit_research_pending:
+ 1173:                 self.exit_research_pending.add(coin)
+ 1174:                 self.exit_research_queue.put(coin)
+ 1175:             if self.exit_research_thread is None or not self.exit_research_thread.is_alive():
+ 1176:                 self.exit_research_thread = threading.Thread(
+ 1177:                     target=self.exit_research_worker, name="exit-research", daemon=True
+ 1178:                 )
+ 1179:                 self.exit_research_thread.start()
+ 1180:             if cached and cached[1] is not None and age <= 300:
+ 1181:                 return cached[1]
+ 1182:             detail = cached[2] if cached and cached[2] else "Research pending or stale"
+ 1183:         raise RuntimeError(detail)
+    ...
+ 1185:     def monitor_exits(
+ 1186:         self, positions, holdings, history, pairs, writable
+ 1187:     ):
+ 1188:         busy = {
+ 1189:             order["symbol"] for order in history
+ 1190:             if order["state"] not in TERMINAL
+ 1191:         }
+ 1192:         monitoring_error = False
+ 1193: 
+ 1194:         for symbol, position in positions.items():
+ 1195:             try:
+ 1196:                 # Exit eligibility is checked for this asset only.
+ 1197:                 # The caller's global BUY/reconciliation gate is unchanged.
+ 1198:                 asset = symbol.removesuffix("-USD")
+ 1199:                 broker_total = holdings.get(
+ 1200:                     asset, (numeric(0), numeric(0))
+ 1201:                 )[0]
+ 1202:                 expected_total = (
+ 1203:                     numeric(self.baseline.get(asset, "0"))
+ 1204:                     + position["quantity"]
+ 1205:                 )
+ 1206:                 remote_ids = {
+ 1207:                     order.get("client_order_id")
+ 1208:                     for order in history
+ 1209:                     if order.get("client_order_id")
+ 1210:                 }
+ 1211:                 local_rows = list(self.db.execute(
+ 1212:                     "SELECT cid, state FROM orders WHERE symbol=?",
+ 1213:                     (symbol,),
+ 1214:                 ))
+ 1215:                 unresolved_local = any(
+ 1216:                     row["state"] not in TERMINAL
+ 1217:                     for row in local_rows
+ 1218:                 )
+ 1219:                 writable = (
+ 1220:                     broker_total == expected_total
+ 1221:                     and broker_total >= position["quantity"]
+ 1222:                     and not unresolved_local
+ 1223:                 )
+ 1224:                 if not writable:
+ 1225:                     log("EXIT ASSET BLOCKED", symbol,
+ 1226:                         "asset reconciliation or unresolved local order")
+ 1227:                     continue
+ 1228:                 bid, _ = self.broker.quote(symbol)
+ 1229:                 signal = {"sell": False, "candle": timestamp()}
+ 1230:                 # Net thresholds replace the historical distance-based stop.
+ 1231:                 due = False
+ 1232:                 exit_reason = None
+ 1233:                 net_return = None
+ 1234: 
+ 1235:                 # Evaluate net return even when submission is blocked.
+ 1236:                 if not due:
+ 1237:                     pair = pairs.get(symbol)
+ 1238:                     require(pair is not None, "Held pair is not API tradable")
+ 1239:                     sell_quantity = rounded(
+ 1240:                         min(
+ 1241:                             position["quantity"],
+ 1242:                             self.maximum_quantity(pair),
+ 1243:                         ),
+ 1244:                         numeric(pair["asset_increment"]),
+ 1245:                     )
+ 1246:                     require(sell_quantity > 0, "No sellable quantity")
+ 1247: 
+ 1248:                     # Allocate entry cost proportionally if only part can sell.
+ 1249:                     entry_cost = (
+ 1250:                         position["cost"]
+ 1251:                         * sell_quantity / position["quantity"]
+ 1252:                     )
+ 1253:                     require(entry_cost > 0, "Invalid fee-inclusive entry cost")
+ 1254: 
+ 1255:                     estimate = self.broker.estimated_side(
+ 1256:                         symbol, sell_quantity, "bid"
+ 1257:                     )
+ 1258:                     net_credit = estimate["total"]
+ 1259:                     net_return = (net_credit - entry_cost) / entry_cost
+ 1260:                     loss_due = net_credit <= entry_cost * numeric("0.99")
+ 1261:                     profit_due = net_credit >= entry_cost * numeric("1.06")
+ 1262:                     due = loss_due or profit_due
+ 1263:                     if loss_due:
+ 1264:                         exit_reason = "stop_loss_1pct_net"
+ 1265:                     elif profit_due:
+ 1266:                         exit_reason = "take_profit_6pct_net"
+ 1267: 
+ 1268:                     log(
+ 1269:                         "NET PROFIT CHECK", symbol,
+ 1270:                         "quantity", sell_quantity,
+ 1271:                         "entry_cost_including_fees", entry_cost,
+ 1272:                         "estimated_net_sale_credit", net_credit,
+ 1273:                         "estimated_exit_fee", estimate["fee"],
+ 1274:                         "net_return", net_return,
+ 1275:                         "target_net_return", numeric("0.06"),
+ 1276:                     )
+ 1277:                 if not due:
+ 1278:                     try:
+ 1279:                         signal = self.exit_signal(position["coin"])
+ 1280:                         if signal["sell"]:
+ 1281:                             if net_return is not None and net_return < numeric("0"):
+ 1282:                                 due = True
+ 1283:                                 exit_reason = "sell_signal"
+ 1284:                             else:
+ 1285:                                 log(
+ 1286:                                     "PROFIT FLOOR HOLD", symbol,
+ 1287:                                     "net_return", net_return,
+ 1288:                                     "minimum_net_profit", numeric("0.06"),
+ 1289:                                 )
+ 1290:                     except Exception as exc:
+ 1291:                         log("EXIT RESEARCH UNAVAILABLE", symbol,
+ 1292:                             type(exc).__name__)
+ 1293:                         monitoring_error = True
+ 1294:                 log(
+ 1295:                     "POSITION", symbol,
+ 1296:                     "quantity", position["quantity"],
+ 1297:                     "bid", bid, "stop", position["stop"],
+ 1298:                     "exit_due", due,
+ 1299:                     "exit_reason", exit_reason,
+ 1300:                     "net_return", net_return,
+ 1301:                 )
+ 1302:                 if not due or not writable or symbol in busy:
+ 1303:                     continue
+ 1304: 
+ 1305:                 pair = pairs.get(symbol)
+ 1306:                 require(pair is not None, "Held pair is not API tradable")
+ 1307:                 increment = numeric(pair["asset_increment"])
+ 1308:                 quantity = rounded(
+ 1309:                     min(
+ 1310:                         position["quantity"],
+ 1311:                         self.maximum_quantity(pair),
+ 1312:                     ),
+ 1313:                     increment,
+ 1314:                 )
+ 1315:                 require(
+ 1316:                     quantity > 0
+ 1317:                     and quantity * bid
+ 1318:                     >= numeric(pair["min_order_amount"]),
+ 1319:                     "Remaining position is below sell constraints",
+ 1320:                 )
+ 1321:                 available = holdings.get(
+ 1322:                     pair["asset_code"], (numeric(0), numeric(0))
+ 1323:                 )[1]
+ 1324:                 require(
+ 1325:                     available >= quantity,
+ 1326:                     "Insufficient available bot-owned quantity",
+ 1327:                 )
+ 1328: 
+ 1329:                 self.submit(
+ 1330:                     symbol, position["coin"], "sell",
+ 1331:                     quantity, signal["candle"], numeric(0),
+ 1332:                     exit_reason=exit_reason,
+ 1333:                     exit_details={"bid": str(bid), "price_stop": str(position["stop"]),
+ 1334:                                   "net_return": str(net_return), "quantity": str(quantity)},
+ 1335:                 )
+ 1336:                 return True
+ 1337: 
+ 1338:             except Exception as exc:
+ 1339:                 log(
+ 1340:                     "EXIT MONITOR ERROR", symbol,
+ 1341:                     type(exc).__name__, str(exc),
+ 1342:                 )
+ 1343:                 monitoring_error = True
+ 1344: 
+ 1345:         return monitoring_error
+    ...
+ 1348:     def signal_is_current(signal):
+ 1349:         try:
+ 1350:             candle = datetime.fromisoformat(signal["candle"])
+ 1351:             require(candle.tzinfo is not None, "Signal candle lacks timezone")
+ 1352:             boundary = ((time.time() - 300) // 3600) * 3600 - 3600
+ 1353:             return boundary - 7200 <= candle.timestamp() <= boundary
+ 1354:         except (ValueError, TypeError, KeyError, RuntimeError):
+ 1355:             return False
+    ...
+ 1564:     def cycle(self):
+ 1565:         account = self.broker.account()
+ 1566:         history, holdings = self.broker.stable_snapshot()
+ 1567:         pairs = self.broker.pairs()
+ 1568: 
+ 1569:         if not self.live:
+ 1570:             require(
+ 1571:                 not any(
+ 1572:                     row["state"] not in TERMINAL for row in history
+ 1573:                 ),
+ 1574:                 "Preview blocked: account has open/pending orders",
+ 1575:             )
+ 1576:             self.scan(holdings, {}, pairs, account)
+ 1577:             return
+ 1578: 
+ 1579:         if self.db is None:
+ 1580:             self.open_journal(history, holdings)
+ 1581: 
+ 1582:         unknown, external = self.reconcile(history)
+ 1583:         self.start_email_worker()
+ 1584:         positions = self.positions()
+ 1585:         # stable_snapshot must succeed before this point; API errors raise.
+ 1586:         # An empty dict is a valid zero-holdings snapshot, not an API failure.
+ 1587:         # None or any non-dict value remains fail-closed.
+ 1588:         holdings_verified = isinstance(holdings, dict)
+ 1589:         writable = (
+ 1590:             holdings_verified
+ 1591:             and not unknown
+ 1592:             and not external
+ 1593:             and self.ownership_matches(holdings, positions)
+ 1594:         )
+ 1595: 
+ 1596:         if not writable:
+ 1597:             log(
+ 1598:                 "SUBMISSIONS BLOCKED",
+ 1599:                 "unknown orders", len(unknown),
+ 1600:                 "external open orders", len(external),
+ 1601:                 "check journal and holdings",
+ 1602:             )
+ 1603: 
+ 1604:         # Monitor exits even while known buy orders remain pending.
+ 1605:         if self.monitor_exits(
+ 1606:             positions, holdings, history, pairs, writable
+ 1607:         ):
+ 1608:             return
+ 1609: 
+ 1610:         if not writable:
+ 1611:             return
+ 1612: 
+ 1613:         if getattr(self, "exits_only", False):
+ 1614:             log("EXITS ONLY", "entry queue and new buys blocked")
+ 1615:             return
+ 1616: 
+ 1617:         if any(row["state"] not in TERMINAL for row in history):
+ 1618:             log("WAIT", "account order pending; no new buys")
+ 1619:             return
+ 1620: 
+ 1621:         if self.db.execute(
+ 1622:             "SELECT 1 FROM plans WHERE state='queued'"
+ 1623:         ).fetchone():
+ 1624:             try:
+ 1625:                 self.execute_queue(holdings, positions, pairs, self.broker.account())
+ 1626:             except BuyBlocked:
+ 1627:                 log("BUY BLOCKED", "OFF or control unavailable; exit monitoring continues")
+ 1628:             return
+ 1629: 
+ 1630:         self.scan(holdings, positions, pairs, account)
+    ...
+ 1633: def main():
+ 1634:     parser = argparse.ArgumentParser(description=__doc__)
+ 1635:     parser.add_argument("--live", action="store_true")
+ 1636:     parser.add_argument("--acknowledge-risk", action="store_true")
+ 1637:     parser.add_argument("--exits-only", action="store_true")
+ 1638:     args = parser.parse_args()
+ 1639: 
+ 1640:     require(
+ 1641:         not args.live or args.acknowledge_risk,
+ 1642:         "Actual orders require --live --acknowledge-risk",
+ 1643:     )
+ 1644: 
+ 1645:     os.chdir(ROOT)
+ 1646:     lock_path = ROOT / "equal_allocation_v3.lock"
+ 1647: 
+ 1648:     with lock_path.open("a") as lock:
+ 1649:         os.chmod(lock_path, 0o600)
+ 1650:         try:
+ 1651:             fcntl.flock(
+ 1652:                 lock, fcntl.LOCK_EX | fcntl.LOCK_NB
+ 1653:             )
+ 1654:         except BlockingIOError:
+ 1655:             raise SystemExit("Another controller owns the process lock")
+ 1656: 
+ 1657:         engine = Engine(args.live)
+ 1658:         engine.exits_only = args.exits_only
+ 1659:         if args.exits_only:
+ 1660:             log("RECOVERY MODE", "EXITS ONLY; new buys blocked")
+ 1661:         log("MODE", "LIVE" if args.live else "READ-ONLY PREVIEW")
+ 1662: 
+ 1663:         while True:
+ 1664:             try:
+ 1665:                 engine.cycle()
+ 1666:             except KeyboardInterrupt:
+ 1667:                 log(
+ 1668:                     "STOPPED",
+ 1669:                     "Shutdown does not cancel orders or sell holdings",
+ 1670:                 )
+ 1671:                 send_alert(
+ 1672:                     "Controller stopped",
+ 1673:                     "Controller interrupted; live exit monitoring stopped.\n"
+ 1674:                     "Holdings were not automatically sold.",
+ 1675:                 )
+ 1676:                 return
+ 1677:             except Exception as exc:
+ 1678:                 log(
+ 1679:                     "HALTED", type(exc).__name__, str(exc),
+ 1680:                     "No automatic restart or order resubmission",
+ 1681:                 )
+ 1682:                 import traceback
+ 1683:                 traceback.print_exc()
+ 1684:                 send_alert(
+ 1685:                     "CRITICAL: controller halted",
+ 1686:                     "Live exit monitoring has stopped.\n"
+ 1687:                     f"Failure type: {type(exc).__name__}\n"
+ 1688:                     "Check broker holdings and pending orders.\n"
+ 1689:                     "Inspect the terminal traceback. No automatic restart.",
+ 1690:                 )
+ 1691:                 raise SystemExit(1)
+ 1692: 
+ 1693:             if not args.live:
+ 1694:                 log(
+ 1695:                     "PREVIEW COMPLETE",
+ 1696:                     "No orders submitted; no trading journal created",
+ 1697:                 )
+ 1698:                 return
+ 1699: 
+ 1700:             time.sleep(30)
+    ...
+ 1703: if __name__ == "__main__":
+ 1704:     main()
+    ...
+ 1717: def _on_exit():
+ 1718:     send_alert("Bot stopped", "Process exiting.")
+ 1719: atexit.register(_on_exit)
+===== END: /home/ubuntu/crypto-bot/paper-trend-500/equal_allocation_bot.py =====
 
-    print(json.dumps(result, separators=(",", ":")))
+===== BEGIN: /home/ubuntu/bot-capital/capital_guard.py =====
+SYNTAX ERROR: expected an indented block after 'for' statement on line 34 (<unknown>, line 35)
 
-if __name__ == "__main__":
-    main()
+===== BEGIN: /opt/stock-bot/decision_engine.py =====
+    ...
+   21: load_secure_env()
+    ...
+   23: import json
+   24: import sys
+   25: sys.path.insert(0, "/opt/market_intelligence_engine")
+   26: from market_intelligence import MarketIntelligenceEngine
+   27: intel_engine = MarketIntelligenceEngine(market_type="us_stocks")
+   28: import os
+   29: from datetime import datetime
+   30: from zoneinfo import ZoneInfo
+    ...
+   32: ACCOUNT_FILE = "/var/lib/stock-bot/stock_account.json"
+    ...
+   34: MAX_DEPLOYMENT_PCT = 0.92
+   35: MAX_DAILY_LOSS = 0.02
+   36: MIN_HYBRID_SCORE = 3
+   37: MIN_POSITION_DOLLARS = 10.0
+   38: MAX_POSITION_DOLLARS = 180.0
+    ...
+   40: MAX_OPEN_POSITIONS = 10
+   41: MAX_RSI_FOR_BUY = 45
+   42: MIN_STOP_PCT = 0.01
+    ...
+  233: if __name__ == "__main__":
+  234:     print(f"[{datetime.now()}] Starting decision engine cycle...")
+  235:     try:
+  236:         account = load_account()
+  237:         _roll_daily_state(account)
+  238:     except Exception as e:
+  239:         print(f"Error initializing account balance files: {e}")
+  240:         sys.exit(1)
+  241:         
+  242:     try:
+  243:         watchlist_path = "/opt/stock-bot/actionable_watchlist.json"
+  244:         with open(watchlist_path, "r") as wf:
+  245:             watchlist_data = json.load(wf)
+  246:         candidates = watchlist_data if isinstance(watchlist_data, list) else watchlist_data.get("watchlist", [])
+  247:         print(f"Retrieved {len(candidates)} watchlist candidates for evaluation.")
+  248:     except Exception as e:
+  249:         print(f"Error fetching actionable watchlist matrix: {e}")
+  250:         sys.exit(1)
+  251: 
+  252:     import robinhood_live_executor as live_exec
+  253:     
+  254:     for cand in candidates:
+  255:         if isinstance(cand, str):
+  256:             cand = {"symbol": cand}
+  257:         
+  258:         # Fail closed: never manufacture a BUY signal or RSI value.
+  259:         # Incomplete watchlist data must not become a live buy candidate.
+  260:         if not cand.get("signal") and not cand.get("hybrid_signal"):
+  261:             print(f"[SAFETY BLOCK] {cand.get('symbol', 'UNKNOWN')}: missing explicit signal")
+  262:             continue
+  263: 
+  264:         if cand.get("hybrid_score") is None and cand.get("score") is not None:
+  265:             try:
+  266:                 cand["hybrid_score"] = float(cand["score"])
+  267:             except (TypeError, ValueError):
+  268:                 print(f"[SAFETY BLOCK] {cand.get('symbol', 'UNKNOWN')}: invalid score")
+  269:                 continue
+  270: 
+  271:         if cand.get("rsi") is None:
+  272:             print(f"[SAFETY BLOCK] {cand.get('symbol', 'UNKNOWN')}: missing RSI")
+  273:             continue
+  274:         try:
+  275:             cand["rsi"] = float(cand["rsi"])
+  276:         except (TypeError, ValueError):
+  277:             print(f"[SAFETY BLOCK] {cand.get('symbol', 'UNKNOWN')}: invalid RSI")
+  278:             continue
+  279:         
+  280:         symbol = cand.get("symbol")
+  281:         if not symbol:
+  282:             continue
+  283:             
+  284:         try:
+  285:             result = evaluate_candidate(cand, account)
+  286:             if not result or len(result) < 2:
+  287:                 continue
+  288:                 
+  289:             sym, status, details = result[0], result[1], result[2] if len(result) > 2 else ""
+  290:             
+  291:             if "APPROVED" in str(status):
+  292:                 print(f"[✓] STRATEGY SIGNAL MATCH: {sym} -> {status} ({details})")
+  293:                 cash = float(account.get("cash", 0))
+  294:                 deployment_buying_power = live_exec.available_deployment(cash)
+  295:                 print(f"Routing live order deployment of  for {sym} via Live Executor...")
+  296:             else:
+  297:                 print(f"[-] Candidate {symbol} evaluated: {status} | {details}")
+  298:         except Exception as ex:
+  299:             print(f"[!] Error evaluating candidate {symbol}: {ex}")
+  300: 
+  301:     print(f"[{datetime.now()}] Decision engine cycle finished successfully.")
+===== END: /opt/stock-bot/decision_engine.py =====
 
-===== 4. STOCK DATA SOURCE AND TRADE HISTORY =====
-4-import os
-5-from datetime import datetime, timezone
-6-from pathlib import Path
-7-
-8-SOURCES = {
-9:    "stocks": Path("/var/lib/stock-bot/stock_account.json"),
-10-    "zerodha": Path("/opt/zerodha-bot/state/live_reconciliation_latest.json"),
-11-}
-12-
-13-def read_json(path):
-14-    try:
-15-        stat = path.stat()
-16-        with path.open() as f:
-17-            data = json.load(f)
-18-        return {
-19:            "available": True,
-20:            "source_modified": datetime.fromtimestamp(
-21-                stat.st_mtime, timezone.utc
-22-            ).isoformat(),
-23-            "data": data,
-24-        }
-25-    except (OSError, ValueError) as exc:
-26:        return {"available": False, "error": type(exc).__name__}
-27-
-28-def read_csv(path):
-29-    try:
-30-        stat = path.stat()
-31-        with path.open(newline="") as f:
-32-            rows = list(csv.DictReader(f))
-33-        return {
-34:            "available": True,
-35:            "source_modified": datetime.fromtimestamp(
-36-                stat.st_mtime, timezone.utc
-37-            ).isoformat(),
-38-            "rows": rows,
-39-        }
-40-    except OSError as exc:
-41:        return {"available": False, "error": type(exc).__name__}
-42-
-43-def main():
-44-    result = {
-45-        "generated_at": datetime.now(timezone.utc).isoformat(),
-46:        "crypto": {"available": False, "error": "Legacy snapshot retired; live crypto integration pending"},
-47:        "stocks": read_json(SOURCES["stocks"]),
-48-        "zerodha": read_json(SOURCES["zerodha"]),
-49-    }
-50-
-51-    result["crypto_trades"] = {
-52:        "available": False,
-53-        "error": "Legacy crypto history retired; live integration pending",
-54-    }
-55:    result["stock_trades"] = read_csv(
-56:        Path("/var/lib/stock-bot/stock_trades.csv")
-57-    )
-58-
-59-    z = result["zerodha"]
-60:    if z.get("available"):
-61-        d = z["data"]
-62-        result["zerodha_snapshot_is_paper"] = (
-63-            d.get("mode") == "PAPER"
-64-            or d.get("paper") is not None
-65-            or d.get("read_only") is True
+===== BEGIN: /opt/us-trading-bot/buy_control_store.py =====
+    1: import contextlib
+    2: import fcntl
+    3: import json
+    4: import os
+    5: import sys
+    6: import tempfile
+    7: from pathlib import Path
+    8: from datetime import datetime, timezone
+    ...
+   10: ROOT = Path('/var/lib/trading-control')
+   11: BOTS = ('crypto', 'us_trading', 'zerodha')
+    ...
+   49: def require_buy_enabled(bot):
+   50:     if bot not in BOTS:
+   51:         raise BuyBlocked('BUY blocked: unknown bot')
+   52:     if read()['bots'][bot]['enabled'] is not True:
+   53:         raise BuyBlocked('BUY blocked: trading toggle is OFF')
+    ...
+   56: def submission_guard(bot, side):
+   57:     if bot not in BOTS or side not in ('BUY', 'SELL'):
+   58:         raise BuyBlocked('Order blocked: invalid bot or side')
+   59:     if side == 'SELL':
+   60:         yield
+   61:         return
+   62:     with locked():
+   63:         require_buy_enabled(bot)
+   64:         yield
+    ...
+  108: if __name__ == '__main__':
+  109:     try:
+  110:         command = json.load(sys.stdin)
+  111:         if command.get('action') == 'get':
+  112:             result = read()
+  113:         elif command.get('action') == 'set':
+  114:             result = update(command.get('bot'), command.get('enabled'))
+  115:         else:
+  116:             raise ValueError('Invalid action')
+  117:         print(json.dumps({'ok': True, 'verified': True, 'state': result,
+  118:                           'activation_pending': (ROOT / 'BUY_ENABLE_DEPLOYMENT_LOCK').exists()}))
+  119:     except Exception as exc:
+  120:         print(json.dumps({'ok': False, 'verified': False, 'error': str(exc)
+  121:                           if isinstance(exc, (BuyBlocked, ValueError))
+  122:                           else 'Control persistence/read failed'}))
+  123:         sys.exit(1)
+===== END: /opt/us-trading-bot/buy_control_store.py =====
 
-===== 5. ZERODHA SNAPSHOT PRODUCER REFERENCES =====
-/opt/zerodha-bot/zerodha_broker.py:30:                    "average_buy_price": float(pos['average_price']),
-/opt/zerodha-bot/app/email_alerts.py:33:    if normalized_trade_type in {"PAPER BUY", "PAPER_BUY", "BUY"}:
-/opt/zerodha-bot/app/email_alerts.py:35:    elif normalized_trade_type in {"PAPER SELL", "PAPER_SELL", "SELL"}:
-/opt/zerodha-bot/app/email_alerts.py:47:        "ZERODHA PAPER-TRADING ALERT\n"
-/opt/zerodha-bot/app/email_alerts.py:56:        + "Trading mode: PAPER\n"
-/opt/zerodha-bot/app/live_executor.py:207:        "PAPER",
-/opt/zerodha-bot/app/live_broker_readiness.py:20:    mode = os.getenv("TRADING_MODE", "PAPER").strip().upper()
-/opt/zerodha-bot/app/live_broker_readiness.py:23:    if mode != "PAPER":
-/opt/zerodha-bot/app/live_broker_readiness.py:24:        fail(f"Safety stop: expected TRADING_MODE=PAPER, got {mode!r}")
-/opt/zerodha-bot/app/live_broker_readiness.py:42:        "read_only": True,
-/opt/zerodha-bot/app/live_broker_readiness.py:48:        "holdings": None,
-/opt/zerodha-bot/app/live_broker_readiness.py:58:        "holdings": kite.holdings,
-/opt/zerodha-bot/app/live_reconciliation.py:100:                "average_price": str(
-/opt/zerodha-bot/app/live_reconciliation.py:102:                        "average_price",
-/opt/zerodha-bot/app/live_reconciliation.py:195:        "PAPER",
-/opt/zerodha-bot/app/live_reconciliation.py:237:    holdings = kite.holdings()
-/opt/zerodha-bot/app/live_reconciliation.py:239:    _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings)
-/opt/zerodha-bot/app/live_reconciliation.py:273:        "timestamp_utc": datetime.now(
-/opt/zerodha-bot/app/live_reconciliation.py:278:        "read_only": True,
-/opt/zerodha-bot/app/live_reconciliation.py:294:        "holdings_ok": isinstance(
-/opt/zerodha-bot/app/live_reconciliation.py:295:            holdings,
-/opt/zerodha-bot/app/live_reconciliation.py:305:        "holdings": _json_safe(holdings),
-/opt/zerodha-bot/app/live_reconciliation.py:316:            len(holdings)
-/opt/zerodha-bot/app/live_reconciliation.py:318:                holdings,
-/opt/zerodha-bot/app/live_reconciliation.py:350:def _validate_exit_snapshot(profile, margins, orders, trades, positions, holdings):
-/opt/zerodha-bot/app/live_reconciliation.py:371:    for label, rows in (("orders", orders), ("trades", trades), ("holdings", holdings)):
-/opt/zerodha-bot/app/reconciliation_report.py:12:PAPER_LEDGER = BASE_DIR / "paper_account_29919.json"
-/opt/zerodha-bot/app/reconciliation_report.py:26:    mode = os.getenv("TRADING_MODE", "PAPER").strip().upper()
-/opt/zerodha-bot/app/reconciliation_report.py:29:    if mode != "PAPER":
-/opt/zerodha-bot/app/reconciliation_report.py:31:            f"Safety stop: expected TRADING_MODE=PAPER, got {mode!r}"
-/opt/zerodha-bot/app/reconciliation_report.py:45:    paper = load_json(PAPER_LEDGER)
-/opt/zerodha-bot/app/reconciliation_report.py:68:        "read_only": True,
-/opt/zerodha-bot/app/reconciliation_report.py:70:            "PAPER STATE IS NOT LIVE BROKER STATE. "
-/opt/zerodha-bot/app/reconciliation_report.py:101:    print("Mode: PAPER — no broker action was performed")
-/opt/zerodha-bot/app/live_safety_gate.py:140:        "PAPER",
-/opt/zerodha-bot/app/live_safety_gate.before_dryrun_validation_20261005_070848.py:135:        "PAPER",
-/opt/secure-dashboard-api/read_bot_data.py:63:            d.get("mode") == "PAPER"
-/opt/secure-dashboard-api/read_bot_data.py:65:            or d.get("read_only") is True
-/opt/secure-dashboard-api/server.py:46:            return self.reply(200, {"ok": True, "read_only": True})
+===== BEGIN: /opt/us-trading-bot/sell_control_store.py =====
+    1: import json
+    2: import sqlite3
+    3: from contextlib import contextmanager
+    4: from datetime import datetime, timezone
+    5: from pathlib import Path
+    ...
+    7: BOTS = ("crypto", "us_trading", "zerodha")
+===== END: /opt/us-trading-bot/sell_control_store.py =====
 
-===== DIAGNOSTIC COMPLETE: NO FILES MODIFIED =====
-ubuntu@vmi3619462:~$ 
-sudo bash <<'BASH'
-set -u
+===== BEGIN: /opt/zerodha-bot/exit_manager_live.py =====
+    1: import logging
+    ...
+    3: logger = logging.getLogger(__name__)
+    ...
+    5: def check_live_position(broker, symbol, strategy_name="ZERODHA_LIVE_NET_6_PROFIT_1_LOSS_V1"):
+    6:     try:
+    7:         position = broker.get_open_position(symbol)
+    8:         if not position:
+    9:             return False, f"{symbol} EXIT BLOCKED: position not found"
+   10:         
+   11:         qty = float(position.get("quantity", 0) or 0)
+   12:         shares_available = float(position.get("shares_available_for_sells", qty) or 0)
+   13:         avg_price = float(position.get("average_buy_price", 0) or 0)
+   14:         curr_price = float(broker.get_last_price(symbol) or 0)
+   15:     except Exception as e:
+   16:         return False, f"{symbol} EXIT BLOCKED: error fetching position data ({e})"
+   17: 
+   18:     if shares_available <= 0:
+   19:         return False, f"{symbol} HOLD (Order already pending/queued for exit)"
+   20: 
+   21:     if qty <= 0 or curr_price <= 0:
+   22:         return False, f"{symbol} EXIT BLOCKED: invalid or non-positive position values"
+   23: 
+   24:     if avg_price <= 0:
+   25:         avg_price = curr_price
+   26: 
+   27:     stop_price = avg_price * 0.99
+   28:     target_price = avg_price * 1.06
+   29:     pnl_pct = ((curr_price / avg_price) - 1) * 100
+   30: 
+   31:     exit_due = False
+   32:     reason = "HOLD"
+   33: 
+   34:     if curr_price <= stop_price:
+   35:         exit_due = True
+   36:         reason = f"EXIT_STOP_LOSS_{symbol}"
+   37:     elif curr_price >= target_price:
+   38:         exit_due = True
+   39:         reason = f"EXIT_PROFIT_TARGET_{symbol}"
+   40: 
+   41:     return exit_due, f"{symbol} {reason} [{strategy_name}]: price=Rs.{curr_price:.2f} P&L={pnl_pct:+.2f}% cost=Rs.{avg_price:.2f} stop=Rs.{stop_price:.2f} target=Rs.{target_price:.2f}"
+===== END: /opt/zerodha-bot/exit_manager_live.py =====
 
-echo "===== 1. ACTIVE DASHBOARD SERVER ====="
-sudo sed -n '1,260p' /var/www/trading-bot-dashboard/server.js
+===== BEGIN: /opt/zerodha-bot/run_zerodha_exits.py =====
+    1: import time
+    2: import logging
+    3: import os
+    4: from http.client import RemoteDisconnected
+    5: from cryptography.fernet import Fernet
+    6: from kiteconnect import KiteConnect
+    7: from kiteconnect.exceptions import TokenException
+    ...
+    9: logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+   10: logger = logging.getLogger(__name__)
+    ...
+   12: MONITORED_SYMBOLS = [
+   13:     "RELIANCE", "INFY", "TCS", "HDFCBANK", "ICICIBANK", 
+   14:     "SBIN", "ITC", "TATAMOTORS", "BHARTIARTL", "AXISBANK"
+   15: ]
+    ...
+   41: def run_supervisor():
+   42:     logger.info("Starting Zerodha Live Exit Supervisor service...")
+   43:     try:
+   44:         kite = get_kite_client()
+   45:         logger.info("Successfully connected to Kite Connect API.")
+   46:     except Exception as e:
+   47:         logger.error(f"Failed to initialize Kite client: {e}")
+   48:         return
+   49: 
+   50:     logger.info(f"Entering continuous exit supervision loop for Zerodha symbols: {MONITORED_SYMBOLS}")
+   51: 
+   52:     while True:
+   53:         try:
+   54:             positions = kite.positions().get('net', [])
+   55:             open_positions = {p['tradingsymbol']: p for p in positions if p['quantity'] != 0}
+   56: 
+   57:             for symbol in MONITORED_SYMBOLS:
+   58:                 if symbol in open_positions:
+   59:                     pos = open_positions[symbol]
+   60:                     qty = pos['quantity']
+   61:                     pnl = pos['pnl']
+   62:                     logger.info(f"SUPERVISING {symbol}: Qty={qty}, PnL={pnl}")
+   63:                 else:
+   64:                     logger.info(f"{symbol} EXIT BLOCKED: position not found")
+   65: 
+   66:         except (TokenException, RemoteDisconnected) as te:
+   67:             logger.warning(f"API connection error/expired token: {te}. Retrying next cycle...")
+   68:         except Exception as e:
+   69:             logger.error(f"Error fetching position data ({e})")
+   70: 
+   71:         time.sleep(60)
+    ...
+   73: if __name__ == '__main__':
+   74:     run_supervisor()
+===== END: /opt/zerodha-bot/run_zerodha_exits.py =====
 
-echo
-echo "===== 2. STATIC FILES AND NGINX ROUTING ====="
-sudo grep -nEi 'express\.static|sendFile|dist|public|listen|proxy_pass|5175' \
-  /var/www/trading-bot-dashboard/server.js \
-  /opt/us-trading-bot/unified_server.js \
-  /etc/nginx/sites-enabled/* 2>/dev/null || true
-
-echo
-echo "===== 3. LIVE FRONTEND PORTFOLIO IMPLEMENTATION ====="
-for f in \
-  /var/www/trading-bot-dashboard/index.html \
-  /var/www/trading-bot-dashboard/dist/index.html \
-  /opt/us-trading-bot/public/index.html
-do
-  if [ -f "$f" ]; then
-    echo "--- $f ---"
-    sudo grep -nEi -A8 -B4 \
-      'botProfiles|loadPortfolio|liveProfiles|currentData|hardcoded|fallback|dashboard-data' \
-      "$f" | head -100 || true
-  fi
-done
-
-echo
-echo "===== 4. STOCK FILE SCHEMA (VALUES REDACTED) ====="
-sudo python3 - <<'PY'
-import json
-from pathlib import Path
-
-for name, path in [
-    ("Stocks", Path("/var/lib/stock-bot/stock_account.json")),
-    ("Stock trades", Path("/var/lib/stock-bot/stock_trades.csv")),
-    ("Zerodha", Path("/opt/zerodha-bot/state/live_reconciliation_latest.json")),
-]:
-    print(f"\n--- {name}: {path} ---")
-    try:
-        if path.suffix == ".json":
-            obj = json.loads(path.read_text())
-            print("File modified:", path.stat().st_mtime)
-            print("Root type:", type(obj).__name__)
-            if isinstance(obj, dict):
-                print("Root keys:", sorted(obj.keys()))
-                for k, v in obj.items():
-                    if isinstance(v, list):
-BASH "===== READ-ONLY DIAGNOSTIC COMPLETE ====="ue"name__) reader))()))
-===== 1. ACTIVE DASHBOARD SERVER =====
-
-
-app.get('/api/bot-data', (req, res) => {
-  const botType = req.query.bot || 'crypto';
-  const now = new Date();
-  const seed = now.getSeconds() + (now.getMilliseconds() / 1000);
-  const multiplier = 1 + (Math.sin(seed) * 0.001);
-
-  if (botType === 'zerodha') {
-    return res.json({
-      success: true,
-      bot: 'zerodha',
-      metrics: {
-        availableFunds: '₹1,42,500.00',
-        realizedPnl: '₹' + (4200 * multiplier).toFixed(2),
-        unrealizedPnl: '₹' + (1150 * multiplier).toFixed(2),
-        totalValue: '₹' + (356000 * multiplier).toFixed(2)
-      }
-    });
-  } else if (botType === 'us_trading') {
-    return res.json({
-      success: true,
-      bot: 'us_trading',
-      metrics: {
-        availableFunds: '$8,920.50',
-        realizedPnl: '$' + (1120 * multiplier).toFixed(2),
-        unrealizedPnl: '$' + (215 * multiplier).toFixed(2),
-        totalValue: '$' + (32150 * multiplier).toFixed(2)
-      }
-    });
-  } else {
-    return res.json({
-      success: true,
-      bot: 'crypto',
-      metrics: {
-        availableFunds: '$12,450.00',
-        realizedPnl: '$' + (342.50 * multiplier).toFixed(2),
-        unrealizedPnl: '$' + (-18.20 * multiplier).toFixed(2),
-        totalValue: '$' + (24890.10 * multiplier).toFixed(2)
-      }
-    });
-  }
-});
-
-
-app.get('/api/bot-data', (req, res) => {
-  const botType = req.query.bot || 'crypto';
-  
-  let limits = { crypto: { amount: 500 }, stocks: { amount: 1000 } };
-  try {
-    const limitsRaw = fs.readFileSync('/opt/us-trading-bot/data/trade-limits.json', 'utf8');
-    limits = JSON.parse(limitsRaw);
-  } catch (e) {}
-
-  if (botType === 'zerodha') {
-    return res.json({
-      success: true,
-      bot: 'zerodha',
-      metrics: {
-        availableFunds: '₹1,42,500.00',
-        realizedPnl: '+₹4,200.00',
-        unrealizedPnl: '+₹1,150.00',
-        totalValue: '₹3,56,000.00'
-      },
-      positions: [
-        { asset: 'RELIANCE', sharesCount: '50', buyPrice: '₹2,680.00', currentPrice: '₹2,710.00', diffAmt: '+₹1,500.00', investedValue: '₹1,34,000.00', currentValue: '₹1,35,500.00', status: 'RUNNING_STREAMING' }
-      ]
-    });
-  } else if (botType === 'us_trading') {
-    return res.json({
-      success: true,
-      bot: 'us_trading',
-      metrics: {
-        availableFunds: '$' + (limits.stocks.amount * 10),
-        realizedPnl: '+$1,120.00',
-        unrealizedPnl: '+$215.40',
-        totalValue: '$' + (limits.stocks.amount * 32)
-      },
-      positions: [
-        { asset: 'AAPL (Limit: $' + limits.stocks.amount + ')', sharesCount: '45.0', buyPrice: '$225.00', currentPrice: '$231.50', diffAmt: '+$292.50', investedValue: '$10,125.00', currentValue: '$10,417.50', status: 'MONITORING_ACTIVE' }
-      ]
-    });
-  } else {
-    return res.json({
-      success: true,
-      bot: 'crypto',
-      metrics: {
-        availableFunds: '$' + (limits.crypto.amount * 20),
-        realizedPnl: '+$342.50',
-        unrealizedPnl: '-$18.20',
-        totalValue: '$' + (limits.crypto.amount * 49)
-      },
-      positions: [
-        { asset: 'BTC-USD (Limit: $' + limits.crypto.amount + ')', sharesCount: '0.15', buyPrice: '$67,500.00', currentPrice: '$68,200.00', diffAmt: '+$105.00', investedValue: '$10,125.00', currentValue: '$10,230.00', status: 'MONITORING_ACTIVE' }
-      ]
-    });
-  }
-});
-
-// --- DETAILED LIVE BOT HOLDINGS & TRADES ENDPOINT ---
-app.get('/api/bot-data', (req, res) => {
-  const botType = req.query.bot || 'crypto';
-  
-  if (botType === 'zerodha') {
-    return res.json({
-      success: true,
-      bot: 'zerodha',
-      metrics: { availableFunds: '₹1,42,500.00', realizedPnl: '+₹4,200.00', unrealizedPnl: '+₹1,150.00', totalValue: '₹3,56,000.00' },
-      positions: [
-        { asset: 'RELIANCE', sharesCount: '50', buyPrice: '₹2,680.00', currentPrice: '₹2,710.00', diffAmt: '+₹30.00', investedValue: '₹1,34,000.00', buyFee: '₹12.50', currentValue: '₹1,35,500.00', totalRet: '+1.12%' },
-        { asset: 'INFY', sharesCount: '100', buyPrice: '₹1,850.00', currentPrice: '₹1,846.50', diffAmt: '-₹3.50', investedValue: '₹1,85,000.00', buyFee: '₹18.00', currentValue: '₹1,84,650.00', totalRet: '-0.18%' }
-      ],
-      pastTrades: [
-        { timestamp: '2026-10-20 01:15:30', symbol: 'TCS', type: 'SELL', qty: '25', invested: '₹1,02,000.00', sold: '₹1,06,200.00', pnl: '+₹4,200.00 (+4.12%)' }
-      ]
-    });
-  } else if (botType === 'us_trading') {
-    return res.json({
-      success: true,
-      bot: 'us_trading',
-      metrics: { availableFunds: '$8,920.50', realizedPnl: '+$1,120.00', unrealizedPnl: '+$215.40', totalValue: '$32,150.00' },
-      positions: [
-        { asset: 'AAPL', sharesCount: '45.0', buyPrice: '$225.00', currentPrice: '$231.50', diffAmt: '+$6.50', investedValue: '$10,125.00', buyFee: '$1.20', currentValue: '$10,417.50', totalRet: '+2.89%' },
-        { asset: 'NVDA', sharesCount: '30.0', buyPrice: '$135.00', currentPrice: '$132.40', diffAmt: '-$2.60', investedValue: '$4,050.00', buyFee: '$0.95', currentValue: '$3,972.00', totalRet: '-1.92%' }
-      ],
-      pastTrades: [
-        { timestamp: '2026-10-20 02:45:11', symbol: 'MSFT', type: 'SELL', qty: '20.0', invested: '$8,400.00', sold: '$8,850.00', pnl: '+$450.00 (+5.3%)' }
-      ]
-    });
-  } else {
-    return res.json({
-      success: true,
-      bot: 'crypto',
-      metrics: { availableFunds: '$12,450.00', realizedPnl: '+$342.50', unrealizedPnl: '-$18.20', totalValue: '$24,890.10' },
-      positions: [
-        { asset: 'BTC-USD', sharesCount: '0.15', buyPrice: '$67,500.00', currentPrice: '$68,128.08', diffAmt: '+$628.08', investedValue: '$10,125.00', buyFee: '$2.50', currentValue: '$10,219.21', totalRet: '+0.93%' },
-        { asset: 'ETH-USD', sharesCount: '2.50', buyPrice: '$2,410.00', currentPrice: '$2,463.68', diffAmt: '+$53.68', investedValue: '$6,025.00', buyFee: '$1.80', currentValue: '$6,159.20', totalRet: '+2.22%' }
-      ],
-      pastTrades: [
-        { timestamp: '2026-10-20 04:12:10', symbol: 'SOL-USD', type: 'SELL', qty: '12.0', invested: '$1,200.00', sold: '$1,310.00', pnl: '+$110.00 (+9.1%)' }
-      ]
-    });
-  }
-});
-
-===== 2. STATIC FILES AND NGINX ROUTING =====
-/opt/us-trading-bot/unified_server.js:13:const PORT = process.env.PORT || 5175;
-/opt/us-trading-bot/unified_server.js:16:app.use(express.static(path.join(__dirname, 'public')));
-/opt/us-trading-bot/unified_server.js:669:    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-/opt/us-trading-bot/unified_server.js:672:// PUBLIC_HTTPS_LOOPBACK_V1
-/opt/us-trading-bot/unified_server.js:674:// Dynamic World Stocks market data. Uses Yahoo Finance public chart/search endpoints.
-/opt/us-trading-bot/unified_server.js:803:app.listen(PORT, '127.0.0.1', () => {
-/etc/nginx/sites-enabled/trading-bot:1:# DASHBOARD_PUBLIC_HTTPS_V1
-/etc/nginx/sites-enabled/trading-bot:3:    listen 80;
-/etc/nginx/sites-enabled/trading-bot:15:    listen 443 ssl default_server;
-/etc/nginx/sites-enabled/trading-bot:35:        proxy_pass http://127.0.0.1:5175;
-/etc/nginx/sites-enabled/trading-bot:39:        proxy_pass http://127.0.0.1:5175;
-/etc/nginx/sites-enabled/trading-bot:48:        root /var/www/trading-bot-dashboard/dist;
-/etc/nginx/sites-enabled/trading-bot-dashboard:2:    listen 80;
-/etc/nginx/sites-enabled/trading-bot-dashboard:5:    root /var/www/trading-bot-dashboard/dist;
-/etc/nginx/sites-enabled/trading-bot-dashboard:15:        proxy_pass http://localhost:5000;
-
-===== 3. LIVE FRONTEND PORTFOLIO IMPLEMENTATION =====
---- /var/www/trading-bot-dashboard/index.html ---
---- /var/www/trading-bot-dashboard/dist/index.html ---
-297-                    });
-298-                }
-299-            };
-300-
-301:            const [liveProfiles, setLiveProfiles] = useState({});
-302-
-303:            const botProfiles = {
-304-                crypto: {
-305-                    name: 'Crypto Bot',
-306-                    portal: 'Robinhood.com',
-307-                    funds: '$94.10',
-308-                    realized: '+$24.50 (+26.04%)',
-309-                    unrealized: '+$8.18 (+11.75%)',
-310-                    totalValue: '$77.78',
-311-                    holdingsTitle: 'CRYPTO Active Holdings - Live Stream (Robinhood.com)',
---
-397-                    holdings: [],
-398-                    closedTrades: []
-399-                });
-400-
-401:                const loadPortfolio = async () => {
-402-                    try {
-403:                        const response = await fetch('/api/dashboard-data', {
-404-                            credentials: 'same-origin',
-405-                            cache: 'no-store'
-406-                        });
-407-                        if (!response.ok) {
-408-                            throw new Error('Portfolio API returned HTTP ' + response.status);
-409-                        }
-410-
-411-                        const payload = await response.json();
---
-562-                                closedTrades: []
-563-                            };
-564-                        }
-565-
-566:                        if (active) setLiveProfiles(profiles);
-567-                    } catch (error) {
-568-                        console.error('Portfolio data refresh failed:', error);
-569-                    }
-570-                };
-571-
-572:                window.__refreshPortfolio = loadPortfolio;
-573:                loadPortfolio();
-574:                const timer = setInterval(loadPortfolio, 30000);
-575-
-576-                return () => {
-577-                    active = false;
-578-                    clearInterval(timer);
-579:                    if (window.__refreshPortfolio === loadPortfolio) {
-580-                        delete window.__refreshPortfolio;
-581-                    }
-582-                };
-583-            }, []);
-584-
-585:            const currentData = liveProfiles[selectedBot] || {
-586:                name: botProfiles[selectedBot].name,
-587:                portal: botProfiles[selectedBot].portal,
-588-                funds: 'Unavailable',
-589-                realized: 'Unavailable',
-590-                unrealized: 'Unavailable',
-591-                totalValue: 'Unavailable',
-592-                holdingsTitle: 'Waiting for verified account data',
-593-                holdings: [],
-594-                closedTrades: []
-595-            };
---
-737-                                </div>
-738-                            </div>
-739-
-740-                            <div className="panel-card">
-741:                                <MiniBarChart title={`1. ${currentData.name} Performance`} value="-5.68%" color="text-sky-400" period={p1} setPeriod={setP1} bars={[30,45,60,80,40,90,75,85]} />
-742-                                <MiniBarChart title="2. Amount Performance" value="$-4.40" color="text-pink-400" period={p2} setPeriod={setP2} bars={[20,35,50,70,95,60,80,90]} />
-743-
-744-                                <div className="bg-[#090D14] border border-[#1E293B] rounded-lg p-2.5 mb-2.5">
-745-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">3. Live Session</div>
-746-                                    <HorizontalBar label="Nikkei 225 (Japan)" value="+0.03%" percent={40} color="bg-emerald-500" />
-747-                                    <HorizontalBar label="S&P 500 (US)" value="+0.53%" percent={65} color="bg-emerald-500" />
-748-                                    <HorizontalBar label="STOXX 600 (Europe)" value="-0.10%" percent={30} color="bg-amber-500" />
-749-                                    <HorizontalBar label="Nifty 50 (India)" value="+0.44%" percent={55} color="bg-emerald-500" />
---
-796-                                            {/* LEFT SIDE: Portal Status + StopBuy Toggle */}
-797-                                            <div className="flex items-center gap-3">
-798-                                                <div className="flex items-center gap-2 text-xs font-bold">
-799-                                                    <span className={`w-2.5 h-2.5 rounded-full ${currentState.status === 'RUNNING' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-800:                                                    <span>Portal: <span className="text-sky-400">{currentData.portal}</span></span>
-801-                                                    <span className="text-slate-500">|</span>
-802-                                                    <span className="text-slate-400">Status: <span className={currentState.status === 'RUNNING' ? 'text-emerald-400' : 'text-red-400'}>{currentState.status === 'RUNNING' ? 'RUNNING_STREAMING' : 'NOT_RUNNING'}</span></span>
-803-                                                </div>
-804-
-805-                                                {window.__TradeToggles && React.createElement(window.__TradeToggles, { bot: selectedBot, buyBlocked: currentState.buyBlocked, status: currentState.status })}
-806-                                            </div>
-807-
-808-                                            {/* RIGHT SIDE: Start Bot / Stop Bot Action Buttons (Reduced text size to text-[11px] / py-0.5) */}
-809-                                            
-810-                                        </div>
-811-
-812-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-813:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Available Funds</div><div className="text-lg font-bold text-white">{currentData.funds}</div></div>
-814:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Realized P&L</div><div className="text-lg font-bold text-emerald-400">{currentData.realized}</div></div>
---- /opt/us-trading-bot/public/index.html ---
-297-                    });
-298-                }
-299-            };
-300-
-301:            const [liveProfiles, setLiveProfiles] = useState({});
-302-
-303:            const botProfiles = {
-304-                crypto: {
-305-                    name: 'Crypto Bot',
-306-                    portal: 'Robinhood.com',
-307-                    funds: '$94.10',
-308-                    realized: '+$24.50 (+26.04%)',
-309-                    unrealized: '+$8.18 (+11.75%)',
-310-                    totalValue: '$77.78',
-311-                    holdingsTitle: 'CRYPTO Active Holdings - Live Stream (Robinhood.com)',
---
-397-                    holdings: [],
-398-                    closedTrades: []
-399-                });
-400-
-401:                const loadPortfolio = async () => {
-402-                    try {
-403:                        const response = await fetch('/api/dashboard-data', {
-404-                            credentials: 'same-origin',
-405-                            cache: 'no-store'
-406-                        });
-407-                        if (!response.ok) {
-408-                            throw new Error('Portfolio API returned HTTP ' + response.status);
-409-                        }
-410-
-411-                        const payload = await response.json();
---
-562-                                closedTrades: []
-563-                            };
-564-                        }
-565-
-566:                        if (active) setLiveProfiles(profiles);
-567-                    } catch (error) {
-568-                        console.error('Portfolio data refresh failed:', error);
-569-                    }
-570-                };
-571-
-572:                window.__refreshPortfolio = loadPortfolio;
-573:                loadPortfolio();
-574:                const timer = setInterval(loadPortfolio, 30000);
-575-
-576-                return () => {
-577-                    active = false;
-578-                    clearInterval(timer);
-579:                    if (window.__refreshPortfolio === loadPortfolio) {
-580-                        delete window.__refreshPortfolio;
-581-                    }
-582-                };
-583-            }, []);
-584-
-585:            const currentData = liveProfiles[selectedBot] || {
-586:                name: botProfiles[selectedBot].name,
-587:                portal: botProfiles[selectedBot].portal,
-588-                funds: 'Unavailable',
-589-                realized: 'Unavailable',
-590-                unrealized: 'Unavailable',
-591-                totalValue: 'Unavailable',
-592-                holdingsTitle: 'Waiting for verified account data',
-593-                holdings: [],
-594-                closedTrades: []
-595-            };
---
-737-                                </div>
-738-                            </div>
-739-
-740-                            <div className="panel-card">
-741:                                <MiniBarChart title={`1. ${currentData.name} Performance`} value="-5.68%" color="text-sky-400" period={p1} setPeriod={setP1} bars={[30,45,60,80,40,90,75,85]} />
-742-                                <MiniBarChart title="2. Amount Performance" value="$-4.40" color="text-pink-400" period={p2} setPeriod={setP2} bars={[20,35,50,70,95,60,80,90]} />
-743-
-744-                                <div className="bg-[#090D14] border border-[#1E293B] rounded-lg p-2.5 mb-2.5">
-745-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">3. Live Session</div>
-746-                                    <HorizontalBar label="Nikkei 225 (Japan)" value="+0.03%" percent={40} color="bg-emerald-500" />
-747-                                    <HorizontalBar label="S&P 500 (US)" value="+0.53%" percent={65} color="bg-emerald-500" />
-748-                                    <HorizontalBar label="STOXX 600 (Europe)" value="-0.10%" percent={30} color="bg-amber-500" />
-749-                                    <HorizontalBar label="Nifty 50 (India)" value="+0.44%" percent={55} color="bg-emerald-500" />
---
-796-                                            {/* LEFT SIDE: Portal Status + StopBuy Toggle */}
-797-                                            <div className="flex items-center gap-3">
-798-                                                <div className="flex items-center gap-2 text-xs font-bold">
-799-                                                    <span className={`w-2.5 h-2.5 rounded-full ${currentState.status === 'RUNNING' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-800:                                                    <span>Portal: <span className="text-sky-400">{currentData.portal}</span></span>
-801-                                                    <span className="text-slate-500">|</span>
-802-                                                    <span className="text-slate-400">Status: <span className={currentState.status === 'RUNNING' ? 'text-emerald-400' : 'text-red-400'}>{currentState.status === 'RUNNING' ? 'RUNNING_STREAMING' : 'NOT_RUNNING'}</span></span>
-803-                                                </div>
-804-
-805-                                                {window.__TradeToggles && React.createElement(window.__TradeToggles, { bot: selectedBot, buyBlocked: currentState.buyBlocked, status: currentState.status })}
-806-                                            </div>
-807-
-808-                                            {/* RIGHT SIDE: Start Bot / Stop Bot Action Buttons (Reduced text size to text-[11px] / py-0.5) */}
-809-                                            
-810-                                        </div>
-811-
-812-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-813:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Available Funds</div><div className="text-lg font-bold text-white">{currentData.funds}</div></div>
-814:                                            <div className="bg-[#090D14] p-2.5 rounded-lg border border-slate-800"><div className="text-[10px] text-slate-400">Realized P&L</div><div className="text-lg font-bold text-emerald-400">{currentData.realized}</div></div>
-
-===== 4. STOCK FILE SCHEMA (VALUES REDACTED) =====
-
---- Stocks: /var/lib/stock-bot/stock_account.json ---
-File modified: 1792515321.040382
-Root type: dict
-Root keys: ['cash', 'closed_trades', 'daily_loss_date', 'daily_loss_locked', 'daily_start_value', 'losses', 'positions', 'realized_pnl', 'starting_cash', 'total_fees', 'total_trades', 'wins']
-cash: type=float
-starting_cash: type=float
-positions: dict keys=['NVDA']
-total_trades: type=int
-closed_trades: type=int
-wins: type=int
-losses: type=int
-realized_pnl: type=float
-total_fees: type=float
-daily_start_value: type=float
-daily_loss_locked: type=bool
-daily_loss_date: type=str
-
---- Stock trades: /var/lib/stock-bot/stock_trades.csv ---
-File exists: True
-CSV columns: ['timestamp', 'action', 'symbol', 'quantity', 'price', 'value', 'pnl']
-CSV row count: 195
-
---- Zerodha: /opt/zerodha-bot/state/live_reconciliation_latest.json ---
-File modified: 1792357809.2145536
-Root type: dict
-Root keys: ['broker', 'broker_live_balance', 'holding_count', 'holdings', 'holdings_ok', 'inventory_ready_for_orders', 'kill_switch', 'margins_ok', 'mode', 'net_positions', 'open_orders', 'orders_ok', 'positions_ok', 'profile_ok', 'read_only', 'reconciled', 'timestamp_utc', 'trade_count', 'trades_ok']
-timestamp_utc: type=str
-mode: type=str
-kill_switch: type=str
-read_only: type=bool
-broker: type=str
-profile_ok: type=bool
-margins_ok: type=bool
-orders_ok: type=bool
-trades_ok: type=bool
-positions_ok: type=bool
-holdings_ok: type=bool
-broker_live_balance: type=str
-net_positions: list length=0
-open_orders: list length=0
-holdings: list length=5
-holdings[0] keys: ['authorisation', 'authorised_date', 'authorised_quantity', 'average_price', 'close_price', 'collateral_quantity', 'collateral_type', 'day_change', 'day_change_percentage', 'discrepancy', 'exchange', 'instrument_token', 'isin', 'las_quantity', 'last_price', 'mtf', 'opening_quantity', 'pnl', 'price', 'product', 'quantity', 'realised_quantity', 'short_quantity', 't1_quantity', 'tradingsymbol', 'used_quantity']
-inventory_ready_for_orders: type=bool
-trade_count: type=int
-holding_count: type=int
-reconciled: type=bool
-
-===== 5. DASHBOARD API RESPONSE STATUS =====
-dashboard-data HTTP 401
-
-===== READ-ONLY DIAGNOSTIC COMPLETE =====
-ubuntu@vmi3619462:~$ 
+READ-ONLY INSPECTION COMPLETE.
