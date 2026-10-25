@@ -1,0 +1,122 @@
+[
+  {
+    "type": "index",
+    "name": "idx_decisions_bot_time",
+    "sql": "CREATE INDEX idx_decisions_bot_time\n    ON decisions(bot_name, created_at)"
+  },
+  {
+    "type": "index",
+    "name": "idx_fills_symbol_time",
+    "sql": "CREATE INDEX idx_fills_symbol_time\n    ON fills(symbol, filled_at)"
+  },
+  {
+    "type": "index",
+    "name": "idx_orders_status",
+    "sql": "CREATE INDEX idx_orders_status\n    ON order_intents(status, created_at)"
+  },
+  {
+    "type": "index",
+    "name": "idx_positions_account_time",
+    "sql": "CREATE INDEX idx_positions_account_time\n    ON position_snapshots(broker, account_ref, observed_at)"
+  },
+  {
+    "type": "table",
+    "name": "audit_events",
+    "sql": "CREATE TABLE audit_events (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    event_type TEXT NOT NULL,\n    bot_name TEXT,\n    correlation_id TEXT,\n    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    details_json TEXT NOT NULL DEFAULT '{}'\n)"
+  },
+  {
+    "type": "table",
+    "name": "bot_runs",
+    "sql": "CREATE TABLE bot_runs (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    bot_name TEXT NOT NULL,\n    started_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    finished_at TEXT,\n    status TEXT NOT NULL,\n    details_json TEXT NOT NULL DEFAULT '{}'\n)"
+  },
+  {
+    "type": "table",
+    "name": "broker_orders",
+    "sql": "CREATE TABLE broker_orders (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    intent_id INTEGER NOT NULL REFERENCES order_intents(id),\n    broker TEXT NOT NULL,\n    broker_order_id TEXT,\n    status TEXT NOT NULL,\n    submitted_at TEXT,\n    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    response_json TEXT NOT NULL DEFAULT '{}',\n    UNIQUE (broker, broker_order_id)\n)"
+  },
+  {
+    "type": "table",
+    "name": "capital_buy_reservations",
+    "sql": "CREATE TABLE capital_buy_reservations (\n        request_id TEXT PRIMARY KEY,\n        bot TEXT NOT NULL, account_ref TEXT NOT NULL,\n        config_revision INTEGER NOT NULL,\n        amount_total TEXT NOT NULL,\n        state TEXT NOT NULL CHECK(state IN ('HELD','UNKNOWN','CLOSED')),\n        created_at TEXT NOT NULL\n    )"
+  },
+  {
+    "type": "table",
+    "name": "capital_verified_states",
+    "sql": "CREATE TABLE capital_verified_states (\n        bot TEXT NOT NULL, account_ref TEXT NOT NULL,\n        config_revision INTEGER NOT NULL,\n        reconciliation_id INTEGER NOT NULL,\n        funded_capital TEXT NOT NULL,\n        eligible_cash TEXT NOT NULL,\n        position_cost TEXT NOT NULL,\n        realized_net_profit TEXT NOT NULL,\n        baseline_pending_buy_commitment TEXT NOT NULL,\n        as_of TEXT NOT NULL,\n        PRIMARY KEY(bot,account_ref),\n        FOREIGN KEY(reconciliation_id) REFERENCES reconciliation_runs(id)\n    )"
+  },
+  {
+    "type": "table",
+    "name": "dashboard_control_requests",
+    "sql": "CREATE TABLE dashboard_control_requests (request_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL, response_json TEXT NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "dashboard_control_state",
+    "sql": "CREATE TABLE dashboard_control_state (singleton INTEGER PRIMARY KEY CHECK(singleton=1), revision INTEGER NOT NULL, state_json TEXT NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "decisions",
+    "sql": "CREATE TABLE decisions (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    bot_name TEXT NOT NULL,\n    symbol TEXT NOT NULL,\n    decision TEXT NOT NULL CHECK (\n        decision IN ('BUY', 'SELL', 'HOLD', 'BLOCK')\n    ),\n    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    strategy_version TEXT NOT NULL,\n    rationale_json TEXT NOT NULL DEFAULT '{}'\n)"
+  },
+  {
+    "type": "table",
+    "name": "fills",
+    "sql": "CREATE TABLE fills (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    broker TEXT NOT NULL,\n    account_ref TEXT,\n    broker_fill_id TEXT NOT NULL,\n    broker_order_id TEXT,\n    symbol TEXT NOT NULL,\n    side TEXT NOT NULL CHECK (side IN ('BUY', 'SELL')),\n    quantity TEXT NOT NULL,\n    price TEXT NOT NULL,\n    fee TEXT,\n    currency TEXT,\n    filled_at TEXT NOT NULL,\n    raw_json TEXT NOT NULL DEFAULT '{}',\n    UNIQUE (broker, account_ref, broker_fill_id)\n)"
+  },
+  {
+    "type": "table",
+    "name": "independent_bot_configurations",
+    "sql": "CREATE TABLE independent_bot_configurations (\n            bot TEXT PRIMARY KEY,\n            revision INTEGER NOT NULL,\n            config_json TEXT NOT NULL,\n            updated_at TEXT NOT NULL\n        )"
+  },
+  {
+    "type": "table",
+    "name": "independent_config_requests",
+    "sql": "CREATE TABLE independent_config_requests (\n            request_id TEXT PRIMARY KEY,\n            payload_json TEXT NOT NULL,\n            response_json TEXT NOT NULL\n        )"
+  },
+  {
+    "type": "table",
+    "name": "manual_execution_requests",
+    "sql": "CREATE TABLE manual_execution_requests (\n            request_id TEXT PRIMARY KEY,\n            bot TEXT NOT NULL,\n            payload_json TEXT NOT NULL,\n            status TEXT NOT NULL,\n            created_at TEXT NOT NULL,\n            updated_at TEXT NOT NULL,\n            response_json TEXT,\n            error_type TEXT\n        )"
+  },
+  {
+    "type": "table",
+    "name": "market_snapshots",
+    "sql": "CREATE TABLE market_snapshots (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    bot_name TEXT NOT NULL,\n    symbol TEXT NOT NULL,\n    source TEXT NOT NULL,\n    observed_at TEXT NOT NULL,\n    price TEXT,\n    currency TEXT,\n    data_json TEXT NOT NULL DEFAULT '{}',\n    source_verified INTEGER NOT NULL DEFAULT 0\n        CHECK (source_verified IN (0, 1))\n)"
+  },
+  {
+    "type": "table",
+    "name": "order_intents",
+    "sql": "CREATE TABLE order_intents (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    idempotency_key TEXT NOT NULL UNIQUE,\n    bot_name TEXT NOT NULL,\n    broker TEXT NOT NULL,\n    account_ref TEXT,\n    symbol TEXT NOT NULL,\n    side TEXT NOT NULL CHECK (side IN ('BUY', 'SELL')),\n    quantity TEXT NOT NULL,\n    order_type TEXT NOT NULL,\n    status TEXT NOT NULL DEFAULT 'CREATED',\n    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    decision_id INTEGER REFERENCES decisions(id),\n    metadata_json TEXT NOT NULL DEFAULT '{}'\n)"
+  },
+  {
+    "type": "table",
+    "name": "position_snapshots",
+    "sql": "CREATE TABLE position_snapshots (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    broker TEXT NOT NULL,\n    account_ref TEXT,\n    symbol TEXT NOT NULL,\n    quantity TEXT NOT NULL,\n    average_cost TEXT,\n    market_value TEXT,\n    currency TEXT,\n    observed_at TEXT NOT NULL,\n    raw_json TEXT NOT NULL DEFAULT '{}'\n)"
+  },
+  {
+    "type": "table",
+    "name": "price_samples",
+    "sql": "CREATE TABLE price_samples (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT NOT NULL, price TEXT NOT NULL, sampled_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))"
+  },
+  {
+    "type": "table",
+    "name": "reconciliation_runs",
+    "sql": "CREATE TABLE reconciliation_runs (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    broker TEXT NOT NULL,\n    account_ref TEXT,\n    started_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    finished_at TEXT,\n    status TEXT NOT NULL,\n    discrepancies_json TEXT NOT NULL DEFAULT '[]'\n)"
+  },
+  {
+    "type": "table",
+    "name": "risk_checks",
+    "sql": "CREATE TABLE risk_checks (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    decision_id INTEGER REFERENCES decisions(id),\n    bot_name TEXT NOT NULL,\n    passed INTEGER NOT NULL CHECK (passed IN (0, 1)),\n    checked_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n    rules_version TEXT NOT NULL,\n    reasons_json TEXT NOT NULL DEFAULT '[]'\n)"
+  },
+  {
+    "type": "trigger",
+    "name": "audit_events_no_delete",
+    "sql": "CREATE TRIGGER audit_events_no_delete\nBEFORE DELETE ON audit_events\nBEGIN\n    SELECT RAISE(ABORT, 'audit events are append-only');\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "audit_events_no_update",
+    "sql": "CREATE TRIGGER audit_events_no_update\nBEFORE UPDATE ON audit_events\nBEGIN\n    SELECT RAISE(ABORT, 'audit events are append-only');\nEND"
+  }
+]
