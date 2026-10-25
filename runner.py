@@ -1,28 +1,37 @@
+# RUNNER_CONTEXT_REPAIR_V2
+# RUNNER_QUOTED_BUDGET_FIX_V1
 """LIVE_ONLY_RUNNER_V1: production runner; incomplete automation is blocked."""
 import json, logging, os, sqlite3, time, uuid
 from decimal import Decimal, InvalidOperation
+
 from app.core.config import get_settings
 from app.core.write_policy import can_submit_order
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-log = logging.getLogger('runner')
-NS = uuid.UUID('[REDACTED_LITERAL]')
-INTERVAL = int(os.getenv('RUNNER_INTERVAL_SECONDS', '60'))
-MAX_ORDER_USD = Decimal(os.getenv('RUNNER_MAX_ORDER_USD', '10'))
-MAX_ORDERS_PER_DAY = int(os.getenv('RUNNER_MAX_ORDERS_PER_DAY', '3'))
-COUNTED = ('SUBMITTING', 'SUBMITTED', 'UNKNOWN')
-SYMBOL = 'BTC-USD'
-SMA_SAMPLES = int(os.getenv('STRATEGY_SMA_SAMPLES', '120'))
-DIP_PCT = Decimal(os.getenv('STRATEGY_DIP_PCT', '1.0'))
-TRADE_USD = os.getenv('STRATEGY_TRADE_USD', '5')
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("runner")
+
+NS = uuid.UUID("6f1d2a52-5c1e-4f0e-9a41-0c5d3b7e9a10")
+INTERVAL = int(os.getenv("RUNNER_INTERVAL_SECONDS", "60"))
+MAX_ORDER_USD = Decimal(os.getenv("RUNNER_MAX_ORDER_USD", "10"))
+MAX_ORDERS_PER_DAY = int(os.getenv("RUNNER_MAX_ORDERS_PER_DAY", "3"))
+COUNTED = ("SUBMITTING", "SUBMITTED", "UNKNOWN")
+
+
+SYMBOL = "BTC-USD"
+SMA_SAMPLES = int(os.getenv("STRATEGY_SMA_SAMPLES", "120"))
+DIP_PCT = Decimal(os.getenv("STRATEGY_DIP_PCT", "1.0"))
+TRADE_USD = os.getenv("STRATEGY_TRADE_USD", "5")
+
 
 def _price(adapter, symbol):
     r = adapter.quote(symbol)
-    row = r['results'][0] if isinstance(r, dict) and r.get('results') else r
-    if row.get('price'):
-        return Decimal(str(row['price']))
-    bid = Decimal(str(row['bid_inclusive_of_sell_spread']))
-    ask = Decimal(str(row['ask_inclusive_of_buy_spread']))
+    row = r["results"][0] if isinstance(r, dict) and r.get("results") else r
+    if row.get("price"):
+        return Decimal(str(row["price"]))
+    bid = Decimal(str(row["bid_inclusive_of_sell_spread"]))
+    ask = Decimal(str(row["ask_inclusive_of_buy_spread"]))
     return (bid + ask) / 2
+
 
 def strategy_crypto() -> list[dict]:
     """Dip-buy on BTC-USD: price <= SMA of recent samples minus DIP_PCT percent."""
@@ -54,61 +63,94 @@ def strategy_crypto() -> list[dict]:
     finally:
         conn.close()
 
+
 def db():
     conn = sqlite3.connect(get_settings().database_path, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def orders_today(conn, bot):
     """Count submitted orders even after their local status becomes FILLED."""
     return conn.execute("\n        SELECT COUNT(*)\n        FROM order_intents AS oi\n        WHERE oi.bot_name=?\n          AND oi.created_at >= strftime('%Y-%m-%dT00:00:00Z','now')\n          AND (\n              oi.status IN ('SUBMITTING','SUBMITTED','UNKNOWN','FILLED')\n              OR EXISTS (\n                  SELECT 1 FROM broker_orders AS bo\n                  WHERE bo.intent_id=oi.id AND bo.broker=oi.broker\n              )\n          )\n        ", (bot,)).fetchone()[0]
 
+
 def reconciliation_healthy(conn, bot):
-    n = conn.execute("SELECT COUNT(*) FROM order_intents WHERE bot_name=? AND status IN ('SUBMITTING','UNKNOWN')", (bot,)).fetchone()[0]
+    # Any ambiguous or in-flight order halts trading until a human reviews it.
+    n = conn.execute(
+        "SELECT COUNT(*) FROM order_intents WHERE bot_name=? AND status IN ('SUBMITTING','UNKNOWN')",
+        (bot,)).fetchone()[0]
     return n == 0
+
 
 def asset_qty_for_notional(adapter, symbol, notional):
     from decimal import ROUND_DOWN
+
     target = Decimal(str(notional))
     if not target.is_finite() or target <= 0:
-        raise ValueError('Order notional must be finite and positive')
+        raise ValueError("Order notional must be finite and positive")
+
     response = adapter.pairs()
     if not isinstance(response, dict):
-        raise ValueError('Trading-pair response is invalid')
-    matches = [pair for pair in response.get('results', []) if isinstance(pair, dict) and pair.get('symbol') == symbol]
+        raise ValueError("Trading-pair response is invalid")
+
+    matches = [
+        pair for pair in response.get("results", [])
+        if isinstance(pair, dict) and pair.get("symbol") == symbol
+    ]
     if len(matches) != 1:
-        raise ValueError('Trading pair is missing or not unique')
+        raise ValueError("Trading pair is missing or not unique")
+
     pair = matches[0]
-    increment = Decimal(str(pair.get('asset_increment')))
-    minimum = Decimal(str(pair.get('min_order_size')))
+    increment = Decimal(str(pair.get("asset_increment")))
+    minimum = Decimal(str(pair.get("min_order_size")))
+
     if not increment.is_finite() or increment <= 0:
-        raise ValueError('Verified positive asset increment required')
+        raise ValueError("Verified positive asset increment required")
+
     if not minimum.is_finite() or minimum < 0:
-        raise ValueError('Verified nonnegative minimum size required')
+        raise ValueError("Verified nonnegative minimum size required")
+
     quote = adapter.quote(symbol)
     if not isinstance(quote, dict):
-        raise ValueError('Quote response is invalid')
-    if 'results' in quote:
-        quote_rows = quote['results']
+        raise ValueError("Quote response is invalid")
+
+    if "results" in quote:
+        quote_rows = quote["results"]
         if not isinstance(quote_rows, list) or len(quote_rows) != 1:
-            raise ValueError('Expected exactly one quote')
+            raise ValueError("Expected exactly one quote")
         row = quote_rows[0]
     else:
         row = quote
-    if not isinstance(row, dict):
-        raise ValueError('Quote row is invalid')
-    if row.get('symbol') not in (None, symbol):
-        raise ValueError('Quote symbol mismatch')
-    ask = Decimal(str(row.get('ask_inclusive_of_buy_spread')))
-    if not ask.is_finite() or ask <= 0:
-        raise ValueError('Verified positive ask required')
-    quantity = (target / ask / increment).to_integral_value(rounding=ROUND_DOWN) * increment
-    if quantity <= 0 or quantity < minimum:
-        raise ValueError('Budget cannot satisfy the broker minimum size')
-    if quantity * ask > target:
-        raise ValueError('Rounded quantity exceeds quoted notional budget')
-    return (quantity, ask)
 
+    if not isinstance(row, dict):
+        raise ValueError("Quote row is invalid")
+
+    if row.get("symbol") not in (None, symbol):
+        raise ValueError("Quote symbol mismatch")
+
+    # A last-trade price is not a substitute for an executable ask.
+    ask = Decimal(str(row.get("ask_inclusive_of_buy_spread")))
+
+    if not ask.is_finite() or ask <= 0:
+        raise ValueError("Verified positive ask required")
+
+    quantity = (target / ask / increment).to_integral_value(
+        rounding=ROUND_DOWN
+    ) * increment
+
+    if quantity <= 0 or quantity < minimum:
+        raise ValueError("Budget cannot satisfy the broker minimum size")
+
+    if quantity * ask > target:
+        raise ValueError("Rounded quantity exceeds quoted notional budget")
+
+    # Observed-ask cap only: excludes additional fees/slippage.
+    # This is not a capital reservation or guaranteed fill ceiling.
+    return quantity, ask
+
+
+# CRYPTO_CAPITAL_READINESS_GATE_V1
 def handle_crypto(d, settings):
     if not MAX_ORDER_USD.is_finite() or MAX_ORDER_USD <= 0:
         log.error('Invalid RUNNER_MAX_ORDER_USD; automatic order rejected')
@@ -193,20 +235,24 @@ def handle_crypto(d, settings):
     finally:
         conn.close()
 
+
 def run_once():
     s = get_settings()
-    log.info('heartbeat mode=live crypto=%s equity=%s zerodha=%s', s.crypto_bot_enabled, s.equity_bot_enabled, s.zerodha_bot_enabled)
+    log.info("heartbeat mode=live crypto=%s equity=%s zerodha=%s",
+             s.crypto_bot_enabled, s.equity_bot_enabled, s.zerodha_bot_enabled)
     if s.crypto_bot_enabled:
         for d in strategy_crypto():
             handle_crypto(d, s)
     if s.equity_bot_enabled:
-        log.warning('equity: no verified broker adapter; skipped')
+        log.warning("equity: no verified broker adapter; skipped")
     if s.zerodha_bot_enabled:
-        log.warning('zerodha: daily token refresh and strategy not implemented; skipped')
-if __name__ == '__main__':
+        log.warning("zerodha: daily token refresh and strategy not implemented; skipped")
+
+
+if __name__ == "__main__":
     while True:
         try:
             run_once()
         except Exception:
-            log.exception('run_once failed')
+            log.exception("run_once failed")
         time.sleep(INTERVAL)

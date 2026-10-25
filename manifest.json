@@ -1,285 +1,215 @@
 {
-  "created_at": "2026-10-25T15:25:53.678900+00:00",
-  "purpose": "SANITIZED_REVIEW_COPY_NOT_A_DEPLOYABLE_BACKUP",
-  "python_files": [
+  "captured_at": "2026-10-25T23:37:03.591852+00:00",
+  "files": [
     {
-      "path": "app/__init__.py",
-      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "export_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "redacted_literal_count": 0
+      "path": "backend/app/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "app/api/__init__.py",
-      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "export_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "redacted_literal_count": 0
+      "path": "backend/app/api/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "app/api/bot_configuration.py",
-      "original_sha256": "2aa05269469a1834eae963ecdee8e79c9c2f5c7ad69fcd7187b97ea4f0f79fe3",
-      "export_sha256": "c953c30b8cfbb8edc73869e83011762e4b82299bfc377b853acece1055c916be",
-      "redacted_literal_count": 1
+      "path": "backend/app/api/bot_configuration.py",
+      "bytes": 11128,
+      "sha256": "2aa05269469a1834eae963ecdee8e79c9c2f5c7ad69fcd7187b97ea4f0f79fe3"
     },
     {
-      "path": "app/api/capital_api_v1.py",
-      "original_sha256": "1b54f0fb4efac31cea5f5ed26d3f2e733dd3780dfba90bedc0db819341991702",
-      "export_sha256": "a9938311359e13c79af0efe5b741015db5580e790e493688a683e39605fcdf35",
-      "redacted_literal_count": 0
+      "path": "backend/app/api/capital_api_v1.py",
+      "bytes": 906,
+      "sha256": "1b54f0fb4efac31cea5f5ed26d3f2e733dd3780dfba90bedc0db819341991702"
     },
     {
-      "path": "app/api/dashboard_data_v1.py",
-      "original_sha256": "5cac5c8288fcca5b59c5820037095032451c7b3be496b9b92a7b28b139f5dc09",
-      "export_sha256": "41570f6c18df25c1cc33bc4d7e2a857e482226bd1f5b627cd135b7de05d216d9",
-      "redacted_literal_count": 1
+      "path": "backend/app/api/dashboard_bridge_v2.py",
+      "bytes": 6087,
+      "sha256": "0ff4341f3852998c0db503f9fb930423be4040054c989539728c9cea25023fed"
     },
     {
-      "path": "app/api/status.py",
-      "original_sha256": "cb2c751d1ce5cba50146a36214fd74fc6adc552b05aa67ae847918053bc46059",
-      "export_sha256": "1d15eed0ba2f0e3090015b52646eca1f7d91ec8429855aab7a1aec73c62b9b55",
-      "redacted_literal_count": 0
+      "path": "backend/app/api/dashboard_data_v1.py",
+      "bytes": 12052,
+      "sha256": "af8d48b6e84f338e69c2ecf48ba4cde68013b47990302009448f08a52f78371a"
     },
     {
-      "path": "app/api/trading_controls.py",
-      "original_sha256": "f13a8a8dfeafccdedce4c9543f3e05e52361727f1be14c7256cda0489fc659e0",
-      "export_sha256": "bcdee033ffe2dbb662017111819fd9c05ef72839b5f8174510ebbb5ea813e0ee",
-      "redacted_literal_count": 0
+      "path": "backend/app/api/position_metrics_v1.py",
+      "bytes": 14604,
+      "sha256": "42d079c3f7ad4885254c29e1ab4bef8c8191cc56b156b2c20c17e5a23df16b46"
     },
     {
-      "path": "app/brokers/__init__.py",
-      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "export_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "redacted_literal_count": 0
+      "path": "backend/app/api/status.py",
+      "bytes": 3503,
+      "sha256": "cb2c751d1ce5cba50146a36214fd74fc6adc552b05aa67ae847918053bc46059"
     },
     {
-      "path": "app/brokers/healthcheck.py",
-      "original_sha256": "a7fc1a53a75824261a22ed75b06a9f4d1e84a9cbabae513f81450d9243871d2d",
-      "export_sha256": "bd8b79985588f472d7c29b204cf11493b18baf9a31355ae04756ef7d1f4c4921",
-      "redacted_literal_count": 0
+      "path": "backend/app/api/trading_controls.py",
+      "bytes": 6104,
+      "sha256": "f13a8a8dfeafccdedce4c9543f3e05e52361727f1be14c7256cda0489fc659e0"
     },
     {
-      "path": "app/brokers/robinhood/__init__.py",
-      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "export_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "app/brokers/robinhood/crypto.py",
-      "original_sha256": "5d9c12e2a6fc4ed45119cf3125132a8b2018a5728f1116c197a3d6f7d3c801ff",
-      "export_sha256": "2bb0215b1d7be77a1413f3615af409e3a0651a58f43da3279a1f7209614ca490",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/healthcheck.py",
+      "bytes": 1502,
+      "sha256": "a7fc1a53a75824261a22ed75b06a9f4d1e84a9cbabae513f81450d9243871d2d"
     },
     {
-      "path": "app/brokers/robinhood/dashboard_crypto_reader_v1.py",
-      "original_sha256": "3cb6b194020119aafaac222932aa06729eb67493555893c9db8b6200bfe1900f",
-      "export_sha256": "716d0b3179e7a49eb84fa49c5e6a8c7a0100b09d0b5e426591f36967e7b20bec",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/robinhood/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "app/brokers/robinhood/equity.py",
-      "original_sha256": "774f728253a4d6dbf75ce22d1fe5768034dc320666983eeac38d84cadc118473",
-      "export_sha256": "b7d08bca066d392c3291ebcbeff0b8406715605c46feca3c88a41ba37c444fcf",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/robinhood/crypto.py",
+      "bytes": 5248,
+      "sha256": "5d9c12e2a6fc4ed45119cf3125132a8b2018a5728f1116c197a3d6f7d3c801ff"
     },
     {
-      "path": "app/brokers/robinhood/readonly_client.py",
-      "original_sha256": "01f544a4b94982ca409e5a2e6bef7ad9d900a5d4c93866b62c9aa5e7ee610272",
-      "export_sha256": "80f3be5e08d557e96110227dad92963642ffd4e2f9048f0e62af204d121aa468",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/robinhood/dashboard_crypto_reader_v1.py",
+      "bytes": 5819,
+      "sha256": "3cb6b194020119aafaac222932aa06729eb67493555893c9db8b6200bfe1900f"
     },
     {
-      "path": "app/brokers/zerodha/__init__.py",
-      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "export_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/robinhood/equity.py",
+      "bytes": 1120,
+      "sha256": "774f728253a4d6dbf75ce22d1fe5768034dc320666983eeac38d84cadc118473"
     },
     {
-      "path": "app/brokers/zerodha/kite.py",
-      "original_sha256": "372304841f86c6f80e2fb78d3384f230de1d8b866fb27e3804441283af3ab7ba",
-      "export_sha256": "38033dadf69021d25a6db91aebe7b067d7ee9cb63eb21eb8a735440596921ff3",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/robinhood/readonly_client.py",
+      "bytes": 2172,
+      "sha256": "01f544a4b94982ca409e5a2e6bef7ad9d900a5d4c93866b62c9aa5e7ee610272"
     },
     {
-      "path": "app/core/__init__.py",
-      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "export_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/zerodha/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "app/core/automatic_order_guard.py",
-      "original_sha256": "ca9d58c3357fd596aa7677c0aea8f157c7fec9ec392da570469c42e18b29902c",
-      "export_sha256": "6729e244eed207f5fd8f025c52ef85be0c5c62cbd0406b7ac863b888bfb282d3",
-      "redacted_literal_count": 0
+      "path": "backend/app/brokers/zerodha/kite.py",
+      "bytes": 3229,
+      "sha256": "372304841f86c6f80e2fb78d3384f230de1d8b866fb27e3804441283af3ab7ba"
     },
     {
-      "path": "app/core/capital_ledger_v1.py",
-      "original_sha256": "38289c4018a1d93305fd9215b1c346420fed1fabbba3edfb54bbfa10510d0cc9",
-      "export_sha256": "179644c6d8795e5c4182d0a6d9127c064f0d332a9441797f4999a17d49f4baef",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "app/core/config.py",
-      "original_sha256": "7a1a95d22edbe23a1e6ee56502c6cd2081aedd919c294c56a67e43329e1caf29",
-      "export_sha256": "896aa740c5af22651a9e5cac5a5c987a8d28071add8af7ad60c9e154d61fd6ed",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/automatic_order_guard.py",
+      "bytes": 5705,
+      "sha256": "ca9d58c3357fd596aa7677c0aea8f157c7fec9ec392da570469c42e18b29902c"
     },
     {
-      "path": "app/core/crypto_buy_budget_v1.py",
-      "original_sha256": "ec8a905dcbb6369c7b793069587fecd53aea6954a26d519566b4267beab25fd2",
-      "export_sha256": "901b6abf83eaae47f611075578b6398fa0936aa94744bc1bd4a5dcf16147c237",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/capital_ledger_v1.py",
+      "bytes": 8675,
+      "sha256": "38289c4018a1d93305fd9215b1c346420fed1fabbba3edfb54bbfa10510d0cc9"
     },
     {
-      "path": "app/core/database.py",
-      "original_sha256": "a3871d19fc1198cc307a26fa3bc4c0266932a07ff34b8f82467382c661388f87",
-      "export_sha256": "68f0d4d13ecf53057dac94c7592cf99c798003f499d37fc7081317ceb64126b6",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/config.py",
+      "bytes": 921,
+      "sha256": "7a1a95d22edbe23a1e6ee56502c6cd2081aedd919c294c56a67e43329e1caf29"
     },
     {
-      "path": "app/core/index_holding_policy.py",
-      "original_sha256": "d89f57efb82df67ba7fbae5dec6dd95f8d36789ae177620e4523890dc89bbb26",
-      "export_sha256": "4a15b31b9017486ee0f3cd01d6a96f70c19b3b44d81c374f64592fb13021565c",
-      "redacted_literal_count": 2
+      "path": "backend/app/core/crypto_buy_budget_v1.py",
+      "bytes": 5045,
+      "sha256": "ec8a905dcbb6369c7b793069587fecd53aea6954a26d519566b4267beab25fd2"
     },
     {
-      "path": "app/core/order_intents.py",
-      "original_sha256": "1e6aa68cbafded10a822381702c0614d58481ada4bfc519edea7d917a46564b1",
-      "export_sha256": "901ac39e6805d3732dab9c04e10556b9ac5e9551c6455d14cf2c2500b85ba2fa",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/database.py",
+      "bytes": 5470,
+      "sha256": "a3871d19fc1198cc307a26fa3bc4c0266932a07ff34b8f82467382c661388f87"
     },
     {
-      "path": "app/core/readiness.py",
-      "original_sha256": "39763f3ea23db210b6cf71dd2fb19ae8b760f633ac3a6c544f0b4c08135440ec",
-      "export_sha256": "876ee28d0f09f3df7ca553980c8d428237690ac8c8bb9398b291618ea7693a98",
-      "redacted_literal_count": 1
+      "path": "backend/app/core/equity_reads_v1.py",
+      "bytes": 12335,
+      "sha256": "6b555d92abbb0b4faff23aa6f1167e1d4736dae156a06465fbf2e229b5956d92"
     },
     {
-      "path": "app/core/safety.py",
-      "original_sha256": "092e63cf4a617c99cbe2600add0e82723434054a129b191b18f475c62a3797d9",
-      "export_sha256": "8b46633ec5f631dbb90044859c57551682da121f4c574f6e82922c4c8ef30456",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/index_holding_policy.py",
+      "bytes": 9012,
+      "sha256": "d89f57efb82df67ba7fbae5dec6dd95f8d36789ae177620e4523890dc89bbb26"
     },
     {
-      "path": "app/core/trading_policy_config.py",
-      "original_sha256": "3dcc5adf0215615c54e9d6e50043b6b44d1f3b60549a1c66af2d3d326f9a3dec",
-      "export_sha256": "a16d68c6e98af13a24d9f121e00872ee94cb333880723502ed20543d0d38174b",
-      "redacted_literal_count": 1
+      "path": "backend/app/core/order_intents.py",
+      "bytes": 3647,
+      "sha256": "1e6aa68cbafded10a822381702c0614d58481ada4bfc519edea7d917a46564b1"
     },
     {
-      "path": "app/core/write_policy.py",
-      "original_sha256": "79c7cedab2204fb4c9e4d95c157680966974d95c7e32a6c042678b31f3177595",
-      "export_sha256": "bcbc0d660ea485590edcb31334b1d5775eb43ed627de6da6707db9ad155b5007",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/readiness.py",
+      "bytes": 1522,
+      "sha256": "39763f3ea23db210b6cf71dd2fb19ae8b760f633ac3a6c544f0b4c08135440ec"
     },
     {
-      "path": "app/main.py",
-      "original_sha256": "6c7efe0b23fdf6611c9335684b162ddcd2f6c220a9d078177b5d520e918204c9",
-      "export_sha256": "33457d55eec5520b63533bada72bd0b2cd55c8d965b1f0b7a87a9d5887226a17",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/safety.py",
+      "bytes": 1522,
+      "sha256": "092e63cf4a617c99cbe2600add0e82723434054a129b191b18f475c62a3797d9"
     },
     {
-      "path": "app/runner.py",
-      "original_sha256": "989adf33f348c1c687b0d8052ee343d0fe0dce50f074bab5059a1b6cebc66b12",
-      "export_sha256": "7a862a8a8a2ddeae9c2fceb9efea7b894eaa0b3c981b50d43606faee2451c5a9",
-      "redacted_literal_count": 1
+      "path": "backend/app/core/trading_policy_config.py",
+      "bytes": 3574,
+      "sha256": "3dcc5adf0215615c54e9d6e50043b6b44d1f3b60549a1c66af2d3d326f9a3dec"
     },
     {
-      "path": "broker_contract_check.py",
-      "original_sha256": "b4ab36670a3a63bc3579f4f049bb4d172376dd1ec189fd5937d5551c075a9e27",
-      "export_sha256": "f77f116d36b604f480527653cb4b569336369772a5ffcdef3c31d9277eaff05e",
-      "redacted_literal_count": 0
+      "path": "backend/app/core/write_policy.py",
+      "bytes": 3485,
+      "sha256": "79c7cedab2204fb4c9e4d95c157680966974d95c7e32a6c042678b31f3177595"
     },
     {
-      "path": "check_hold.py",
-      "original_sha256": "4f5a53c47426654b9e8b77f6020e215e3cceca518ed4119704d22ae7556ce4b1",
-      "export_sha256": "9f52f71a6dd0c77251281f8686cad754160ad61cd9592ba7fcb04e591db73d3f",
-      "redacted_literal_count": 0
+      "path": "backend/app/main.py",
+      "bytes": 1081,
+      "sha256": "b5e907d24fb73ca1d6dd0c01420593b93c7a5ed32f230f8a7ad0485f9cca9be8"
     },
     {
-      "path": "check_order.py",
-      "original_sha256": "d61f174592e5cbb2423a1639dd4a7257de1c9da566c9c4d0cf675954b451e6bb",
-      "export_sha256": "b56ccf951c6b0ee778a59a0d8b81986ed764113d121f05e4daf1cefd6298e21a",
-      "redacted_literal_count": 1
+      "path": "backend/app/runner.py",
+      "bytes": 11697,
+      "sha256": "989adf33f348c1c687b0d8052ee343d0fe0dce50f074bab5059a1b6cebc66b12"
     },
     {
-      "path": "check_order2.py",
-      "original_sha256": "4ba6bbd57fa6f534e814eb6ac9d7ed84ba989f0feb01217370798a66561c234d",
-      "export_sha256": "2b7bb403a789705c80391b99ee67e4396b22c32c4345e024e32d7d8a07115372",
-      "redacted_literal_count": 1
+      "path": "backend/broker_contract_check.py",
+      "bytes": 3978,
+      "sha256": "b4ab36670a3a63bc3579f4f049bb4d172376dd1ec189fd5937d5551c075a9e27"
     },
     {
-      "path": "diag_btc.py",
-      "original_sha256": "db2df587dc184c4141b0dba3de57e162c04cdd77f7a067a67065f9b2a3b40fe0",
-      "export_sha256": "396943393da8c7b1012e68f6418ef4c0fccc15ca8df07b3b2db4d6e0c04fe021",
-      "redacted_literal_count": 0
+      "path": "backend/manual_broker_order.py",
+      "bytes": 13311,
+      "sha256": "74beee5d8bf314c5828c206a454ed90681280613629093c9981851511165f73f"
     },
     {
-      "path": "exchange_zerodha_token.py",
-      "original_sha256": "6c2fffbd1ebc7d7d0b9750e7e612f527c5db7f9143d80ccb679e25af60084343",
-      "export_sha256": "e08a63caa7eff9dbb18e2eee575401098547d4b3c809fad2a9d3134d16394e51",
-      "redacted_literal_count": 3
+      "path": "backend/rh_equity_review.py",
+      "bytes": 2213,
+      "sha256": "1fbd6e8d0019c790c0b31a80e2729cd3ab02944e87c5bf86d71263f35eac9060"
     },
     {
-      "path": "live_test_btc.py",
-      "original_sha256": "182f92e75debbd61bc08f93f0105c7294ecffcaa3069697389f3e27f1d1d6c26",
-      "export_sha256": "47eefe0e4b852f6d8447063d458b142da870c72dbb72a080103025ce29b1e8c1",
-      "redacted_literal_count": 0
+      "path": "frontend/app.js",
+      "bytes": 23082,
+      "sha256": "7b503fbc4b391f44b8fdcbe7026aa0ee0ddbe5adc7f8e4366faed93c26e09487"
     },
     {
-      "path": "manual_broker_order.py",
-      "original_sha256": "74beee5d8bf314c5828c206a454ed90681280613629093c9981851511165f73f",
-      "export_sha256": "86c97ea5e866ebd93264db3e1a1cce5cd784d1cb94bd39d976b968140fb56af0",
-      "redacted_literal_count": 0
+      "path": "frontend/configurations.js",
+      "bytes": 8007,
+      "sha256": "4a0e2d2221270311fd022b4677de1271becb5ab9a65e1468a79420008567c646"
     },
     {
-      "path": "repair_zerodha_session.py",
-      "original_sha256": "8724a70ebd91a867622b7c9d3a4dfc848a124ef8933a55d492e275b1e61b34d4",
-      "export_sha256": "50dc40534c17cfcb6a8dbe6cb43bc6c0da653e5c1db5eb9e6f9d265b813cf803",
-      "redacted_literal_count": 0
+      "path": "frontend/index.html",
+      "bytes": 5464,
+      "sha256": "f2af4d9c9b68f4f36499dcb73b37a5dfcce10df438fbc8277bfcc8c1c9965e64"
     },
     {
-      "path": "rh_crypto_check.py",
-      "original_sha256": "aeac3316603a4245ba7bed8a3d82116e1733cf0a7a4286c6acd0adb334252c10",
-      "export_sha256": "accd86a93237196c603ccf94b2390b809347a4c4d6f7ef5bcdbd31009088cab5",
-      "redacted_literal_count": 0
+      "path": "frontend/metrics.js",
+      "bytes": 5923,
+      "sha256": "9b2e96784eee822b48e35483a9ecd7586b8741480e15ec25cf9141ee5a937c20"
     },
     {
-      "path": "rh_crypto_schema.py",
-      "original_sha256": "7089d09ff2d66c2fe1cd20f4a87e2875374769f4e79477616a94a1d7ff061ce2",
-      "export_sha256": "022fd7be25c7ee70c565a30d43c4c8a9a4f1f4b757d78ceeb50ea49119d34298",
-      "redacted_literal_count": 0
+      "path": "frontend/server.py",
+      "bytes": 11199,
+      "sha256": "dd3256c56770f5496c23a9a0ac74a7ae159236f67687f643969a89a10632c656"
     },
     {
-      "path": "rh_equity_order.py",
-      "original_sha256": "2ed08e524d7592ad8092029bcecb2c7f3d6f587644b75f38f97d71965df7fc22",
-      "export_sha256": "c6b2fe2a06c0e82154ae502cd6d3775a47b26002a8e6a6328a1da2225c8881f6",
-      "redacted_literal_count": 1
-    },
-    {
-      "path": "rh_equity_review.py",
-      "original_sha256": "1fbd6e8d0019c790c0b31a80e2729cd3ab02944e87c5bf86d71263f35eac9060",
-      "export_sha256": "0edcd50542a8d97f988fbcd4615df37285d5a93016764803c38514bf5e049568",
-      "redacted_literal_count": 0
-    },
-    {
-      "path": "rh_mcp_auth.py",
-      "original_sha256": "5b2c651247787537f9e9c9b6718c32ac7d8145ffdc2f9ac293cd773bec048cfb",
-      "export_sha256": "5c27fcec99c4d323140fd51687799873cc67f673f3f2f81522257e69be0ad161",
-      "redacted_literal_count": 0
-    },
-    {
-      "path": "sum_orders.py",
-      "original_sha256": "36624480733e5cfd07054cbd380365351b1739544b9649d3bc55d6e5b27e96ff",
-      "export_sha256": "c7ed86ce195ae0df8367911989701f096f16716c9d519c2fcd31dfbe5597ee3b",
-      "redacted_literal_count": 0
+      "path": "frontend/styles.css",
+      "bytes": 24782,
+      "sha256": "f4537fc4c8f897f34dddb98fae8bcbadeba617c702fe26996b20561cb3a4b7da"
     }
-  ],
-  "excluded": [
-    "environment files",
-    "database rows and database files",
-    "credential and token files",
-    "logs",
-    "Git history",
-    "non-Python application assets"
-  ],
-  "warning": "Automated redaction is best-effort. Review before sharing. Do not restore this rewritten source over the application."
+  ]
 }

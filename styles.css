@@ -195,3 +195,33 @@ body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
   background: rgba(56, 189, 248, 0.04) !important;
   box-shadow: inset 0 0 10px rgba(52, 211, 153, 0.04) !important;
 }
+
+/* Reference integration: truthful data and native confirmation dialogs. */
+button:disabled{opacity:.42;cursor:not-allowed;filter:none!important}.small-note{font-size:11px;line-height:1.55;color:var(--slate-400);margin:9px 0}.banner{padding:12px 16px;background:var(--blue-bg);border:1px solid var(--slate-700);border-radius:10px;margin-bottom:20px;font-size:12px}.native-dialog{border:1px solid var(--slate-700);border-radius:14px;background:var(--slate-800);color:var(--slate-100);padding:24px;width:560px;max-width:94vw;max-height:90vh;margin:auto;overflow:auto}.native-dialog::backdrop{background:#000b}.native-dialog h3{margin-bottom:12px}.native-dialog .form-row{margin:12px 0}.review-output{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 ui-monospace,monospace;max-height:280px;overflow:auto}.read-label{font-size:11px;color:var(--accent);margin-bottom:10px}.cap-warning{color:var(--yellow);font-size:11px;overflow-wrap:anywhere}.bot-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric-value{overflow-wrap:anywhere}.sidebar-nav{overflow:auto}.badge-warn{color:var(--yellow)}.settings-list{display:grid;gap:14px}.audit-detail{white-space:pre-wrap;overflow-wrap:anywhere;max-width:650px}.service-grid .service-card{flex-wrap:wrap}.table-caption{font-size:11px;color:var(--slate-400);margin-top:9px}.inline-error{color:var(--red)}.section-title{margin-bottom:0}.topbar{height:auto;min-height:64px;padding-top:10px;padding-bottom:10px}.position-card{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:768px){.position-card{grid-template-columns:1fr 1fr}.content{padding:16px}}@media(prefers-reduced-motion:reduce){.table-wrap{animation:none!important}}
+
+.auto-badge.off{background:var(--yellow-bg);color:var(--yellow);border-color:rgba(251,191,36,.3)}
+
+/* BOT_TABLE_SCOPE_V1 */
+.bot-scope-title{padding:0;background:none;border:0;text-align:left;cursor:pointer;color:var(--slate-100)}.bot-scope-title:hover{color:var(--accent)}.bot-card[data-bot]{cursor:pointer}.bot-card.bot-selected{border-color:var(--accent);box-shadow:0 0 0 1px rgba(56,189,248,.2)}
+
+/* BOT_VALUATION_UI_V1 */
+.valuation-tickers{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.valuation-tickers p{width:100%}.data-table tfoot td{font-weight:700;border-top:2px solid var(--accent);background:var(--slate-950)}details{margin-top:20px}details>summary{cursor:pointer;color:var(--accent)}
+
+/* TICKER_CONFIG_CONTROLS_V1 */
+.live-ticker-shelf{padding:10px 24px;border-bottom:1px solid var(--slate-700);background:var(--slate-950);min-width:0}.live-ticker-label{font-size:11px;color:var(--accent);margin-bottom:6px}.live-ticker-viewport{overflow:hidden;width:100%;position:relative}.live-ticker-track{display:flex;width:max-content;animation:backendTickerScroll 38s linear infinite}.live-ticker-group{display:flex;flex-shrink:0;gap:25px;padding-right:25px;align-items:center}.ticker-quote{white-space:nowrap;background:none;border:0;font:600 13px system-ui;cursor:pointer;padding:7px 0}.ticker-bull{color:#39ff88}.ticker-bear{color:#ffaaaa}.ticker-neutral{color:var(--slate-300)}.live-ticker-meta{font-size:10px;color:var(--slate-400);margin-top:5px}.live-ticker-viewport:hover .live-ticker-track,.live-ticker-viewport:focus-within .live-ticker-track{animation-play-state:paused}.requested-controls{margin-top:16px;padding-top:10px;border-top:1px solid var(--slate-700)}.request-control-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;margin:9px 0}.request-control-row span{flex:1;min-width:170px}@keyframes backendTickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}@media(prefers-reduced-motion:reduce){.live-ticker-track{animation:none}.live-ticker-viewport{overflow-x:auto}}
+
+.main{min-width:0}.live-ticker-shelf,.live-ticker-viewport{min-width:0;max-width:100%}.live-ticker-group{min-width:calc(100vw - 288px);justify-content:space-around}@media(max-width:768px){.live-ticker-group{min-width:calc(100vw - 48px)}}
+
+/* COMPACT_MARKET_TICKER_SPACING_V1 */
+.live-ticker-group {
+    min-width: 0 !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding-right: 12px !important;
+}
+.live-ticker-track {
+    gap: 0 !important;
+}
+.ticker-quote {
+    margin: 0 !important;
+}
