@@ -20,7 +20,6 @@ with socket.socket() as s:
 CHECK_PORT
 fi
 install -d -m 0755 /opt/super-intelligence-dashboard
-install -d -m 0700 /etc/super-intelligence
 cat > /opt/super-intelligence-dashboard/server.py <<'DASHBOARD_PY'
 import base64, hashlib, hmac, json, os, subprocess
 from datetime import datetime, timezone
