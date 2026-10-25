@@ -1,0 +1,1217 @@
+SUPER INTELLIGENCE
+Crypto
+US Equity
+India / Zerodha
+Authenticated read-only dashboard.
+
+Trade controls are not connected here. This UI cannot submit or cancel orders.
+
+Trading overview
+Service check: 2026-10-25T18:47:54.321977+00:00 — server receipt time
+READ ONLY / PRIVATE ACCESS
+Process status is not proof of permission to trade. Missing or unreconciled data is shown as unavailable, never as a zero balance.
+Backend
+unknown
+Process — · unavailable
+Runner
+unknown
+Process — · unavailable
+Monitor
+unknown
+Process — · unavailable
+Email worker
+unknown
+Process — · unavailable
+Local API: responding · HTTP 200
+
+Crypto
+RAW_READS_COMPLETE · received 2026-10-25T18:42:46.955220+00:00 · cache age 13.24s
+Refresh account data
+Saved configuration
+{
+  "account_ref": "311077765576",
+  "currency": "USD",
+  "allocated_capital": "200.00",
+  "cash_reserve_pct": "10",
+  "sell_protections": [],
+  "buy_restrictions": []
+}
+Execution / control integration
+{
+  "snapshot_status": "RAW_READS_COMPLETE",
+  "automatic_execution_readiness": "NOT_ESTABLISHED_BY_THIS_API",
+  "controls": {
+    "requested": {
+      "buy_enabled": null,
+      "sell_enabled": null,
+      "bot_enabled": null
+    },
+    "effective": null,
+    "enforcement_connected": false
+  },
+  "account_selection_verified": false,
+  "account_scope": "BROKER_RESPONSE_NOT_BOUND_TO_CONFIGURED_ACCOUNT",
+  "warning": "Raw reads are not verified account routing, fill confirmation, or permission to trade. Pagination is not followed."
+}
+Capital response — Crypto only
+{
+  "schema_version": 1,
+  "bot": "crypto",
+  "currency": "USD",
+  "configuration_revision": 1,
+  "account_ending": "5576",
+  "configured_allocation": "200.00",
+  "reserve_pct": "10",
+  "funded_capital": null,
+  "verified_position_cost": null,
+  "realized_net_profit": null,
+  "verified_pending_buy_commitment": null,
+  "local_held_reservations": null,
+  "available_automatic_budget": null,
+  "as_of": null,
+  "status": "AWAITING_VERIFIED_CAPITAL_BASELINE",
+  "reservation_checks_ready": false,
+  "automatic_trading_enabled": false,
+  "execution_integration": "NOT_CONNECTED_TO_RUNNER"
+}
+Broker response — not a fill confirmation
+{
+  "source": "existing_crypto_adapter",
+  "coverage": "RAW_BROKER_RESPONSES",
+  "parts": {
+    "accounts": {
+      "status": "BROKER_RESPONSE_RECEIVED",
+      "requested_at": "2026-10-25T18:42:32.132176+00:00",
+      "received_at": "2026-10-25T18:42:32.748640+00:00",
+      "source_timestamp": null,
+      "data": {
+        "account_number": "311077765576",
+        "status": "active",
+        "buying_power": "221.0300",
+        "buying_power_currency": "USD",
+        "account_type": "individual",
+        "is_api_tradable": true,
+        "fee_tier_status": {
+          "fee_ratio": 0.0095,
+          "thirty_day_volume": 441.21,
+          "next_fee_tier_ratio": 0.0025,
+          "next_fee_tier_threshold": 49558.79
+        }
+      }
+    },
+    "holdings": {
+      "status": "BROKER_RESPONSE_RECEIVED",
+      "requested_at": "2026-10-25T18:42:32.748710+00:00",
+      "received_at": "2026-10-25T18:42:32.882273+00:00",
+      "source_timestamp": null,
+      "data": {
+        "results": [
+          {
+            "account_number": "311077765576",
+            "asset_code": "BTC",
+            "total_quantity": "0.000012310000000000",
+            "quantity_available_for_trading": "0.000012310000000000"
+          }
+        ],
+        "next": null,
+        "previous": null
+      }
+    },
+    "orders": {
+      "status": "BROKER_RESPONSE_RECEIVED",
+      "requested_at": "2026-10-25T18:42:32.882342+00:00",
+      "received_at": "2026-10-25T18:42:33.196434+00:00",
+      "source_timestamp": null,
+      "data": {
+        "results": [
+          {
+            "symbol": "BTC-USD",
+            "client_order_id": "53f045f5-fe42-529c-ba36-abdcb9f989fc",
+            "side": "buy",
+            "type": "market",
+            "id": "6add3f2b-7e2c-4751-b640-6c38c6a4ff76",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "0.000012310000000000",
+            "executions": [
+              {
+                "effective_price": "81294.765588390000000000",
+                "quantity": "0.000012310000000000",
+                "timestamp": "2026-10-24T19:28:43.925000-04:00"
+              }
+            ],
+            "average_price": "81294.765588390000000000",
+            "created_at": "2026-10-24T19:28:43.597245-04:00",
+            "updated_at": "2026-10-24T19:28:45.105082-04:00",
+            "fee_charged": null,
+            "estimated_fee_remaining": null,
+            "market_order_config": {
+              "asset_quantity": "0.000012310000000000"
+            }
+          },
+          {
+            "symbol": "XLM-USD",
+            "client_order_id": "ca2bf399-2d91-4a66-bc05-d5349cdb738e",
+            "side": "sell",
+            "type": "market",
+            "id": "6ad7c0c1-b3e7-4f35-b7d8-d966507ba2fc",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "6.550000000000000000",
+            "executions": [
+              {
+                "effective_price": "0.176626300000000000",
+                "quantity": "6.550000000000000000",
+                "timestamp": "2026-10-20T15:28:01.293000-04:00"
+              }
+            ],
+            "average_price": "0.176626300000000000",
+            "created_at": "2026-10-20T15:28:01.144007-04:00",
+            "updated_at": "2026-10-20T15:28:02.438752-04:00",
+            "fee_charged": null,
+            "estimated_fee_remaining": null,
+            "market_order_config": {
+              "asset_quantity": "6.550000000000000000"
+            }
+          },
+          {
+            "symbol": "XLM-USD",
+            "client_order_id": "171bb7f2-b4fd-4edc-9378-520301a45681",
+            "side": "buy",
+            "type": "market",
+            "id": "6ad7c0b1-8f89-4165-9b13-578ca10d21f3",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "5.550000000000000000",
+            "executions": [
+              {
+                "effective_price": "0.180072490000000000",
+                "quantity": "5.550000000000000000",
+                "timestamp": "2026-10-20T15:27:46.066000-04:00"
+              }
+            ],
+            "average_price": "0.180072490000000000",
+            "created_at": "2026-10-20T15:27:45.711297-04:00",
+            "updated_at": "2026-10-20T15:27:47.166004-04:00",
+            "fee_charged": null,
+            "estimated_fee_remaining": null,
+            "market_order_config": {
+              "quote_amount": "1.00"
+            }
+          },
+          {
+            "symbol": "BTC-USD",
+            "client_order_id": "5457340a-1cac-4aa3-986e-ada1e373f781",
+            "side": "sell",
+            "type": "market",
+            "id": "6ad7c039-6eb6-4c3e-b43b-56d0e49240ea",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "0.000059730000000000",
+            "executions": [
+              {
+                "effective_price": "81562.169743680000000000",
+                "quantity": "0.000059730000000000",
+                "timestamp": "2026-10-20T15:25:45.790000-04:00"
+              }
+            ],
+            "average_price": "81562.169743680000000000",
+            "created_at": "2026-10-20T15:25:45.667313-04:00",
+            "updated_at": "2026-10-20T15:25:46.814668-04:00",
+            "fee_charged": null,
+            "estimated_fee_remaining": null,
+            "market_order_config": {
+              "asset_quantity": "0.000059730000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "dda193f7-1742-4f3b-a6ea-54cd3ff20412",
+            "side": "sell",
+            "type": "market",
+            "id": "6ad54ff3-02a0-4c15-a477-5cec36d1b943",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "14.210000000000000000",
+            "executions": [
+              {
+                "effective_price": "4.940830000000000000",
+                "quantity": "14.210000000000000000",
+                "timestamp": "2026-10-18T19:02:11.474000-04:00"
+              }
+            ],
+            "average_price": "4.940830000000000000",
+            "created_at": "2026-10-18T19:02:11.198789-04:00",
+            "updated_at": "2026-10-18T19:02:12.606415-04:00",
+            "fee_charged": 0.66698734585,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "14.210000000000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "5984460e-f57b-4653-b715-611ac96f9597",
+            "side": "buy",
+            "type": "market",
+            "id": "6acd79ff-cbac-47f8-949c-164422e87b18",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "0.300000000000000000",
+            "executions": [
+              {
+                "effective_price": "5.071140000000000000",
+                "quantity": "0.300000000000000000",
+                "timestamp": "2026-10-12T20:23:28.245000-04:00"
+              }
+            ],
+            "average_price": "5.071140000000000000",
+            "created_at": "2026-10-12T20:23:27.747087-04:00",
+            "updated_at": "2026-10-12T20:23:28.833231-04:00",
+            "fee_charged": 0.014452749,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "0.300000000000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "b3074edc-c463-43d4-86f6-c3af14b4239e",
+            "side": "buy",
+            "type": "market",
+            "id": "6acd7939-218d-481f-b6ea-8966294657bb",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "13.910000000000000000",
+            "executions": [
+              {
+                "effective_price": "5.090899000000000000",
+                "quantity": "13.910000000000000000",
+                "timestamp": "2026-10-12T20:20:09.708000-04:00"
+              }
+            ],
+            "average_price": "5.090899000000000000",
+            "created_at": "2026-10-12T20:20:09.300688-04:00",
+            "updated_at": "2026-10-12T20:20:10.385191-04:00",
+            "fee_charged": 0.672736848355,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "13.910000000000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "ca4d556e-ad20-4976-b66e-f1e22a4a1770",
+            "side": "sell",
+            "type": "market",
+            "id": "6accca73-b0af-4801-a01b-003a0b0d4241",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "12.800000000000000000",
+            "executions": [
+              {
+                "effective_price": "5.640484000000000000",
+                "quantity": "12.800000000000000000",
+                "timestamp": "2026-10-12T07:54:27.955000-04:00"
+              }
+            ],
+            "average_price": "5.640484000000000000",
+            "created_at": "2026-10-12T07:54:27.752231-04:00",
+            "updated_at": "2026-10-12T07:54:28.749853-04:00",
+            "fee_charged": 0.6858828544,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "12.800000000000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "0db57987-5bc1-4bfe-94a9-0094f70bf49a",
+            "side": "buy",
+            "type": "market",
+            "id": "6acbc739-5d92-417a-91e0-df33408487aa",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "12.800000000000000000",
+            "executions": [
+              {
+                "effective_price": "5.800190000000000000",
+                "quantity": "4.164000000000000000",
+                "timestamp": "2026-10-11T13:28:26.004000-04:00"
+              },
+              {
+                "effective_price": "5.800190000000000000",
+                "quantity": "4.164000000000000000",
+                "timestamp": "2026-10-11T13:28:26.004000-04:00"
+              },
+              {
+                "effective_price": "5.800190000000000000",
+                "quantity": "4.472000000000000000",
+                "timestamp": "2026-10-11T13:28:26.004000-04:00"
+              }
+            ],
+            "average_price": "5.800190000000000000",
+            "created_at": "2026-10-11T13:28:25.518264-04:00",
+            "updated_at": "2026-10-11T13:28:27.756345-04:00",
+            "fee_charged": 0.705303104,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "12.800000000000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "a3c2c73a-0f16-4968-b510-1cdb45aaefc7",
+            "side": "sell",
+            "type": "market",
+            "id": "6acbc651-c21e-4d7f-925c-fa8a1139f3f9",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "13.070000000000000000",
+            "executions": [
+              {
+                "effective_price": "5.796660000000000000",
+                "quantity": "4.164000000000000000",
+                "timestamp": "2026-10-11T13:24:33.356000-04:00"
+              },
+              {
+                "effective_price": "5.796660000000000000",
+                "quantity": "8.906000000000000000",
+                "timestamp": "2026-10-11T13:24:33.356000-04:00"
+              }
+            ],
+            "average_price": "5.796660000000000000",
+            "created_at": "2026-10-11T13:24:33.043407-04:00",
+            "updated_at": "2026-10-11T13:24:34.316016-04:00",
+            "fee_charged": 0.7197422889,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "13.070000000000000000"
+            }
+          },
+          {
+            "symbol": "NEAR-USD",
+            "client_order_id": "b6476a6a-cf01-44f5-8410-f2787fbce4b0",
+            "side": "buy",
+            "type": "market",
+            "id": "6acb991a-f191-4ec4-81a4-fad5c5727e4f",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "13.070000000000000000",
+            "executions": [
+              {
+                "effective_price": "5.320080000000000000",
+                "quantity": "13.070000000000000000",
+                "timestamp": "2026-10-11T10:11:39.201000-04:00"
+              }
+            ],
+            "average_price": "5.320080000000000000",
+            "created_at": "2026-10-11T10:11:38.798714-04:00",
+            "updated_at": "2026-10-11T10:11:40.648926-04:00",
+            "fee_charged": 0.6605677332,
+            "estimated_fee_remaining": 0,
+            "market_order_config": {
+              "asset_quantity": "13.070000000000000000"
+            }
+          },
+          {
+            "symbol": "BTC-USD",
+            "client_order_id": "e5d1ee8d-8337-44fc-9151-3d5e53328867",
+            "side": "buy",
+            "type": "limit",
+            "id": "6acb154b-6a83-4f68-a837-c66408c44b52",
+            "account_number": "311077765576",
+            "state": "filled",
+            "filled_asset_quantity": "0.000059730000000000",
+            "executions": [
+              {
+                "effective_price": "83705.720000000000000000",
+                "quantity": "0.000059730000000000",
+                "timestamp": "2026-10-11T00:49:15.805000-04:00"
+              }
+            ],
+            "average_price": "83705.720000000000000000",
+            "created_at": "2026-10-11T00:49:15.306649-04:00",
+            "updated_at": "2026-10-11T00:49:16.531887-04:00",
+            "fee_charged": null,
+            "estimated_fee_remaining": null,
+            "limit_order_config": {
+              "asset_quantity": "0.000059730000000000",
+              "limit_price": "83705.770000000000000000"
+            }
+          }
+        ],
+        "next": null,
+        "previous": null
+      }
+    },
+    "pairs": {
+      "status": "BROKER_RESPONSE_RECEIVED",
+      "requested_at": "2026-10-25T18:42:33.198169+00:00",
+      "received_at": "2026-10-25T18:42:33.711954+00:00",
+      "source_timestamp": null,
+      "data": {
+        "next": "https://trading.robinhood.com/api/v1/crypto/trading/trading_pairs/?cursor=cD0yMDIyLTAzLTIxKzIyJTNBMDQlM0EyMi4wMjQyNzglMkIwMCUzQTAw",
+        "previous": null,
+        "results": [
+          {
+            "asset_code": "XDC",
+            "quote_code": "USD",
+            "max_order_size": "8800000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "XDC-USD"
+          },
+          {
+            "asset_code": "BILL",
+            "quote_code": "USD",
+            "max_order_size": "9900000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "BILL-USD"
+          },
+          {
+            "asset_code": "CASHCAT",
+            "quote_code": "USD",
+            "max_order_size": "700000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "CASHCAT-USD"
+          },
+          {
+            "asset_code": "RE",
+            "quote_code": "USD",
+            "max_order_size": "500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "RE-USD"
+          },
+          {
+            "asset_code": "FLR",
+            "quote_code": "USD",
+            "max_order_size": "30000000.0000000000000000",
+            "min_order_size": "20.000000000000000000",
+            "quote_increment": "0.000000100000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "FLR-USD"
+          },
+          {
+            "asset_code": "CHIP",
+            "quote_code": "USD",
+            "max_order_size": "4500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "CHIP-USD"
+          },
+          {
+            "asset_code": "CC",
+            "quote_code": "USD",
+            "max_order_size": "1500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "CC-USD"
+          },
+          {
+            "asset_code": "MON",
+            "quote_code": "USD",
+            "max_order_size": "11260000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "MON-USD"
+          },
+          {
+            "asset_code": "SENT",
+            "quote_code": "USD",
+            "max_order_size": "16000000.0000000000000000",
+            "min_order_size": "10.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "SENT-USD"
+          },
+          {
+            "asset_code": "USDG",
+            "quote_code": "USD",
+            "max_order_size": "1000000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "sell_only",
+            "symbol": "USDG-USD"
+          },
+          {
+            "asset_code": "MEGA",
+            "quote_code": "USD",
+            "max_order_size": "3000000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "MEGA-USD"
+          },
+          {
+            "asset_code": "SKR",
+            "quote_code": "USD",
+            "max_order_size": "15000000.0000000000000000",
+            "min_order_size": "10.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "SKR-USD"
+          },
+          {
+            "asset_code": "LIT",
+            "quote_code": "USD",
+            "max_order_size": "100000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "LIT-USD"
+          },
+          {
+            "asset_code": "SYRUP",
+            "quote_code": "USD",
+            "max_order_size": "900000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "SYRUP-USD"
+          },
+          {
+            "asset_code": "AVNT",
+            "quote_code": "USD",
+            "max_order_size": "1200000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "AVNT-USD"
+          },
+          {
+            "asset_code": "HYPE",
+            "quote_code": "USD",
+            "max_order_size": "7000.0000000000000000",
+            "min_order_size": "0.001000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.000100000000000000",
+            "status": "tradable",
+            "symbol": "HYPE-USD"
+          },
+          {
+            "asset_code": "XPL",
+            "quote_code": "USD",
+            "max_order_size": "1500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "XPL-USD"
+          },
+          {
+            "asset_code": "ASTER",
+            "quote_code": "USD",
+            "max_order_size": "175000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "ASTER-USD"
+          },
+          {
+            "asset_code": "SEI",
+            "quote_code": "USD",
+            "max_order_size": "2500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "SEI-USD"
+          },
+          {
+            "asset_code": "ZORA",
+            "quote_code": "USD",
+            "max_order_size": "20000000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "ZORA-USD"
+          },
+          {
+            "asset_code": "WLFI",
+            "quote_code": "USD",
+            "max_order_size": "1750000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "WLFI-USD"
+          },
+          {
+            "asset_code": "XCN",
+            "quote_code": "USD",
+            "max_order_size": "50000000.0000000000000000",
+            "min_order_size": "10.000000000000000000",
+            "quote_increment": "0.000000100000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "XCN-USD"
+          },
+          {
+            "asset_code": "SKY",
+            "quote_code": "USD",
+            "max_order_size": "4000000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "SKY-USD"
+          },
+          {
+            "asset_code": "SUI",
+            "quote_code": "USD",
+            "max_order_size": "150000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "SUI-USD"
+          },
+          {
+            "asset_code": "MOODENG",
+            "quote_code": "USD",
+            "max_order_size": "2750000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "MOODENG-USD"
+          },
+          {
+            "asset_code": "VVV",
+            "quote_code": "USD",
+            "max_order_size": "32000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "VVV-USD"
+          },
+          {
+            "asset_code": "ORCA",
+            "quote_code": "USD",
+            "max_order_size": "265000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "ORCA-USD"
+          },
+          {
+            "asset_code": "MNT",
+            "quote_code": "USD",
+            "max_order_size": "250000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "MNT-USD"
+          },
+          {
+            "asset_code": "PNUT",
+            "quote_code": "USD",
+            "max_order_size": "2500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "PNUT-USD"
+          },
+          {
+            "asset_code": "MEW",
+            "quote_code": "USD",
+            "max_order_size": "300000000.0000000000000000",
+            "min_order_size": "10.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "MEW-USD"
+          },
+          {
+            "asset_code": "BIO",
+            "quote_code": "USD",
+            "max_order_size": "6000000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "BIO-USD"
+          },
+          {
+            "asset_code": "POPCAT",
+            "quote_code": "USD",
+            "max_order_size": "2500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "POPCAT-USD"
+          },
+          {
+            "asset_code": "SNX",
+            "quote_code": "USD",
+            "max_order_size": "500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "SNX-USD"
+          },
+          {
+            "asset_code": "W",
+            "quote_code": "USD",
+            "max_order_size": "13000000.0000000000000000",
+            "min_order_size": "10.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "W-USD"
+          },
+          {
+            "asset_code": "EIGEN",
+            "quote_code": "USD",
+            "max_order_size": "1300000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "EIGEN-USD"
+          },
+          {
+            "asset_code": "MORPHO",
+            "quote_code": "USD",
+            "max_order_size": "125000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "MORPHO-USD"
+          },
+          {
+            "asset_code": "JTO",
+            "quote_code": "USD",
+            "max_order_size": "470000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "JTO-USD"
+          },
+          {
+            "asset_code": "AERO",
+            "quote_code": "USD",
+            "max_order_size": "350000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "AERO-USD"
+          },
+          {
+            "asset_code": "STRK",
+            "quote_code": "USD",
+            "max_order_size": "7000000.0000000000000000",
+            "min_order_size": "5.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "STRK-USD"
+          },
+          {
+            "asset_code": "PYTH",
+            "quote_code": "USD",
+            "max_order_size": "3500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "PYTH-USD"
+          },
+          {
+            "asset_code": "FLOKI",
+            "quote_code": "USD",
+            "max_order_size": "2500000000.0000000000000000",
+            "min_order_size": "1000.000000000000000000",
+            "quote_increment": "0.000000010000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "FLOKI-USD"
+          },
+          {
+            "asset_code": "PENGU",
+            "quote_code": "USD",
+            "max_order_size": "20000000.0000000000000000",
+            "min_order_size": "10.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "PENGU-USD"
+          },
+          {
+            "asset_code": "QNT",
+            "quote_code": "USD",
+            "max_order_size": "3900.0000000000000000",
+            "min_order_size": "0.001000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.000100000000000000",
+            "status": "tradable",
+            "symbol": "QNT-USD"
+          },
+          {
+            "asset_code": "LDO",
+            "quote_code": "USD",
+            "max_order_size": "400000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "LDO-USD"
+          },
+          {
+            "asset_code": "INJ",
+            "quote_code": "USD",
+            "max_order_size": "55000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "INJ-USD"
+          },
+          {
+            "asset_code": "WLD",
+            "quote_code": "USD",
+            "max_order_size": "500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "WLD-USD"
+          },
+          {
+            "asset_code": "IMX",
+            "quote_code": "USD",
+            "max_order_size": "1500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "IMX-USD"
+          },
+          {
+            "asset_code": "RAY",
+            "quote_code": "USD",
+            "max_order_size": "400000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "RAY-USD"
+          },
+          {
+            "asset_code": "VIRTUAL",
+            "quote_code": "USD",
+            "max_order_size": "200000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "VIRTUAL-USD"
+          },
+          {
+            "asset_code": "ENA",
+            "quote_code": "USD",
+            "max_order_size": "1150000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "ENA-USD"
+          },
+          {
+            "asset_code": "FET",
+            "quote_code": "USD",
+            "max_order_size": "1250000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "FET-USD"
+          },
+          {
+            "asset_code": "ONDO",
+            "quote_code": "USD",
+            "max_order_size": "350000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "ONDO-USD"
+          },
+          {
+            "asset_code": "TRUMP",
+            "quote_code": "USD",
+            "max_order_size": "75000.0000000000000000",
+            "min_order_size": "0.001000000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.000100000000000000",
+            "status": "tradable",
+            "symbol": "TRUMP-USD"
+          },
+          {
+            "asset_code": "BONK",
+            "quote_code": "USD",
+            "max_order_size": "15000000000.0000000000000000",
+            "min_order_size": "1000.000000000000000000",
+            "quote_increment": "0.000000010000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "BONK-USD"
+          },
+          {
+            "asset_code": "OP",
+            "quote_code": "USD",
+            "max_order_size": "1150000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "OP-USD"
+          },
+          {
+            "asset_code": "ARB",
+            "quote_code": "USD",
+            "max_order_size": "1350000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "ARB-USD"
+          },
+          {
+            "asset_code": "GRAM",
+            "quote_code": "USD",
+            "max_order_size": "375000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "GRAM-USD"
+          },
+          {
+            "asset_code": "WIF",
+            "quote_code": "USD",
+            "max_order_size": "700000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.000100000000000000",
+            "status": "tradable",
+            "symbol": "WIF-USD"
+          },
+          {
+            "asset_code": "RENDER",
+            "quote_code": "USD",
+            "max_order_size": "115000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "RENDER-USD"
+          },
+          {
+            "asset_code": "ZRO",
+            "quote_code": "USD",
+            "max_order_size": "125000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "ZRO-USD"
+          },
+          {
+            "asset_code": "PEPE",
+            "quote_code": "USD",
+            "max_order_size": "65000000000.0000000000000000",
+            "min_order_size": "10000.000000000000000000",
+            "quote_increment": "0.000000010000000000",
+            "asset_increment": "1.000000000000000000",
+            "status": "tradable",
+            "symbol": "PEPE-USD"
+          },
+          {
+            "asset_code": "AXS",
+            "quote_code": "USD",
+            "max_order_size": "200000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "AXS-USD"
+          },
+          {
+            "asset_code": "XTZ",
+            "quote_code": "USD",
+            "max_order_size": "500000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.001000000000000000",
+            "status": "tradable",
+            "symbol": "XTZ-USD"
+          },
+          {
+            "asset_code": "AAVE",
+            "quote_code": "USD",
+            "max_order_size": "3300.0000000000000000",
+            "min_order_size": "0.000100000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.000010000000000000",
+            "status": "tradable",
+            "symbol": "AAVE-USD"
+          },
+          {
+            "asset_code": "GRT",
+            "quote_code": "USD",
+            "max_order_size": "13000000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "GRT-USD"
+          },
+          {
+            "asset_code": "PAXG",
+            "quote_code": "USD",
+            "max_order_size": "50.0000000000000000",
+            "min_order_size": "0.000010000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.000001000000000000",
+            "status": "tradable",
+            "symbol": "PAXG-USD"
+          },
+          {
+            "asset_code": "CRV",
+            "quote_code": "USD",
+            "max_order_size": "400000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "CRV-USD"
+          },
+          {
+            "asset_code": "ZRX",
+            "quote_code": "USD",
+            "max_order_size": "2000000.0000000000000000",
+            "min_order_size": "5.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "ZRX-USD"
+          },
+          {
+            "asset_code": "BAT",
+            "quote_code": "USD",
+            "max_order_size": "2500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000001000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "BAT-USD"
+          },
+          {
+            "asset_code": "HBAR",
+            "quote_code": "USD",
+            "max_order_size": "1500000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "HBAR-USD"
+          },
+          {
+            "asset_code": "ALGO",
+            "quote_code": "USD",
+            "max_order_size": "1500000.0000000000000000",
+            "min_order_size": "1.000000000000000000",
+            "quote_increment": "0.000010000000000000",
+            "asset_increment": "0.100000000000000000",
+            "status": "tradable",
+            "symbol": "ALGO-USD"
+          },
+          {
+            "asset_code": "UNI",
+            "quote_code": "USD",
+            "max_order_size": "50000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.001000000000000000",
+            "asset_increment": "0.000100000000000000",
+            "status": "tradable",
+            "symbol": "UNI-USD"
+          },
+          {
+            "asset_code": "LINK",
+            "quote_code": "USD",
+            "max_order_size": "35000.0000000000000000",
+            "min_order_size": "0.010000000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.000100000000000000",
+            "status": "tradable",
+            "symbol": "LINK-USD"
+          },
+          {
+            "asset_code": "COMP",
+            "quote_code": "USD",
+            "max_order_size": "6083.0000000000000000",
+            "min_order_size": "0.000100000000000000",
+            "quote_increment": "0.010000000000000000",
+            "asset_increment": "0.000010000000000000",
+            "status": "tradable",
+            "symbol": "COMP-USD"
+          },
+          {
+            "asset_code": "NEAR",
+            "quote_code": "USD",
+            "max_order_size": "200000.0000000000000000",
+            "min_order_size": "0.100000000000000000",
+            "quote_increment": "0.000100000000000000",
+            "asset_increment": "0.010000000000000000",
+            "status": "tradable",
+            "symbol": "NEAR-USD"
+          }
+        ]
+      }
+    }
+  }
+}
+Closed-trade ledger
+{
+  "status": "NOT_IMPLEMENTED",
+  "records": null
+}
+No broker keys are included in this page. Dashboard API credentials remain on the VPS. Broker timestamps and coverage limitations are retained in responses.
