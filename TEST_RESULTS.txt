@@ -1,0 +1,31 @@
+test_audit_failure_rolls_back_claim_and_reservation (test_enforcement.EnforcementTests.test_audit_failure_rolls_back_claim_and_reservation) ... ok
+test_buy_disabled (test_enforcement.EnforcementTests.test_buy_disabled) ... ok
+test_buy_restricted (test_enforcement.EnforcementTests.test_buy_restricted) ... ok
+test_changed_configuration (test_enforcement.EnforcementTests.test_changed_configuration) ... ok
+test_changed_controls (test_enforcement.EnforcementTests.test_changed_controls) ... ok
+test_concurrent_claim_single_winner (test_enforcement.EnforcementTests.test_concurrent_claim_single_winner) ... ok
+test_external_holdings_not_assumed_owned (test_enforcement.EnforcementTests.test_external_holdings_not_assumed_owned) ... ok
+test_failed_reconciliation (test_enforcement.EnforcementTests.test_failed_reconciliation) ... ok
+test_fee_understatement (test_enforcement.EnforcementTests.test_fee_understatement) ... ok
+test_future_quote (test_enforcement.EnforcementTests.test_future_quote) ... ok
+test_insufficient_capital (test_enforcement.EnforcementTests.test_insufficient_capital) ... ok
+test_invalid_increment (test_enforcement.EnforcementTests.test_invalid_increment) ... ok
+test_market_order_rejected (test_enforcement.EnforcementTests.test_market_order_rejected) ... ok
+test_missing_intent (test_enforcement.EnforcementTests.test_missing_intent) ... ok
+test_missing_risk_record (test_enforcement.EnforcementTests.test_missing_risk_record) ... ok
+test_payload_mismatch (test_enforcement.EnforcementTests.test_payload_mismatch) ... ok
+test_pending_order (test_enforcement.EnforcementTests.test_pending_order) ... ok
+test_policy_legacy_call_fails_closed (test_enforcement.EnforcementTests.test_policy_legacy_call_fails_closed) ... ok
+test_policy_rejects_truthy_non_boolean (test_enforcement.EnforcementTests.test_policy_rejects_truthy_non_boolean) ... ok
+test_policy_uses_actual_conditional_claim (test_enforcement.EnforcementTests.test_policy_uses_actual_conditional_claim) ... ok
+test_replay_denied (test_enforcement.EnforcementTests.test_replay_denied) ... ok
+test_sell_allowed_with_entry_disabled (test_enforcement.EnforcementTests.test_sell_allowed_with_entry_disabled) ... ok
+test_sell_full_protection (test_enforcement.EnforcementTests.test_sell_full_protection) ... ok
+test_sell_partial_protection (test_enforcement.EnforcementTests.test_sell_partial_protection) ... ok
+test_stale_quote (test_enforcement.EnforcementTests.test_stale_quote) ... ok
+test_valid_buy_claim (test_enforcement.EnforcementTests.test_valid_buy_claim) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 0.255s
+
+OK
