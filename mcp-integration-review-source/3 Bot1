@@ -1,0 +1,3832 @@
+root@vmi3619462:/opt/super-intelligence# sudo bash <<'BASH'
+set +e
+echo "=== HOST / TIME ==="
+hostname
+date -Is
+
+echo "=== RELEVANT SERVICES ==="
+systemctl list-units --all --type=service --no-pager |
+  grep -Ei 'super-intelligence|crypto-bot|stock-bot|zerodha|trading|dashboard'
+
+echo "=== SERVICE DETAILS ==="
+for s in super-intelligence.service super-intelligence-runner.service \
+         crypto-bot.service stock-bot.service zerodha-paper-bot.service \
+         zerodha-bot.service; do
+  echo "--- $s ---"
+  systemctl show "$s" \
+    -p LoadState -p ActiveState -p SubState -p User \
+    -p WorkingDirectory -p ExecStart --no-pager 2>/dev/null
+done
+
+echo "=== SUPER-INTELLIGENCE API ==="
+curl --max-time 3 -sS http://127.0.0.1:8000/health
+echo
+curl --max-time 3 -sS http://127.0.0.1:8000/api/status
+echo
+
+echo "=== SOURCE FILE INVENTORY ==="
+for d in /opt/super-intelligence /opt/crypto-bot \
+         /opt/stock-bot /opt/zerodha-bot; do
+  echo "--- $d ---"
+  if [ -d "$d" ]; then
+    find "$d" -maxdepth 2 -type f \
+      \( -name '*.py' -o -name '*.service' -o -name '*.timer' \
+         -o -name 'package.json' \) -printf '%p\n' 2>/dev/null |
+      head -100
+  else
+    echo "DIRECTORY NOT FOUND"
+  fi
+done
+
+echo "=== TIMER STATUS ==="
+systemctl list-timers --all --no-pager |
+  grep -Ei 'stock|crypto|zerodha|trading|super-intelligence'
+
+echo "=== END: NO SETTINGS CHANGED; NO ORDERS SUBMITTED ==="
+BASH
+=== HOST / TIME ===
+vmi3619462
+2026-10-27T02:55:52+01:00
+=== RELEVANT SERVICES ===
+  si-dashboard-status.service                    loaded    inactive dead    Read-only service state snapshot for private dashboard
+  si-private-dashboard.service                   loaded    active   running Private read-only Super Intelligence dashboard
+  super-intelligence-email-alerts.service        loaded    active   running Email delivery for Super Intelligence monitor alerts
+  super-intelligence-monitor.service             loaded    active   running Read-only Super Intelligence trading alerts
+  super-intelligence-runner.service              loaded    active   running Super Intelligence production runner (automatic execution blocked pending enforcement)
+  super-intelligence.service                     loaded    active   running Super Intelligence Trading Dashboard and Broker Service
+=== SERVICE DETAILS ===
+--- super-intelligence.service ---
+ExecStart={ path=/opt/super-intelligence/.venv/bin/uvicorn ; argv[]=/opt/super-intelligence/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 ; ignore_errors=no ; start_time=[Mon 2026-10-26 21:34:00 CET] ; stop_time=[n/a] ; pid=93482 ; code=(null) ; status=0/0 }
+WorkingDirectory=/opt/super-intelligence
+User=superintel
+LoadState=loaded
+ActiveState=active
+SubState=running
+--- super-intelligence-runner.service ---
+ExecStart={ path=/opt/super-intelligence/.venv/bin/python ; argv[]=/opt/super-intelligence/.venv/bin/python -m app.runner ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+WorkingDirectory=/opt/super-intelligence
+User=superintel
+LoadState=loaded
+ActiveState=active
+SubState=running
+--- crypto-bot.service ---
+WorkingDirectory=
+User=
+LoadState=not-found
+ActiveState=inactive
+SubState=dead
+--- stock-bot.service ---
+WorkingDirectory=
+User=
+LoadState=not-found
+ActiveState=inactive
+SubState=dead
+--- zerodha-paper-bot.service ---
+WorkingDirectory=
+User=
+LoadState=not-found
+ActiveState=inactive
+SubState=dead
+--- zerodha-bot.service ---
+WorkingDirectory=
+User=
+LoadState=not-found
+ActiveState=inactive
+SubState=dead
+=== SUPER-INTELLIGENCE API ===
+{"status":"ok","component":"super-intelligence"}
+curl: (28) Operation timed out after 3002 milliseconds with 0 bytes received
+
+=== SOURCE FILE INVENTORY ===
+--- /opt/super-intelligence ---
+/opt/super-intelligence/app/runner.py
+/opt/super-intelligence/app/main.py
+/opt/super-intelligence/app/__init__.py
+/opt/super-intelligence/rh_crypto_schema.py
+/opt/super-intelligence/rh_equity_review.py
+/opt/super-intelligence/preflight_main.py
+/opt/super-intelligence/rh_crypto_check.py
+/opt/super-intelligence/rh_mcp_auth.py
+/opt/super-intelligence/check_order2.py
+/opt/super-intelligence/rh_equity_order.py
+/opt/super-intelligence/sum_orders.py
+/opt/super-intelligence/broker_contract_check.py
+/opt/super-intelligence/rh_data_schema.py
+/opt/super-intelligence/eq_list.py
+/opt/super-intelligence/exchange_zerodha_token.py
+/opt/super-intelligence/preflight_mcp.py
+/opt/super-intelligence/live_test_btc.py
+/opt/super-intelligence/manual_broker_order.py
+/opt/super-intelligence/check_hold.py
+/opt/super-intelligence/check_order.py
+/opt/super-intelligence/repair_zerodha_session.py
+/opt/super-intelligence/rh_data_dump.py
+/opt/super-intelligence/diag_btc.py
+--- /opt/crypto-bot ---
+DIRECTORY NOT FOUND
+--- /opt/stock-bot ---
+DIRECTORY NOT FOUND
+--- /opt/zerodha-bot ---
+DIRECTORY NOT FOUND
+=== TIMER STATUS ===
+=== END: NO SETTINGS CHANGED; NO ORDERS SUBMITTED ===
+root@vmi3619462:/opt/super-intelligence# cd /opt/super-intelligence || exit 1
+
+echo "=== RUNNER SOURCE ==="
+sudo sed -n '1,280p' app/runner.py
+
+echo "=== API ROUTES AND STATUS HANDLERS ==="
+sudo grep -n -A35 -B8 -E \
+'@app\.(get|post|put|patch)|def .*status|def health|include_router|execution|enforcement' \
+app/main.py
+
+echo "=== ORDER EXECUTION AND SAFETY GATES ==="
+sudo grep -RInE \
+'place_order|submit_order|place_crypto_order|place_equity_order|LIVE_TRADING|PAPER|enforcement_connected|automatic execution|kill.switch|idempot|reservation|reconcil|TODO|NotImplementedError' \
+app --include='*.py' 2>/dev/null | head -250
+
+echo "=== RUNNER UNIT ==="
+sudo systemctl cat super-intelligence-runner.service
+
+echo "=== RUNNER STATUS AND RECENT LOGS ==="
+sudo systemctl status super-intelligence-runner.service --no-pager -l
+sudo journalctl -u super-intelligence-runner.service -n 100 \
+  --no-pager -o short-iso
+
+echo "=== RUNNER PROCESSES ==="
+pgrep -af 'app.runner|super-intelligence' || true
+
+echo "=== SOURCE TREE (FILENAMES ONLY) ==="
+sudo find /opt/super-intelligence -maxdepth 3 -type f \
+  ! -name '.env' ! -name '*.db' ! -name '*.sqlite*' \
+  ! -path '*/.venv/*' -printf '%p\n' | sort | head -250
+
+echo "=== END: READ ONLY; NO ORDERS SUBMITTED ==="
+=== RUNNER SOURCE ===
+# RUNNER_CONTEXT_REPAIR_V2
+# RUNNER_QUOTED_BUDGET_FIX_V1
+"""LIVE_ONLY_RUNNER_V1: production runner; incomplete automation is blocked."""
+import json, logging, os, sqlite3, time, uuid
+from decimal import Decimal, InvalidOperation
+
+from app.core.config import get_settings
+from app.core.write_policy import can_submit_order
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("runner")
+
+NS = uuid.UUID("6f1d2a52-5c1e-4f0e-9a41-0c5d3b7e9a10")
+INTERVAL = int(os.getenv("RUNNER_INTERVAL_SECONDS", "60"))
+MAX_ORDER_USD = Decimal(os.getenv("RUNNER_MAX_ORDER_USD", "10"))
+MAX_ORDERS_PER_DAY = int(os.getenv("RUNNER_MAX_ORDERS_PER_DAY", "3"))
+COUNTED = ("SUBMITTING", "SUBMITTED", "UNKNOWN")
+
+
+SYMBOL = "BTC-USD"
+SMA_SAMPLES = int(os.getenv("STRATEGY_SMA_SAMPLES", "120"))
+DIP_PCT = Decimal(os.getenv("STRATEGY_DIP_PCT", "1.0"))
+TRADE_USD = os.getenv("STRATEGY_TRADE_USD", "5")
+
+
+def _price(adapter, symbol):
+    r = adapter.quote(symbol)
+    row = r["results"][0] if isinstance(r, dict) and r.get("results") else r
+    if row.get("price"):
+        return Decimal(str(row["price"]))
+    bid = Decimal(str(row["bid_inclusive_of_sell_spread"]))
+    ask = Decimal(str(row["ask_inclusive_of_buy_spread"]))
+    return (bid + ask) / 2
+
+
+def strategy_crypto() -> list[dict]:
+    """Dip-buy on BTC-USD: price <= SMA of recent samples minus DIP_PCT percent."""
+    conn = db()
+    try:
+        conn.execute("CREATE TABLE IF NOT EXISTS price_samples (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT NOT NULL, price TEXT NOT NULL, sampled_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))")
+        from app.brokers.robinhood.crypto import RobinhoodCrypto
+        sampling_adapter = RobinhoodCrypto()
+        try:
+            price = _price(sampling_adapter, SYMBOL)
+        finally:
+            sampling_adapter.session.close()
+        conn.execute('INSERT INTO price_samples (symbol, price) VALUES (?, ?)', (SYMBOL, str(price)))
+        conn.execute('DELETE FROM price_samples WHERE symbol=? AND id NOT IN (SELECT id FROM price_samples WHERE symbol=? ORDER BY id DESC LIMIT 5000)', (SYMBOL, SYMBOL))
+        conn.commit()
+        rows = conn.execute('SELECT price FROM price_samples WHERE symbol=? ORDER BY id DESC LIMIT ?', (SYMBOL, SMA_SAMPLES)).fetchall()
+        if len(rows) < SMA_SAMPLES:
+            log.info('strategy warming up: %d/%d samples, price=%s', len(rows), SMA_SAMPLES, price)
+            return []
+        sma = sum((Decimal(r[0]) for r in rows)) / len(rows)
+        threshold = sma * (1 - DIP_PCT / 100)
+        log.info('strategy price=%s sma=%.2f buy_below=%.2f', price, sma, threshold)
+        if price <= threshold:
+            return [{'symbol': SYMBOL, 'side': 'BUY', 'notional_usd': TRADE_USD, 'bucket': time.strftime('%Y-%m-%dT%H', time.gmtime())}]
+        return []
+    except Exception:
+        log.exception('strategy_crypto failed')
+        return []
+    finally:
+        conn.close()
+
+
+def db():
+    conn = sqlite3.connect(get_settings().database_path, timeout=10)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def orders_today(conn, bot):
+    """Count submitted orders even after their local status becomes FILLED."""
+    return conn.execute("\n        SELECT COUNT(*)\n        FROM order_intents AS oi\n        WHERE oi.bot_name=?\n          AND oi.created_at >= strftime('%Y-%m-%dT00:00:00Z','now')\n          AND (\n              oi.status IN ('SUBMITTING','SUBMITTED','UNKNOWN','FILLED')\n              OR EXISTS (\n                  SELECT 1 FROM broker_orders AS bo\n                  WHERE bo.intent_id=oi.id AND bo.broker=oi.broker\n              )\n          )\n        ", (bot,)).fetchone()[0]
+
+
+def reconciliation_healthy(conn, bot):
+    # Any ambiguous or in-flight order halts trading until a human reviews it.
+    n = conn.execute(
+        "SELECT COUNT(*) FROM order_intents WHERE bot_name=? AND status IN ('SUBMITTING','UNKNOWN')",
+        (bot,)).fetchone()[0]
+    return n == 0
+
+
+def asset_qty_for_notional(adapter, symbol, notional):
+    from decimal import ROUND_DOWN
+
+    target = Decimal(str(notional))
+    if not target.is_finite() or target <= 0:
+        raise ValueError("Order notional must be finite and positive")
+
+    response = adapter.pairs()
+    if not isinstance(response, dict):
+        raise ValueError("Trading-pair response is invalid")
+
+    matches = [
+        pair for pair in response.get("results", [])
+        if isinstance(pair, dict) and pair.get("symbol") == symbol
+    ]
+    if len(matches) != 1:
+        raise ValueError("Trading pair is missing or not unique")
+
+    pair = matches[0]
+    increment = Decimal(str(pair.get("asset_increment")))
+    minimum = Decimal(str(pair.get("min_order_size")))
+
+    if not increment.is_finite() or increment <= 0:
+        raise ValueError("Verified positive asset increment required")
+
+    if not minimum.is_finite() or minimum < 0:
+        raise ValueError("Verified nonnegative minimum size required")
+
+    quote = adapter.quote(symbol)
+    if not isinstance(quote, dict):
+        raise ValueError("Quote response is invalid")
+
+    if "results" in quote:
+        quote_rows = quote["results"]
+        if not isinstance(quote_rows, list) or len(quote_rows) != 1:
+            raise ValueError("Expected exactly one quote")
+        row = quote_rows[0]
+    else:
+        row = quote
+
+    if not isinstance(row, dict):
+        raise ValueError("Quote row is invalid")
+
+    if row.get("symbol") not in (None, symbol):
+        raise ValueError("Quote symbol mismatch")
+
+    # A last-trade price is not a substitute for an executable ask.
+    ask = Decimal(str(row.get("ask_inclusive_of_buy_spread")))
+
+    if not ask.is_finite() or ask <= 0:
+        raise ValueError("Verified positive ask required")
+
+    quantity = (target / ask / increment).to_integral_value(
+        rounding=ROUND_DOWN
+    ) * increment
+
+    if quantity <= 0 or quantity < minimum:
+        raise ValueError("Budget cannot satisfy the broker minimum size")
+
+    if quantity * ask > target:
+        raise ValueError("Rounded quantity exceeds quoted notional budget")
+
+    # Observed-ask cap only: excludes additional fees/slippage.
+    # This is not a capital reservation or guaranteed fill ceiling.
+    return quantity, ask
+
+
+# CRYPTO_CAPITAL_READINESS_GATE_V1
+def handle_crypto(d, settings):
+    if not MAX_ORDER_USD.is_finite() or MAX_ORDER_USD <= 0:
+        log.error('Invalid RUNNER_MAX_ORDER_USD; automatic order rejected')
+        return
+    conn = db()
+    try:
+        configuration_row = conn.execute('SELECT config_json FROM independent_bot_configurations WHERE bot=?', ('crypto',)).fetchone()
+        if configuration_row is None:
+            log.error('Crypto configuration missing; decision blocked')
+            return
+        saved_configuration = json.loads(configuration_row['config_json'])
+        configured_account = saved_configuration.get('account_ref')
+        if not isinstance(configured_account, str) or not configured_account or configured_account != configured_account.strip() or (saved_configuration.get('currency') != 'USD'):
+            log.error('Valid configured USD Crypto account required; decision blocked')
+            return
+        symbol, side = (d['symbol'], d['side'].upper())
+        try:
+            notional = Decimal(str(d['notional_usd']))
+        except InvalidOperation:
+            log.error('bad notional in decision %s', d)
+            return
+        if side not in ('BUY', 'SELL') or not notional.is_finite() or notional <= 0 or (notional > MAX_ORDER_USD):
+            log.warning('decision rejected by caps/validation: %s', d)
+            return
+        if orders_today(conn, 'crypto') >= MAX_ORDERS_PER_DAY:
+            log.warning('daily order cap reached')
+            return
+        from app.core.crypto_buy_budget_v1 import require_verified_crypto_capital
+        try:
+            require_verified_crypto_capital(conn, account_ref=configured_account)
+        except Exception as capital_error:
+            log.warning('Automatic Crypto decision blocked by capital readiness (%s)', type(capital_error).__name__)
+            return
+        idem = str(uuid.uuid5(NS, f'crypto|{symbol}|{side}|{notional}|{d.get('bucket', '')}'))
+        meta = json.dumps({'decision': d, 'execution_mode': 'live', 'quantity_is': 'quote_amount_usd'})
+        try:
+            cur = conn.execute('INSERT INTO order_intents (idempotency_key,bot_name,broker,account_ref,symbol,side,quantity,order_type,status,metadata_json) VALUES (?,?,?,?,?,?,?,?,?,?)', (idem, 'crypto', 'robinhood_crypto', configured_account, symbol, side, str(notional), 'market', 'CREATED', meta))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            log.info('duplicate intent skipped: %s', idem)
+            return
+        intent_id = cur.lastrowid
+
+        def set_status(status):
+            conn.execute('UPDATE order_intents SET status=? WHERE id=?', (status, intent_id))
+            conn.commit()
+        if not settings.live_trading_enabled:
+            log.warning('LIVE_TRADING_ENABLED is false; blocked')
+            set_status('BLOCKED')
+            return
+        from app.brokers.robinhood.crypto import RobinhoodCrypto
+        try:
+            adapter = RobinhoodCrypto()
+            account_ok = bool(adapter.accounts())
+        except Exception as exc:
+            log.error('account verification failed: %s', exc)
+            set_status('BLOCKED')
+            return
+        ok, reason = can_submit_order('crypto', risk_passed=True, market_calendar_passed=True, account_verified=account_ok, reconciliation_healthy=reconciliation_healthy(conn, 'crypto'), durable_order_intent_saved=True, side=side, symbol=symbol, account_ref=configured_account)
+        if not ok:
+            log.warning('blocked: %s', reason)
+            set_status('BLOCKED')
+            return
+        try:
+            qty, ask = asset_qty_for_notional(adapter, symbol, notional)
+        except Exception as exc:
+            log.error('quantity calc failed: %s', exc)
+            set_status('BLOCKED')
+            return
+        log.info('order qty=%s at ask=%s (target $%s)', qty, ask, notional)
+        set_status('SUBMITTING')
+        payload = {'client_order_id': idem, 'side': side.lower(), 'type': 'market', 'symbol': symbol, 'market_order_config': {'asset_quantity': format(qty, 'f')}}
+        try:
+            resp = adapter.submit_order(payload)
+        except Exception as exc:
+            log.error('submit error, marking UNKNOWN: %s', exc)
+            set_status('UNKNOWN')
+            return
+        conn.execute("INSERT INTO broker_orders (intent_id,broker,broker_order_id,status,submitted_at,response_json) VALUES (?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),?)", (intent_id, 'robinhood_crypto', str(resp.get('id')), str(resp.get('state', 'submitted')), json.dumps(resp)))
+        set_status('SUBMITTED')
+        log.info('SUBMITTED %s %s %s broker_id=%s', side, notional, symbol, resp.get('id'))
+    finally:
+        conn.close()
+
+
+def run_once():
+    s = get_settings()
+    log.info("heartbeat mode=live crypto=%s equity=%s zerodha=%s",
+             s.crypto_bot_enabled, s.equity_bot_enabled, s.zerodha_bot_enabled)
+    if s.crypto_bot_enabled:
+        for d in strategy_crypto():
+            handle_crypto(d, s)
+    if s.equity_bot_enabled:
+        log.warning("equity: no verified broker adapter; skipped")
+    if s.zerodha_bot_enabled:
+        log.warning("zerodha: daily token refresh and strategy not implemented; skipped")
+
+
+if __name__ == "__main__":
+    while True:
+        try:
+            run_once()
+        except Exception:
+            log.exception("run_once failed")
+        time.sleep(INTERVAL)
+=== API ROUTES AND STATUS HANDLERS ===
+5-app = FastAPI(
+6-    title="Super Intelligence",
+7-    version="0.1.0",
+8-    docs_url=None,
+9-    redoc_url=None,
+10-    openapi_url=None,
+11-)
+12-
+13:app.include_router(router)
+14-
+15-from app.api.trading_controls import router as trading_controls_router
+16:app.include_router(trading_controls_router)
+17-
+18-# Independent bot configuration API v1
+19-from app.api.bot_configuration import router as bot_configuration_router
+20:app.include_router(bot_configuration_router)
+21-
+22-
+23-# DASHBOARD_READ_DATA_API_V1
+24-from app.api.dashboard_data_v1 import router as dashboard_data_v1_router
+25:app.include_router(dashboard_data_v1_router)
+26-
+27-
+28-# CAPITAL_READ_API_V1
+29-from app.api.capital_api_v1 import router as capital_api_v1_router
+30:app.include_router(capital_api_v1_router)
+31-
+32-# DASHBOARD_REFERENCE_BRIDGE_V2
+33-from app.api.dashboard_bridge_v2 import router as dashboard_reference_bridge_v2_router
+34:app.include_router(dashboard_reference_bridge_v2_router)
+35-
+36-from app.api.position_metrics_v1 import router as position_metrics_v1_router
+37:app.include_router(position_metrics_v1_router)
+38-
+39-from app.api.dashboard_integration_v1 import router as dashboard_integration_v1_router
+40:app.include_router(dashboard_integration_v1_router)
+41-
+42-from app.api.dashboard_connections_v1 import router as dashboard_connections_v1_router
+43:app.include_router(dashboard_connections_v1_router)
+44-
+45-# MCP_CRYPTO_EVIDENCE_READ_ONLY_V1
+46-from app.api.mcp_crypto_evidence_v1 import router as mcp_crypto_evidence_v1_router
+47:app.include_router(mcp_crypto_evidence_v1_router)
+=== ORDER EXECUTION AND SAFETY GATES ===
+app/runner.py:8:from app.core.write_policy import can_submit_order
+app/runner.py:78:def reconciliation_healthy(conn, bot):
+app/runner.py:149:    # This is not a capital reservation or guaranteed fill ceiling.
+app/runner.py:190:            cur = conn.execute('INSERT INTO order_intents (idempotency_key,bot_name,broker,account_ref,symbol,side,quantity,order_type,status,metadata_json) VALUES (?,?,?,?,?,?,?,?,?,?)', (idem, 'crypto', 'robinhood_crypto', configured_account, symbol, side, str(notional), 'market', 'CREATED', meta))
+app/runner.py:201:            log.warning('LIVE_TRADING_ENABLED is false; blocked')
+app/runner.py:212:        ok, reason = can_submit_order('crypto', risk_passed=True, market_calendar_passed=True, account_verified=account_ok, reconciliation_healthy=reconciliation_healthy(conn, 'crypto'), durable_order_intent_saved=True, side=side, symbol=symbol, account_ref=configured_account)
+app/runner.py:227:            resp = adapter.submit_order(payload)
+app/api/dashboard_data_v1.py:108:                    "enforcement_connected": False,
+app/api/dashboard_connections_v1.py:64:  'warning':'Registration and HTTP success are not proof of funding, broker execution, effective controls or complete reconciliation.'}
+app/api/status.py:87:            reconciliation_passed=False,
+app/api/bot_configuration.py:197:        "enforcement_connected": False,
+app/api/bot_configuration.py:202:            "These saved settings are not connected to automatic execution. "
+app/api/trading_controls.py:89:        "enforcement_connected": False,
+app/brokers/zerodha/kite.py:36:    def submit_order(self, **kwargs):
+app/brokers/zerodha/kite.py:91:        return self.client.place_order(**order)
+app/brokers/robinhood/crypto.py:67:    def submit_order(self, payload):
+app/brokers/robinhood/equity.py:33:    def submit_order(self, payload: dict) -> dict:
+app/core/capital_ledger_v1.py:1:"""Capital reservation infrastructure. Does not reconcile or execute orders.
+app/core/capital_ledger_v1.py:2:Only an authoritative future reconciler may populate capital_verified_states.
+app/core/capital_ledger_v1.py:3:No HTTP funding, reservation, release, or settlement route is provided.
+app/core/capital_ledger_v1.py:16:        reconciliation_id INTEGER NOT NULL,
+app/core/capital_ledger_v1.py:24:        FOREIGN KEY(reconciliation_id) REFERENCES reconciliation_runs(id)
+app/core/capital_ledger_v1.py:26:    """CREATE TABLE IF NOT EXISTS capital_buy_reservations (
+app/core/capital_ledger_v1.py:84:        "verified_pending_buy_commitment":None,"local_held_reservations":None,
+app/core/capital_ledger_v1.py:87:        "reservation_checks_ready":False,"automatic_trading_enabled":False,
+app/core/capital_ledger_v1.py:99:    reconciliation=db.execute("SELECT broker,account_ref,status,finished_at FROM reconciliation_runs WHERE id=?",(state["reconciliation_id"],)).fetchone()
+app/core/capital_ledger_v1.py:100:    if reconciliation is None or reconciliation["broker"]!=BROKERS[bot] or reconciliation["account_ref"]!=account or reconciliation["status"]!="PASS":
+app/core/capital_ledger_v1.py:103:    if not reconciliation["finished_at"] or not 0<=age(reconciliation["finished_at"])<=60 or not 0<=age(state["as_of"])<=60:
+app/core/capital_ledger_v1.py:111:    # A reconciliation snapshot may not be republished while local holds exist.
+app/core/capital_ledger_v1.py:112:    # Future reconciler must settle/reconcile holds atomically, avoiding overlap
+app/core/capital_ledger_v1.py:113:    # between baseline pending orders and these local reservations.
+app/core/capital_ledger_v1.py:114:    held_rows=db.execute("SELECT amount_total FROM capital_buy_reservations WHERE bot=? AND account_ref=? AND state IN ('HELD','UNKNOWN')",(bot,account)).fetchall()
+app/core/capital_ledger_v1.py:128:        "local_held_reservations":str(held),
+app/core/capital_ledger_v1.py:130:        "reservation_checks_ready":True})
+app/core/capital_ledger_v1.py:141:    db.execute("UPDATE capital_buy_reservations SET state=state WHERE 0")
+app/core/capital_ledger_v1.py:145:        raise ValueError("Positive reservation required")
+app/core/capital_ledger_v1.py:149:    existing=db.execute("SELECT * FROM capital_buy_reservations WHERE request_id=?",(request_id,)).fetchone()
+app/core/capital_ledger_v1.py:155:    if report["reservation_checks_ready"] is not True:
+app/core/capital_ledger_v1.py:160:    db.execute("INSERT INTO capital_buy_reservations (request_id,bot,account_ref,config_revision,amount_total,state,created_at) VALUES (?,?,?,?,?,'HELD',?)",(request_id,bot,account_ref,row["revision"],str(amount),created))
+app/core/equity_reads_v1.py:154:    """Atomic, idempotent ledger import. Never writes capital PASS or submits orders."""
+app/core/equity_reads_v1.py:193:            "manual_requests_reconciled":False,"automatic_execution_enabled":False}
+app/core/equity_reads_v1.py:194:        db.execute("INSERT INTO reconciliation_runs (broker,account_ref,finished_at,status,discrepancies_json) VALUES (?,?,?,'READ_IMPORT_ONLY',?)",(BROKER,account,observed,json.dumps(report)))
+app/core/readiness.py:23:    reconciliation_passed: bool = False,
+app/core/readiness.py:32:        "reconciliation_passed": reconciliation_passed,
+app/core/automatic_order_guard.py:155:                # pending SELL reservations and order quantity.
+app/core/automatic_order_guard.py:164:    # available sellable quantity or successful reconciliation.
+app/core/crypto_buy_budget_v1.py:115:            "reservation_total": format(total, "f"),
+app/core/crypto_buy_budget_v1.py:151:        if report.get("reservation_checks_ready") is not True:
+app/core/write_policy.py:74:def can_submit_order(
+app/core/write_policy.py:80:    reconciliation_healthy: bool,
+app/core/write_policy.py:111:        "RECONCILIATION_NOT_HEALTHY": reconciliation_healthy,
+app/core/write_policy.py:123:_previous_can_submit_order = can_submit_order
+app/core/write_policy.py:126:def can_submit_order(
+app/core/write_policy.py:145:    return _previous_can_submit_order(bot, **checks)
+app/core/index_holding_policy.py:52:            "reconciliation_verified",
+app/core/index_holding_policy.py:212:            "capital_reservation_verified": "CAPITAL_RESERVATION_REQUIRED",
+app/core/safety.py:9:    reconciliation_passed: bool = False
+app/core/safety.py:42:        "Broker/account reconciliation has not passed": readiness.reconciliation_passed,
+app/core/database.py:56:    idempotency_key TEXT NOT NULL UNIQUE,
+app/core/database.py:112:CREATE TABLE IF NOT EXISTS reconciliation_runs (
+app/core/order_intents.py:19:    idempotency_key=None,
+app/core/order_intents.py:42:    key = str(idempotency_key or uuid.uuid4()).strip()
+app/core/order_intents.py:44:        raise ValueError("Invalid idempotency key")
+app/core/order_intents.py:55:            "SELECT * FROM order_intents WHERE idempotency_key = ?",
+app/core/order_intents.py:78:                idempotency_key, bot_name, broker, account_ref,
+=== RUNNER UNIT ===
+# /etc/systemd/system/super-intelligence-runner.service
+[Unit]
+Description=Super Intelligence production runner (automatic execution blocked pending enforcement)
+After=super-intelligence.service
+
+[Service]
+Type=simple
+User=superintel
+Group=superintel
+WorkingDirectory=/opt/super-intelligence
+EnvironmentFile=/etc/super-intelligence/brokers.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/super-intelligence/.venv/bin/python -m app.runner
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/super-intelligence
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
+=== RUNNER STATUS AND RECENT LOGS ===
+● super-intelligence-runner.service - Super Intelligence production runner (automatic execution blocked pending enforcement)
+     Loaded: loaded (/etc/systemd/system/super-intelligence-runner.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-10-25 19:17:55 CET; 1 day 7h ago
+   Main PID: 16637 (python)
+      Tasks: 1 (limit: 9483)
+     Memory: 26.9M (peak: 37.7M)
+        CPU: 3min 35.715s
+     CGroup: /system.slice/super-intelligence-runner.service
+             └─16637 /opt/super-intelligence/.venv/bin/python -m app.runner
+
+Oct 27 02:53:28 vmi3619462 python[16637]: 2026-10-27 02:53:28,039 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:53:28 vmi3619462 python[16637]: 2026-10-27 02:53:28,039 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,046 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,454 INFO strategy price=79914.9739502 sma=80106.99 buy_below=79305.92
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,459 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,459 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+Oct 27 02:55:28 vmi3619462 python[16637]: 2026-10-27 02:55:28,477 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:55:28 vmi3619462 python[16637]: 2026-10-27 02:55:28,990 INFO strategy price=79943.8264393 sma=80106.67 buy_below=79305.61
+Oct 27 02:55:29 vmi3619462 python[16637]: 2026-10-27 02:55:29,030 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:55:29 vmi3619462 python[16637]: 2026-10-27 02:55:29,030 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:31:15+01:00 vmi3619462 python[16637]: 2026-10-27 02:31:15,091 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:31:15+01:00 vmi3619462 python[16637]: 2026-10-27 02:31:15,922 INFO strategy price=80089.58133125 sma=80094.19 buy_below=79293.25
+2026-10-27T02:31:15+01:00 vmi3619462 python[16637]: 2026-10-27 02:31:15,951 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:31:15+01:00 vmi3619462 python[16637]: 2026-10-27 02:31:15,951 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:32:15+01:00 vmi3619462 python[16637]: 2026-10-27 02:32:15,952 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:32:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:32:16,350 INFO strategy price=80029.479188315 sma=80094.94 buy_below=79294.00
+2026-10-27T02:32:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:32:16,363 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:32:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:32:16,363 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:33:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:33:16,365 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:33:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:33:16,789 INFO strategy price=80026.59691575 sma=80095.79 buy_below=79294.83
+2026-10-27T02:33:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:33:16,807 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:33:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:33:16,825 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:34:16+01:00 vmi3619462 python[16637]: 2026-10-27 02:34:16,834 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:34:17+01:00 vmi3619462 python[16637]: 2026-10-27 02:34:17,790 INFO strategy price=79992.06950995 sma=80096.31 buy_below=79295.35
+2026-10-27T02:34:17+01:00 vmi3619462 python[16637]: 2026-10-27 02:34:17,799 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:34:17+01:00 vmi3619462 python[16637]: 2026-10-27 02:34:17,799 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:35:17+01:00 vmi3619462 python[16637]: 2026-10-27 02:35:17,800 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:35:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:35:18,308 INFO strategy price=80001.896473825 sma=80096.37 buy_below=79295.41
+2026-10-27T02:35:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:35:18,311 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:35:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:35:18,311 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:36:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:36:18,313 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:36:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:36:18,594 INFO strategy price=80066.872165285 sma=80096.80 buy_below=79295.83
+2026-10-27T02:36:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:36:18,597 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:36:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:36:18,597 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:37:18+01:00 vmi3619462 python[16637]: 2026-10-27 02:37:18,599 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:37:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:37:19,040 INFO strategy price=80110.226406175 sma=80097.50 buy_below=79296.53
+2026-10-27T02:37:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:37:19,045 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:37:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:37:19,046 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:38:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:38:19,047 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:38:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:38:19,927 INFO strategy price=80066.780284445 sma=80097.75 buy_below=79296.77
+2026-10-27T02:38:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:38:19,931 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:38:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:38:19,931 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:39:19+01:00 vmi3619462 python[16637]: 2026-10-27 02:39:19,933 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:39:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:39:20,344 INFO strategy price=80119.44859576 sma=80098.52 buy_below=79297.53
+2026-10-27T02:39:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:39:20,349 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:39:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:39:20,349 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:40:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:40:20,352 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:40:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:40:20,957 INFO strategy price=80111.954119555 sma=80099.20 buy_below=79298.21
+2026-10-27T02:40:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:40:20,959 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:40:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:40:20,959 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:41:20+01:00 vmi3619462 python[16637]: 2026-10-27 02:41:20,961 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:41:21+01:00 vmi3619462 python[16637]: 2026-10-27 02:41:21,988 INFO strategy price=80122.10556425 sma=80100.03 buy_below=79299.03
+2026-10-27T02:41:21+01:00 vmi3619462 python[16637]: 2026-10-27 02:41:21,993 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:41:21+01:00 vmi3619462 python[16637]: 2026-10-27 02:41:21,993 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:42:21+01:00 vmi3619462 python[16637]: 2026-10-27 02:42:21,994 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:42:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:42:22,452 INFO strategy price=80127.31241335 sma=80100.88 buy_below=79299.88
+2026-10-27T02:42:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:42:22,460 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:42:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:42:22,460 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:43:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:43:22,461 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:43:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:43:22,838 INFO strategy price=80204.6177802 sma=80102.54 buy_below=79301.51
+2026-10-27T02:43:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:43:22,846 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:43:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:43:22,850 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:44:22+01:00 vmi3619462 python[16637]: 2026-10-27 02:44:22,852 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:44:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:44:23,295 INFO strategy price=80190.236643 sma=80103.98 buy_below=79302.94
+2026-10-27T02:44:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:44:23,297 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:44:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:44:23,297 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:45:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:45:23,299 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:45:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:45:23,754 INFO strategy price=80171.1537272 sma=80105.27 buy_below=79304.22
+2026-10-27T02:45:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:45:23,817 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:45:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:45:23,819 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:46:23+01:00 vmi3619462 python[16637]: 2026-10-27 02:46:23,843 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:46:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:46:24,239 INFO strategy price=80195.369374175 sma=80106.56 buy_below=79305.50
+2026-10-27T02:46:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:46:24,247 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:46:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:46:24,247 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:47:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:47:24,253 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:47:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:47:24,767 INFO strategy price=80157.12268315 sma=80107.58 buy_below=79306.51
+2026-10-27T02:47:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:47:24,775 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:47:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:47:24,775 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:48:24+01:00 vmi3619462 python[16637]: 2026-10-27 02:48:24,779 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:48:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:48:25,263 INFO strategy price=80103.1312975 sma=80107.96 buy_below=79306.88
+2026-10-27T02:48:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:48:25,270 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:48:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:48:25,270 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:49:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:49:25,274 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:49:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:49:25,728 INFO strategy price=80084.03143125 sma=80108.23 buy_below=79307.15
+2026-10-27T02:49:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:49:25,731 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:49:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:49:25,731 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:50:25+01:00 vmi3619462 python[16637]: 2026-10-27 02:50:25,733 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:50:26+01:00 vmi3619462 python[16637]: 2026-10-27 02:50:26,603 INFO strategy price=80027.51921225 sma=80108.33 buy_below=79307.25
+2026-10-27T02:50:26+01:00 vmi3619462 python[16637]: 2026-10-27 02:50:26,612 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:50:26+01:00 vmi3619462 python[16637]: 2026-10-27 02:50:26,612 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:51:26+01:00 vmi3619462 python[16637]: 2026-10-27 02:51:26,615 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:51:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:51:27,077 INFO strategy price=80008.06950265 sma=80108.48 buy_below=79307.40
+2026-10-27T02:51:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:51:27,083 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:51:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:51:27,084 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:52:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:52:27,103 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:52:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:52:27,607 INFO strategy price=79933.779569545 sma=80108.07 buy_below=79306.99
+2026-10-27T02:52:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:52:27,613 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:52:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:52:27,614 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:53:27+01:00 vmi3619462 python[16637]: 2026-10-27 02:53:27,618 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:53:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:53:28,031 INFO strategy price=79936.536271925 sma=80107.65 buy_below=79306.58
+2026-10-27T02:53:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:53:28,039 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:53:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:53:28,039 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:54:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:54:28,046 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:54:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:54:28,454 INFO strategy price=79914.9739502 sma=80106.99 buy_below=79305.92
+2026-10-27T02:54:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:54:28,459 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:54:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:54:28,459 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+2026-10-27T02:55:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:55:28,477 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+2026-10-27T02:55:28+01:00 vmi3619462 python[16637]: 2026-10-27 02:55:28,990 INFO strategy price=79943.8264393 sma=80106.67 buy_below=79305.61
+2026-10-27T02:55:29+01:00 vmi3619462 python[16637]: 2026-10-27 02:55:29,030 WARNING equity: no verified broker adapter; skipped
+2026-10-27T02:55:29+01:00 vmi3619462 python[16637]: 2026-10-27 02:55:29,030 WARNING zerodha: daily token refresh and strategy not implemented; skipped
+=== RUNNER PROCESSES ===
+15250 /usr/bin/python3 -I -B /opt/super-intelligence-monitor/watch.py
+15666 /usr/bin/python3 -I -B /opt/super-intelligence-email-alerts/mailer.py
+16637 /opt/super-intelligence/.venv/bin/python -m app.runner
+32754 /usr/bin/python3 /opt/super-intelligence-dashboard/server.py
+93482 /opt/super-intelligence/.venv/bin/python /opt/super-intelligence/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+=== SOURCE TREE (FILENAMES ONLY) ===
+/opt/super-intelligence/.pytest_cache/.gitignore
+/opt/super-intelligence/.pytest_cache/CACHEDIR.TAG
+/opt/super-intelligence/.pytest_cache/README.md
+/opt/super-intelligence/.venv-mcp/bin/Activate.ps1
+/opt/super-intelligence/.venv-mcp/bin/activate
+/opt/super-intelligence/.venv-mcp/bin/activate.csh
+/opt/super-intelligence/.venv-mcp/bin/activate.fish
+/opt/super-intelligence/.venv-mcp/bin/automat-visualize
+/opt/super-intelligence/.venv-mcp/bin/cffi-gen-src
+/opt/super-intelligence/.venv-mcp/bin/cftp
+/opt/super-intelligence/.venv-mcp/bin/ckeygen
+/opt/super-intelligence/.venv-mcp/bin/conch
+/opt/super-intelligence/.venv-mcp/bin/dotenv
+/opt/super-intelligence/.venv-mcp/bin/httpx
+/opt/super-intelligence/.venv-mcp/bin/idna
+/opt/super-intelligence/.venv-mcp/bin/incremental
+/opt/super-intelligence/.venv-mcp/bin/jsonschema
+/opt/super-intelligence/.venv-mcp/bin/mailmail
+/opt/super-intelligence/.venv-mcp/bin/mcp
+/opt/super-intelligence/.venv-mcp/bin/normalizer
+/opt/super-intelligence/.venv-mcp/bin/pip
+/opt/super-intelligence/.venv-mcp/bin/pip3
+/opt/super-intelligence/.venv-mcp/bin/pip3.12
+/opt/super-intelligence/.venv-mcp/bin/pyhtmlizer
+/opt/super-intelligence/.venv-mcp/bin/tkconch
+/opt/super-intelligence/.venv-mcp/bin/trial
+/opt/super-intelligence/.venv-mcp/bin/twist
+/opt/super-intelligence/.venv-mcp/bin/twistd
+/opt/super-intelligence/.venv-mcp/bin/uvicorn
+/opt/super-intelligence/.venv-mcp/bin/wamp
+/opt/super-intelligence/.venv-mcp/pyvenv.cfg
+/opt/super-intelligence/__pycache__/manual_broker_order.cpython-312.pyc
+/opt/super-intelligence/__pycache__/preflight_main.cpython-312.pyc
+/opt/super-intelligence/__pycache__/preflight_mcp.cpython-312.pyc
+/opt/super-intelligence/__pycache__/rh_equity_order.cpython-312.pyc
+/opt/super-intelligence/__pycache__/rh_equity_review.cpython-312.pyc
+/opt/super-intelligence/__pycache__/rh_mcp_auth.cpython-312.pyc
+/opt/super-intelligence/app/__init__.py
+/opt/super-intelligence/app/__pycache__/__init__.cpython-312.pyc
+/opt/super-intelligence/app/__pycache__/main.cpython-312.pyc
+/opt/super-intelligence/app/__pycache__/runner.cpython-312.pyc
+/opt/super-intelligence/app/api/__init__.py
+/opt/super-intelligence/app/api/bot_configuration.py
+/opt/super-intelligence/app/api/capital_api_v1.py
+/opt/super-intelligence/app/api/dashboard_bridge_v2.py
+/opt/super-intelligence/app/api/dashboard_connections_v1.py
+/opt/super-intelligence/app/api/dashboard_data_v1.py
+/opt/super-intelligence/app/api/dashboard_integration_v1.py
+/opt/super-intelligence/app/api/mcp_crypto_evidence_v1.py
+/opt/super-intelligence/app/api/position_metrics_v1.py
+/opt/super-intelligence/app/api/status.py
+/opt/super-intelligence/app/api/status.py.backup-20261024-235544
+/opt/super-intelligence/app/api/trading_controls.py
+/opt/super-intelligence/app/brokers/__init__.py
+/opt/super-intelligence/app/brokers/healthcheck.py
+/opt/super-intelligence/app/core/__init__.py
+/opt/super-intelligence/app/core/automatic_order_guard.py
+/opt/super-intelligence/app/core/capital_ledger_v1.py
+/opt/super-intelligence/app/core/config.py
+/opt/super-intelligence/app/core/crypto_buy_budget_v1.py
+/opt/super-intelligence/app/core/database.py
+/opt/super-intelligence/app/core/equity_reads_v1.py
+/opt/super-intelligence/app/core/index_holding_policy.py
+/opt/super-intelligence/app/core/mcp_crypto_read_service_v1.py
+/opt/super-intelligence/app/core/order_intents.py
+/opt/super-intelligence/app/core/readiness.py
+/opt/super-intelligence/app/core/safety.py
+/opt/super-intelligence/app/core/trading_policy_config.py
+/opt/super-intelligence/app/core/write_policy.py
+/opt/super-intelligence/app/engine/__init__.py
+/opt/super-intelligence/app/engine/analysis.py
+/opt/super-intelligence/app/engine/news.py
+/opt/super-intelligence/app/main.py
+/opt/super-intelligence/app/main.py.controls-backup.20261025T004322543055Z
+/opt/super-intelligence/app/runner.py
+/opt/super-intelligence/backups/capital-api-20261025T133138211190682Z/main.py
+/opt/super-intelligence/backups/catalog-fix-20261026T001459-31849/dashboard_integration_v1.py
+/opt/super-intelligence/backups/configuration-api-20261025T033556065060988Z/main.py
+/opt/super-intelligence/backups/configuration-api-20261025T033556065060988Z/new_bot_configuration.py
+/opt/super-intelligence/backups/configuration-openapi-20261025T033917472331629Z/main.py
+/opt/super-intelligence/backups/configuration-permissions-20261025T033821721863331Z/main.py
+/opt/super-intelligence/backups/configuration-permissions-20261025T033830904047635Z/main.py
+/opt/super-intelligence/backups/dashboard-api-20261025T052052864926841Z/main.py
+/opt/super-intelligence/backups/equity-read-import-20261025T191122-18207/dashboard_data_v1.py
+/opt/super-intelligence/backups/equity-read-import-20261025T191122-18207/index.html
+/opt/super-intelligence/backups/equity-read-import-20261025T191122-18207/rollback.sh
+/opt/super-intelligence/backups/equity-read-import-20261025T191122-18207/test_equity_reads.py
+/opt/super-intelligence/backups/equity-transport-20261025T061346784175887Z/rh_equity_review.py
+/opt/super-intelligence/backups/live-only-20261025T040133704943776Z/runner.py
+/opt/super-intelligence/backups/live-only-20261025T040133704943776Z/runner.service
+/opt/super-intelligence/backups/live-only-20261025T040133704943776Z/write_policy.py
+/opt/super-intelligence/backups/mcp-read-service-20261026T203359Z-64c4a7ab/manifest.json
+/opt/super-intelligence/backups/mcp-sdk-error-check/rh_equity_review.20261026T193959Z.ae82410f.py
+/opt/super-intelligence/backups/order-guard-20261025T040617946038947Z/write_policy.py
+/opt/super-intelligence/backups/runner-budget-20261025T131146295788233Z/runner.py
+/opt/super-intelligence/broker_contract_check.py
+/opt/super-intelligence/check_hold.py
+/opt/super-intelligence/check_order.py
+/opt/super-intelligence/check_order2.py
+/opt/super-intelligence/diag_btc.py
+/opt/super-intelligence/eq_list.py
+/opt/super-intelligence/er -p WorkingDirectory -p ExecStart -p EnvironmentFiles
+/opt/super-intelligence/exchange_zerodha_token.py
+/opt/super-intelligence/live_test_btc.py
+/opt/super-intelligence/manual_broker_order.py
+/opt/super-intelligence/manual_broker_order.py.confirmation-backup.20261025T020207891798Z
+/opt/super-intelligence/preflight_main.py
+/opt/super-intelligence/preflight_mcp.py
+/opt/super-intelligence/repair_zerodha_session.py
+/opt/super-intelligence/repair_zerodha_session.py.bak.20261025T011906611561Z
+/opt/super-intelligence/requirements.txt
+/opt/super-intelligence/rh_crypto_check.py
+/opt/super-intelligence/rh_crypto_schema.py
+/opt/super-intelligence/rh_data_dump.py
+/opt/super-intelligence/rh_data_schema.py
+/opt/super-intelligence/rh_equity_order.py
+/opt/super-intelligence/rh_equity_order.py.bak
+/opt/super-intelligence/rh_equity_review.py
+/opt/super-intelligence/rh_equity_review.py.bak.20261025T001223333669Z
+/opt/super-intelligence/rh_mcp_auth.py
+/opt/super-intelligence/sum_orders.py
+=== END: READ ONLY; NO ORDERS SUBMITTED ===
+root@vmi3619462:/opt/super-intelligence# 
+sudo bash <<'BASH'
+set -u
+D=/opt/super-intelligence
+echo '===== HOST / SERVICES ====='
+date -Is
+systemctl show super-intelligence-runner.service \
+  super-intelligence.service \
+  -p Id -p LoadState -p ActiveState -p SubState -p MainPID \
+  -p User -p WorkingDirectory -p ExecStart 2>/dev/null
+echo '===== SOURCE TREE ====='
+find "$D/app" -maxdepth 4 -type f \
+  \( -name '*.py' -o -name '*.toml' -o -name '*.yaml' \) \
+  -printf '%P\n' 2>/dev/null | sort
+echo '===== RUNNER / BROKER / CONTROL SOURCE ====='
+find "$D/app" -maxdepth 4 -type f -name '*.py' \
+  ! -path '*/__pycache__/*' -print0 2>/dev/null |
+while IFS= read -r -d '' f; do
+  if grep -qE \
+    'place_order|submit_order|automatic_order_preflight|trading_controls|RobinhoodCrypto|ZerodhaKite|class .*Runner|def run|def main|LIVE_TRADING|KILL_SWITCH' "$f"; then
+    echo
+    echo "----- $f -----"
+    sed -n '1,260p' "$f"
+  fi
+done
+echo '===== SERVICE LOGS (last 100 lines; credentials filtered) ====='
+journalctl -u super-intelligence-runner.service \
+  -u super-intelligence.service -n 100 --no-pager 2>/dev/null |
+sed -E \
+  's/((TOKEN|SECRET|PASSWORD|API_KEY|ACCESS_KEY|AUTHORIZATION)[^= :]*[=: ]+)[^ ]+/\1[REDACTED]/Ig'
+echo '===== END AUDIT; NO ORDERS SUBMITTED ====='
+BASH
+===== HOST / SERVICES =====
+2026-10-27T02:59:59+01:00
+MainPID=16637
+ExecStart={ path=/opt/super-intelligence/.venv/bin/python ; argv[]=/opt/super-intelligence/.venv/bin/python -m app.runner ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+WorkingDirectory=/opt/super-intelligence
+User=superintel
+Id=super-intelligence-runner.service
+LoadState=loaded
+ActiveState=active
+SubState=running
+
+MainPID=93482
+ExecStart={ path=/opt/super-intelligence/.venv/bin/uvicorn ; argv[]=/opt/super-intelligence/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 ; ignore_errors=no ; start_time=[Mon 2026-10-26 21:34:00 CET] ; stop_time=[n/a] ; pid=93482 ; code=(null) ; status=0/0 }
+WorkingDirectory=/opt/super-intelligence
+User=superintel
+Id=super-intelligence.service
+LoadState=loaded
+ActiveState=active
+SubState=running
+===== SOURCE TREE =====
+__init__.py
+api/__init__.py
+api/bot_configuration.py
+api/capital_api_v1.py
+api/dashboard_bridge_v2.py
+api/dashboard_connections_v1.py
+api/dashboard_data_v1.py
+api/dashboard_integration_v1.py
+api/mcp_crypto_evidence_v1.py
+api/position_metrics_v1.py
+api/status.py
+api/trading_controls.py
+brokers/__init__.py
+brokers/healthcheck.py
+brokers/robinhood/__init__.py
+brokers/robinhood/crypto.py
+brokers/robinhood/dashboard_crypto_reader_v1.py
+brokers/robinhood/equity.py
+brokers/robinhood/readonly_client.py
+brokers/zerodha/__init__.py
+brokers/zerodha/kite.py
+core/__init__.py
+core/automatic_order_guard.py
+core/capital_ledger_v1.py
+core/config.py
+core/crypto_buy_budget_v1.py
+core/database.py
+core/equity_reads_v1.py
+core/index_holding_policy.py
+core/mcp_crypto_read_service_v1.py
+core/order_intents.py
+core/readiness.py
+core/safety.py
+core/trading_policy_config.py
+core/write_policy.py
+engine/__init__.py
+engine/analysis.py
+engine/news.py
+main.py
+runner.py
+===== RUNNER / BROKER / CONTROL SOURCE =====
+
+----- /opt/super-intelligence/app/runner.py -----
+# RUNNER_CONTEXT_REPAIR_V2
+# RUNNER_QUOTED_BUDGET_FIX_V1
+"""LIVE_ONLY_RUNNER_V1: production runner; incomplete automation is blocked."""
+import json, logging, os, sqlite3, time, uuid
+from decimal import Decimal, InvalidOperation
+
+from app.core.config import get_settings
+from app.core.write_policy import can_submit_order
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("runner")
+
+NS = uuid.UUID("6f1d2a52-5c1e-4f0e-9a41-0c5d3b7e9a10")
+INTERVAL = int(os.getenv("RUNNER_INTERVAL_SECONDS", "60"))
+MAX_ORDER_USD = Decimal(os.getenv("RUNNER_MAX_ORDER_USD", "10"))
+MAX_ORDERS_PER_DAY = int(os.getenv("RUNNER_MAX_ORDERS_PER_DAY", "3"))
+COUNTED = ("SUBMITTING", "SUBMITTED", "UNKNOWN")
+
+
+SYMBOL = "BTC-USD"
+SMA_SAMPLES = int(os.getenv("STRATEGY_SMA_SAMPLES", "120"))
+DIP_PCT = Decimal(os.getenv("STRATEGY_DIP_PCT", "1.0"))
+TRADE_USD = os.getenv("STRATEGY_TRADE_USD", "5")
+
+
+def _price(adapter, symbol):
+    r = adapter.quote(symbol)
+    row = r["results"][0] if isinstance(r, dict) and r.get("results") else r
+    if row.get("price"):
+        return Decimal(str(row["price"]))
+    bid = Decimal(str(row["bid_inclusive_of_sell_spread"]))
+    ask = Decimal(str(row["ask_inclusive_of_buy_spread"]))
+    return (bid + ask) / 2
+
+
+def strategy_crypto() -> list[dict]:
+    """Dip-buy on BTC-USD: price <= SMA of recent samples minus DIP_PCT percent."""
+    conn = db()
+    try:
+        conn.execute("CREATE TABLE IF NOT EXISTS price_samples (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT NOT NULL, price TEXT NOT NULL, sampled_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))")
+        from app.brokers.robinhood.crypto import RobinhoodCrypto
+        sampling_adapter = RobinhoodCrypto()
+        try:
+            price = _price(sampling_adapter, SYMBOL)
+        finally:
+            sampling_adapter.session.close()
+        conn.execute('INSERT INTO price_samples (symbol, price) VALUES (?, ?)', (SYMBOL, str(price)))
+        conn.execute('DELETE FROM price_samples WHERE symbol=? AND id NOT IN (SELECT id FROM price_samples WHERE symbol=? ORDER BY id DESC LIMIT 5000)', (SYMBOL, SYMBOL))
+        conn.commit()
+        rows = conn.execute('SELECT price FROM price_samples WHERE symbol=? ORDER BY id DESC LIMIT ?', (SYMBOL, SMA_SAMPLES)).fetchall()
+        if len(rows) < SMA_SAMPLES:
+            log.info('strategy warming up: %d/%d samples, price=%s', len(rows), SMA_SAMPLES, price)
+            return []
+        sma = sum((Decimal(r[0]) for r in rows)) / len(rows)
+        threshold = sma * (1 - DIP_PCT / 100)
+        log.info('strategy price=%s sma=%.2f buy_below=%.2f', price, sma, threshold)
+        if price <= threshold:
+            return [{'symbol': SYMBOL, 'side': 'BUY', 'notional_usd': TRADE_USD, 'bucket': time.strftime('%Y-%m-%dT%H', time.gmtime())}]
+        return []
+    except Exception:
+        log.exception('strategy_crypto failed')
+        return []
+    finally:
+        conn.close()
+
+
+def db():
+    conn = sqlite3.connect(get_settings().database_path, timeout=10)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def orders_today(conn, bot):
+    """Count submitted orders even after their local status becomes FILLED."""
+    return conn.execute("\n        SELECT COUNT(*)\n        FROM order_intents AS oi\n        WHERE oi.bot_name=?\n          AND oi.created_at >= strftime('%Y-%m-%dT00:00:00Z','now')\n          AND (\n              oi.status IN ('SUBMITTING','SUBMITTED','UNKNOWN','FILLED')\n              OR EXISTS (\n                  SELECT 1 FROM broker_orders AS bo\n                  WHERE bo.intent_id=oi.id AND bo.broker=oi.broker\n              )\n          )\n        ", (bot,)).fetchone()[0]
+
+
+def reconciliation_healthy(conn, bot):
+    # Any ambiguous or in-flight order halts trading until a human reviews it.
+    n = conn.execute(
+        "SELECT COUNT(*) FROM order_intents WHERE bot_name=? AND status IN ('SUBMITTING','UNKNOWN')",
+        (bot,)).fetchone()[0]
+    return n == 0
+
+
+def asset_qty_for_notional(adapter, symbol, notional):
+    from decimal import ROUND_DOWN
+
+    target = Decimal(str(notional))
+    if not target.is_finite() or target <= 0:
+        raise ValueError("Order notional must be finite and positive")
+
+    response = adapter.pairs()
+    if not isinstance(response, dict):
+        raise ValueError("Trading-pair response is invalid")
+
+    matches = [
+        pair for pair in response.get("results", [])
+        if isinstance(pair, dict) and pair.get("symbol") == symbol
+    ]
+    if len(matches) != 1:
+        raise ValueError("Trading pair is missing or not unique")
+
+    pair = matches[0]
+    increment = Decimal(str(pair.get("asset_increment")))
+    minimum = Decimal(str(pair.get("min_order_size")))
+
+    if not increment.is_finite() or increment <= 0:
+        raise ValueError("Verified positive asset increment required")
+
+    if not minimum.is_finite() or minimum < 0:
+        raise ValueError("Verified nonnegative minimum size required")
+
+    quote = adapter.quote(symbol)
+    if not isinstance(quote, dict):
+        raise ValueError("Quote response is invalid")
+
+    if "results" in quote:
+        quote_rows = quote["results"]
+        if not isinstance(quote_rows, list) or len(quote_rows) != 1:
+            raise ValueError("Expected exactly one quote")
+        row = quote_rows[0]
+    else:
+        row = quote
+
+    if not isinstance(row, dict):
+        raise ValueError("Quote row is invalid")
+
+    if row.get("symbol") not in (None, symbol):
+        raise ValueError("Quote symbol mismatch")
+
+    # A last-trade price is not a substitute for an executable ask.
+    ask = Decimal(str(row.get("ask_inclusive_of_buy_spread")))
+
+    if not ask.is_finite() or ask <= 0:
+        raise ValueError("Verified positive ask required")
+
+    quantity = (target / ask / increment).to_integral_value(
+        rounding=ROUND_DOWN
+    ) * increment
+
+    if quantity <= 0 or quantity < minimum:
+        raise ValueError("Budget cannot satisfy the broker minimum size")
+
+    if quantity * ask > target:
+        raise ValueError("Rounded quantity exceeds quoted notional budget")
+
+    # Observed-ask cap only: excludes additional fees/slippage.
+    # This is not a capital reservation or guaranteed fill ceiling.
+    return quantity, ask
+
+
+# CRYPTO_CAPITAL_READINESS_GATE_V1
+def handle_crypto(d, settings):
+    if not MAX_ORDER_USD.is_finite() or MAX_ORDER_USD <= 0:
+        log.error('Invalid RUNNER_MAX_ORDER_USD; automatic order rejected')
+        return
+    conn = db()
+    try:
+        configuration_row = conn.execute('SELECT config_json FROM independent_bot_configurations WHERE bot=?', ('crypto',)).fetchone()
+        if configuration_row is None:
+            log.error('Crypto configuration missing; decision blocked')
+            return
+        saved_configuration = json.loads(configuration_row['config_json'])
+        configured_account = saved_configuration.get('account_ref')
+        if not isinstance(configured_account, str) or not configured_account or configured_account != configured_account.strip() or (saved_configuration.get('currency') != 'USD'):
+            log.error('Valid configured USD Crypto account required; decision blocked')
+            return
+        symbol, side = (d['symbol'], d['side'].upper())
+        try:
+            notional = Decimal(str(d['notional_usd']))
+        except InvalidOperation:
+            log.error('bad notional in decision %s', d)
+            return
+        if side not in ('BUY', 'SELL') or not notional.is_finite() or notional <= 0 or (notional > MAX_ORDER_USD):
+            log.warning('decision rejected by caps/validation: %s', d)
+            return
+        if orders_today(conn, 'crypto') >= MAX_ORDERS_PER_DAY:
+            log.warning('daily order cap reached')
+            return
+        from app.core.crypto_buy_budget_v1 import require_verified_crypto_capital
+        try:
+            require_verified_crypto_capital(conn, account_ref=configured_account)
+        except Exception as capital_error:
+            log.warning('Automatic Crypto decision blocked by capital readiness (%s)', type(capital_error).__name__)
+            return
+        idem = str(uuid.uuid5(NS, f'crypto|{symbol}|{side}|{notional}|{d.get('bucket', '')}'))
+        meta = json.dumps({'decision': d, 'execution_mode': 'live', 'quantity_is': 'quote_amount_usd'})
+        try:
+            cur = conn.execute('INSERT INTO order_intents (idempotency_key,bot_name,broker,account_ref,symbol,side,quantity,order_type,status,metadata_json) VALUES (?,?,?,?,?,?,?,?,?,?)', (idem, 'crypto', 'robinhood_crypto', configured_account, symbol, side, str(notional), 'market', 'CREATED', meta))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            log.info('duplicate intent skipped: %s', idem)
+            return
+        intent_id = cur.lastrowid
+
+        def set_status(status):
+            conn.execute('UPDATE order_intents SET status=? WHERE id=?', (status, intent_id))
+            conn.commit()
+        if not settings.live_trading_enabled:
+            log.warning('LIVE_TRADING_ENABLED is false; blocked')
+            set_status('BLOCKED')
+            return
+        from app.brokers.robinhood.crypto import RobinhoodCrypto
+        try:
+            adapter = RobinhoodCrypto()
+            account_ok = bool(adapter.accounts())
+        except Exception as exc:
+            log.error('account verification failed: %s', exc)
+            set_status('BLOCKED')
+            return
+        ok, reason = can_submit_order('crypto', risk_passed=True, market_calendar_passed=True, account_verified=account_ok, reconciliation_healthy=reconciliation_healthy(conn, 'crypto'), durable_order_intent_saved=True, side=side, symbol=symbol, account_ref=configured_account)
+        if not ok:
+            log.warning('blocked: %s', reason)
+            set_status('BLOCKED')
+            return
+        try:
+            qty, ask = asset_qty_for_notional(adapter, symbol, notional)
+        except Exception as exc:
+            log.error('quantity calc failed: %s', exc)
+            set_status('BLOCKED')
+            return
+        log.info('order qty=%s at ask=%s (target $%s)', qty, ask, notional)
+        set_status('SUBMITTING')
+        payload = {'client_order_id': idem, 'side': side.lower(), 'type': 'market', 'symbol': symbol, 'market_order_config': {'asset_quantity': format(qty, 'f')}}
+        try:
+            resp = adapter.submit_order(payload)
+        except Exception as exc:
+            log.error('submit error, marking UNKNOWN: %s', exc)
+            set_status('UNKNOWN')
+            return
+        conn.execute("INSERT INTO broker_orders (intent_id,broker,broker_order_id,status,submitted_at,response_json) VALUES (?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),?)", (intent_id, 'robinhood_crypto', str(resp.get('id')), str(resp.get('state', 'submitted')), json.dumps(resp)))
+        set_status('SUBMITTED')
+        log.info('SUBMITTED %s %s %s broker_id=%s', side, notional, symbol, resp.get('id'))
+    finally:
+        conn.close()
+
+
+def run_once():
+    s = get_settings()
+    log.info("heartbeat mode=live crypto=%s equity=%s zerodha=%s",
+             s.crypto_bot_enabled, s.equity_bot_enabled, s.zerodha_bot_enabled)
+    if s.crypto_bot_enabled:
+        for d in strategy_crypto():
+            handle_crypto(d, s)
+    if s.equity_bot_enabled:
+        log.warning("equity: no verified broker adapter; skipped")
+    if s.zerodha_bot_enabled:
+        log.warning("zerodha: daily token refresh and strategy not implemented; skipped")
+
+
+if __name__ == "__main__":
+    while True:
+        try:
+            run_once()
+        except Exception:
+            log.exception("run_once failed")
+        time.sleep(INTERVAL)
+
+----- /opt/super-intelligence/app/engine/analysis.py -----
+"""Entry analysis engine v1 (advisory only). Debt and cash flow are NOT checked yet."""
+import asyncio, json, sqlite3, sys
+from datetime import date
+from decimal import Decimal
+
+from rh_equity_review import call
+from app.engine.news import get_news
+
+DB = "/var/lib/super-intelligence/super-intelligence.db"
+R = {"g_strong": 30, "g_ok": 10, "ps_cheap": 5, "ps_ok": 15, "ps_rich": 40,
+     "pe_cheap": 25, "pe_rich": 60, "pb_rich": 10, "buy": 5, "watch": 2, "earn_days": 7}
+
+
+def num(x):
+    try:
+        return Decimal(str(x))
+    except Exception:
+        return None
+
+
+def find_key(o, k):
+    if isinstance(o, dict):
+        if o.get(k) not in (None, ""):
+            return o[k]
+        for v in o.values():
+            r = find_key(v, k)
+            if r is not None:
+                return r
+    elif isinstance(o, list):
+        for v in o:
+            r = find_key(v, k)
+            if r is not None:
+                return r
+    return None
+
+
+def first(block):
+    try:
+        return block["results"][0]
+    except Exception:
+        return None
+
+
+async def fetch(sym):
+    plan = (("annual", "get_financials", {"symbols": [sym], "period": "annual", "limit": 4}),
+            ("quarterly", "get_financials", {"symbols": [sym], "period": "quarterly", "limit": 4}),
+            ("fund", "get_equity_fundamentals", {"symbols": [sym]}),
+            ("ratings", "get_equity_analyst_ratings", {"symbols": [sym]}),
+            ("earnings", "get_earnings_results", {"symbol": sym}),
+            ("quote", "get_equity_quotes", {"symbols": [sym]}))
+    d, errs = {}, {}
+    for key, tool, args in plan:
+        try:
+            d[key] = json.loads(await call(tool, args)).get("data")
+        except Exception as exc:
+            d[key], errs[key] = None, str(exc)[:100]
+    d["errors"] = errs
+    return d
+
+
+def analyse(sym, d, news):
+    pts, notes, flags = 0, [], []
+
+    def add(p, text):
+        nonlocal pts
+        pts += p
+        notes.append("%+d  %s" % (p, text))
+
+    ann = (first(d.get("annual")) or {}).get("financials") or []
+    qrows = (first(d.get("quarterly")) or {}).get("financials") or []
+    fund = first(d.get("fund")) or {}
+
+    if len(ann) >= 2 and num(ann[0].get("revenue")) is not None and num(ann[1].get("revenue")):
+        g = (num(ann[0]["revenue"]) / num(ann[1]["revenue"]) - 1) * 100
+        if g >= R["g_strong"]:
+            add(2, "revenue growth %.0f%% YoY (strong)" % g)
+        elif g >= R["g_ok"]:
+            add(1, "revenue growth %.0f%% YoY" % g)
+        elif g < 0:
+            add(-2, "revenue shrinking %.0f%% YoY" % g)
+            flags.append("revenue shrinking")
+        else:
+            add(0, "revenue growth %.0f%% YoY (weak)" % g)
+    else:
+        notes.append(" n/a  revenue growth (no data)")
+
+    if len(qrows) >= 2 and num(qrows[0].get("revenue")) is not None and num(qrows[1].get("revenue")):
+        qg = (num(qrows[0]["revenue"]) / num(qrows[1]["revenue"]) - 1) * 100
+        add(1 if qg > 0 else -1, "latest quarter revenue %+.0f%% vs prior quarter" % qg)
+
+    nm = num(ann[0].get("net_margin")) if ann else None
+    if nm is not None:
+        if nm > 0:
+            add(2, "profitable (net margin %.0f%%)" % nm)
+        elif nm < -100:
+            add(-1, "net margin %.0f%% (deep losses vs revenue)" % nm)
+            flags.append("deep net losses relative to revenue")
+        else:
+            add(0, "net margin %.0f%% (loss-making)" % nm)
+    for q in qrows[:2]:
+        ni, rv = num(q.get("net_income")), num(q.get("revenue"))
+        if ni is not None and rv and abs(ni) > 5 * rv:
+            flags.append("net income swings far larger than revenue (check non-operating items)")
+            break
+
+    mc = num(fund.get("market_cap"))
+    qrev = [num(q.get("revenue")) for q in qrows[:4]]
+    if len(qrev) == 4 and all(v is not None for v in qrev):
+        ttm = sum(qrev)
+    else:
+        ttm = num(ann[0].get("revenue")) if ann else None
+    if mc and ttm:
+        ps = mc / ttm
+        if ps < R["ps_cheap"]:
+            add(2, "price/sales %.1fx (low)" % ps)
+        elif ps < R["ps_ok"]:
+            add(1, "price/sales %.1fx" % ps)
+        elif ps < R["ps_rich"]:
+            add(0, "price/sales %.1fx (rich)" % ps)
+        else:
+            add(-2, "price/sales %.0fx (very rich)" % ps)
+            flags.append("valuation %.0fx sales" % ps)
+    pe, pb = num(fund.get("pe_ratio")), num(fund.get("pb_ratio"))
+    if pe is not None:
+        if pe < 0:
+            notes.append(" n/a  no earnings-based valuation (P/E negative)")
+        elif pe < R["pe_cheap"]:
+            add(1, "P/E %.1f" % pe)
+        elif pe > R["pe_rich"]:
+            add(-1, "P/E %.1f (high)" % pe)
+    if pb is not None and pb > R["pb_rich"]:
+        add(-1, "price/book %.1f (high)" % pb)
+
+    er = (d.get("earnings") or {}).get("results") or []
+    rep = [e for e in er if (e.get("eps") or {}).get("actual") is not None][-4:]
+    if rep:
+        beats = 0
+        for e in rep:
+            a, s = num(e["eps"]["actual"]), num(e["eps"].get("estimate"))
+            if a is not None and s is not None and a > s:
+                beats += 1
+        add(2 if beats == len(rep) else 1 if beats >= len(rep) - 1 else -1,
+            "beat EPS estimates in %d of last %d quarters" % (beats, len(rep)))
+    for e in er:
+        if (e.get("eps") or {}).get("actual") is None:
+            try:
+                days = (date.fromisoformat(e["report"]["date"]) - date.today()).days
+            except Exception:
+                continue
+            if 0 <= days <= R["earn_days"]:
+                add(-1, "earnings report in %d days (event risk)" % days)
+                flags.append("earnings within %d days" % days)
+            else:
+                notes.append("  0  next earnings in %d days" % days)
+            break
+
+    rt = (first(d.get("ratings")) or {}).get("ratings") or {}
+    b, h, s_ = [int(rt.get(k) or 0) for k in ("num_buy_ratings", "num_hold_ratings", "num_sell_ratings")]
+    if b + h + s_:
+        if b / (b + h + s_) >= 0.7:
+            add(1, "analysts: %d buy / %d hold / %d sell" % (b, h, s_))
+        elif s_ > b:
+            add(-2, "analysts: %d buy / %d hold / %d sell" % (b, h, s_))
+        else:
+            add(0, "analysts: %d buy / %d hold / %d sell" % (b, h, s_))
+        if rt.get("mean_price_target"):
+            notes.append("  info  mean analyst target %s (not scored)" % rt["mean_price_target"])
+
+    price = num(find_key(d.get("quote"), "last_trade_price"))
+    hi, lo = num(fund.get("high_52_weeks")), num(fund.get("low_52_weeks"))
+    if price and hi and lo and hi > lo:
+        pos = float((price - lo) / (hi - lo))
+        if pos < 0.15:
+            add(-1, "price %.0f%% up the 52-week range (near lows, falling-knife risk)" % (pos * 100))
+        elif pos < 0.6:
+            add(1, "price %.0f%% up the 52-week range" % (pos * 100))
+        elif pos < 0.9:
+            add(0, "price %.0f%% up the 52-week range" % (pos * 100))
+        else:
+            add(-1, "price %.0f%% up the 52-week range (near highs)" % (pos * 100))
+
+    if news.get("count"):
+        add(-2 if news["label"] == "NEGATIVE" else 1 if news["label"] == "POSITIVE" else 0,
+            "news %s (%d headlines, avg %.2f)" % (news["label"], news["count"], news["avg_score"]))
+        if news.get("severe_negative"):
+            flags.append("severe negative headline(s)")
+
+    decision = ("ENTRY_CANDIDATE" if pts >= R["buy"] and not flags
+                else "WATCH" if pts >= R["watch"] else "AVOID")
+    return {"symbol": sym, "score": pts, "decision": decision, "notes": notes, "flags": flags,
+            "unchecked": ["debt", "cash flow"], "errors": d.get("errors", {})}
+
+
+def show(r):
+    print("\n==== %s: %s (score %d) ====" % (r["symbol"], r["decision"], r["score"]))
+    for n in r["notes"]:
+        print("  " + n)
+    for f in r["flags"]:
+        print("  FLAG:", f)
+    print("  NOT CHECKED:", ", ".join(r["unchecked"]), "| data errors:", r["errors"] or "none")
+
+
+def save(r):
+    try:
+        c = sqlite3.connect(DB, timeout=10)
+        c.execute("CREATE TABLE IF NOT EXISTS engine_decisions (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                  "symbol TEXT NOT NULL, decided_at TEXT NOT NULL DEFAULT "
+                  "(strftime('%Y-%m-%dT%H:%M:%fZ','now')), score INTEGER, decision TEXT, details_json TEXT)")
+        c.execute("INSERT INTO engine_decisions (symbol,score,decision,details_json) VALUES (?,?,?,?)",
+                  (r["symbol"], r["score"], r["decision"], json.dumps(r)))
+        c.commit()
+        c.close()
+    except Exception as exc:
+        print("  (decision not saved:", exc, ")")
+
+
+async def main():
+    syms = [s.upper() for s in sys.argv[1:]] or ["IONQ"]
+    out = []
+    for s in syms:
+        d = await fetch(s)
+        r = analyse(s, d, get_news(s))
+        show(r)
+        save(r)
+        out.append(r)
+    if len(out) > 1:
+        print("\n---- side by side ----")
+        for r in sorted(out, key=lambda x: -x["score"]):
+            print("%-8s %-16s score %3d  flags %d" % (r["symbol"], r["decision"], r["score"], len(r["flags"])))
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+----- /opt/super-intelligence/app/main.py -----
+from fastapi import FastAPI
+
+from app.api.status import router
+
+app = FastAPI(
+    title="Super Intelligence",
+    version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
+
+app.include_router(router)
+
+from app.api.trading_controls import router as trading_controls_router
+app.include_router(trading_controls_router)
+
+# Independent bot configuration API v1
+from app.api.bot_configuration import router as bot_configuration_router
+app.include_router(bot_configuration_router)
+
+
+# DASHBOARD_READ_DATA_API_V1
+from app.api.dashboard_data_v1 import router as dashboard_data_v1_router
+app.include_router(dashboard_data_v1_router)
+
+
+# CAPITAL_READ_API_V1
+from app.api.capital_api_v1 import router as capital_api_v1_router
+app.include_router(capital_api_v1_router)
+
+# DASHBOARD_REFERENCE_BRIDGE_V2
+from app.api.dashboard_bridge_v2 import router as dashboard_reference_bridge_v2_router
+app.include_router(dashboard_reference_bridge_v2_router)
+
+from app.api.position_metrics_v1 import router as position_metrics_v1_router
+app.include_router(position_metrics_v1_router)
+
+from app.api.dashboard_integration_v1 import router as dashboard_integration_v1_router
+app.include_router(dashboard_integration_v1_router)
+
+from app.api.dashboard_connections_v1 import router as dashboard_connections_v1_router
+app.include_router(dashboard_connections_v1_router)
+
+# MCP_CRYPTO_EVIDENCE_READ_ONLY_V1
+from app.api.mcp_crypto_evidence_v1 import router as mcp_crypto_evidence_v1_router
+app.include_router(mcp_crypto_evidence_v1_router)
+
+----- /opt/super-intelligence/app/api/capital_api_v1.py -----
+"""Read-only dashboard capital endpoint. No funding/execution HTTP routes."""
+from contextlib import closing
+from typing import Literal
+from fastapi import APIRouter, Depends, HTTPException, Response
+from app.api.trading_controls import authorize
+from app.core.database import connect_database
+from app.core.capital_ledger_v1 import snapshot
+
+router=APIRouter(prefix="/api/dashboard/v1",dependencies=[Depends(authorize)])
+
+@router.get("/bots/{bot}/capital")
+def capital(bot: Literal["crypto","equity","zerodha"],response: Response):
+    response.headers["Cache-Control"]="no-store, private"
+    try:
+        with closing(connect_database()) as db:
+            db.execute("PRAGMA query_only=ON")
+            db.execute("BEGIN")
+            return snapshot(db,bot)
+    except Exception as exc:
+        raise HTTPException(503,{"status":"CAPITAL_STATE_UNAVAILABLE","error_type":type(exc).__name__}) from None
+
+----- /opt/super-intelligence/app/api/dashboard_integration_v1.py -----
+"""Authenticated API catalog and native market-feed integration. No order writes."""
+from datetime import datetime, timezone
+from typing import Literal
+from fastapi import APIRouter, Depends, Request, Response, HTTPException
+from app.api.trading_controls import authorize
+router = APIRouter(prefix='/api/dashboard-integration/v1', dependencies=[Depends(authorize)])
+FEATURES = [{'id': 'health', 'label': 'Backend health', 'path': '/health', 'methods': ['GET'], 'browser': '/api/health', 'view': 'API Integrations', 'mode': 'Read'}, {'id': 'status', 'label': 'Backend readiness / broker connectivity', 'path': '/api/status', 'methods': ['GET'], 'browser': '/api/system-status', 'view': 'API Integrations', 'mode': 'Read; not process-only status'}, {'id': 'policy', 'label': 'Trading policy', 'path': '/api/trading-policy', 'methods': ['GET'], 'browser': '/api/policy', 'view': 'Configurations', 'mode': 'Read'}, {'id': 'controls', 'label': 'Bot control requests', 'path': '/api/bot-controls', 'methods': ['GET', 'PATCH'], 'browser': '/api/controls', 'view': 'Bot cards / Configurations', 'mode': 'Saved requests; effective enforcement unverified'}, {'id': 'settings', 'label': 'Saved bot configurations', 'path': '/api/configurations', 'methods': ['GET', 'PATCH'], 'browser': '/api/settings', 'view': 'Config editor', 'mode': 'Saved settings; not activation'}, {'id': 'layout', 'label': 'Backend layout / ticker-row metadata', 'path': '/api/dashboard/v1/layout', 'methods': ['GET'], 'browser': '/api/layout', 'view': 'API Integrations', 'mode': 'Read'}, {'id': 'snapshot', 'label': 'Bot accounts, holdings and orders', 'path': '/api/dashboard/v1/bots/{bot}', 'methods': ['GET'], 'browser': '/api/data/{bot}', 'view': 'Bot cards / account tables', 'mode': 'Broker reads; coverage may be partial'}, {'id': 'capital', 'label': 'Capital readiness / budget', 'path': '/api/dashboard/v1/bots/{bot}/capital', 'methods': ['GET'], 'browser': '/api/capital/{bot}', 'view': 'Budget cards', 'mode': 'Read; does not create verified funding'}, {'id': 'market', 'label': 'Market-universe ticker feed', 'path': '/api/dashboard/v1/bots/{bot}/market-movers', 'methods': ['GET'], 'browser': '/api/market/{bot}', 'view': 'Scrolling market ticker', 'mode': 'Native adapter required; no holdings fallback'}, {'id': 'valuation', 'label': 'Account valuation', 'path': '/api/valuation/v1/{bot}', 'methods': ['GET'], 'browser': '/api/valuation/{bot}', 'view': 'Positions / executed-trade tables', 'mode': 'Read; separate from market feed'}, {'id': 'review', 'label': 'Equity order review', 'path': '/api/dashboard-bridge/v2/equity/review', 'methods': ['POST'], 'browser': '/api/equity-review', 'view': 'Equity review dialog', 'mode': 'Review only; no submission'}, {'id': 'events', 'label': 'Supported audit events', 'path': '/api/dashboard-bridge/v2/events', 'methods': ['GET'], 'browser': '/api/events', 'view': 'Trade Messages', 'mode': 'Latest supported events; not full trade ledger'}]
+
+def route_map(routes):
+    found = {}
+    for route in routes:
+        path = getattr(route, 'path', None)
+        if not isinstance(path, str) or not (path.startswith('/api/') or path == '/health'):
+            continue
+        found.setdefault(path, set()).update(getattr(route, 'methods', set()) or set())
+    return found
+
+def catalog_data(routes):
+    found = route_map(routes)
+    features = []
+    for feature in FEATURES:
+        row = dict(feature)
+        actual = found.get(row['path'], set())
+        row['registered_methods'] = sorted(actual)
+        row['registered'] = set(row['methods']) <= actual
+        features.append(row)
+    return {'generated_at': datetime.now(timezone.utc).isoformat(), 'features': features, 'registered_routes': [{'path': p, 'methods': sorted(methods)} for p, methods in sorted(found.items())], 'warning': 'Registration and HTTP success do not certify execution enforcement, data completeness, or trading permission.', 'automatic_trading_activated': False}
+
+def catalog_effective_routes(application):
+    from types import SimpleNamespace
+    schema = application.openapi()
+    paths = schema.get('paths') if isinstance(schema, dict) else None
+    if not isinstance(paths, dict):
+        raise ValueError('OpenAPI paths unavailable')
+    allowed = {'get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'}
+    routes = []
+    for path, operations in paths.items():
+        if not isinstance(path, str) or not isinstance(operations, dict):
+            continue
+        if not (path.startswith('/api/') or path == '/health'):
+            continue
+        methods = {method.upper() for method in operations if method in allowed}
+        if methods:
+            routes.append(SimpleNamespace(path=path, methods=methods))
+    if not routes:
+        raise ValueError('Empty effective API catalog')
+    return routes
+
+@router.get('/catalog')
+def catalog(request: Request, response: Response):
+    response.headers['Cache-Control'] = 'no-store, private'
+    try:
+        routes = catalog_effective_routes(request.app)
+        value = catalog_data(routes)
+    except Exception as exc:
+        raise HTTPException(503, {'status': 'ROUTE_CATALOG_UNAVAILABLE', 'error_type': type(exc).__name__}) from None
+    value['enumeration_source'] = 'FastAPI.openapi.paths'
+    return value
+
+def selected_universe(policy, bot):
+    value = policy.get('bots', {}).get(bot, {}).get('approved_entry_universe', [])
+    if value is None:
+        value = []
+    if not isinstance(value, list) or any((not isinstance(s, str) for s in value)):
+        raise ValueError('Market universe must be a list of explicit instrument strings')
+    result = list(dict.fromkeys((s.strip() for s in value if s.strip())))
+    if len(result) > 50:
+        raise ValueError('Native feed supports at most 50 explicit symbols; batch adapter required for a larger universe')
+    return result
+
+@router.get('/market/{bot}')
+def market(bot: Literal['equity', 'crypto', 'zerodha'], response: Response):
+    from app.api.dashboard_data_v1 import market_movers
+    response.headers['Cache-Control'] = 'no-store, private'
+    selected = []
+    if bot == 'zerodha':
+        try:
+            from app.core.trading_policy_config import load_policy
+            selected = selected_universe(load_policy(), bot)
+        except Exception as exc:
+            raise HTTPException(409, {'status': 'MARKET_UNIVERSE_CONFIGURATION_INVALID', 'error_type': type(exc).__name__}) from None
+    result = market_movers(bot, Response(), symbols=selected or None)
+    result['integration_source'] = 'native_market_movers_api'
+    result['universe_source'] = 'saved_policy.approved_entry_universe' if bot == 'zerodha' else 'native_feed_adapter'
+    result['holdings_fallback_used'] = False
+    return result
+
+----- /opt/super-intelligence/app/api/position_metrics_v1.py -----
+"""Read-only valuation. Never funds a ledger or submits broker orders."""
+import asyncio,json,threading,time
+from datetime import datetime,timezone
+from decimal import Decimal,InvalidOperation
+from typing import Literal
+from fastapi import APIRouter,Depends,Response
+from app.api.trading_controls import authorize
+from app.api.dashboard_data_v1 import bot_snapshot
+router=APIRouter(prefix='/api/valuation/v1',dependencies=[Depends(authorize)])
+_cache={};_locks={b:threading.Lock() for b in ('equity','crypto','zerodha')}
+
+def num(value,signed=False):
+    if value is None or isinstance(value,bool):return None
+    try:v=Decimal(str(value))
+    except (InvalidOperation,TypeError,ValueError):return None
+    if not v.is_finite() or (not signed and v<0):return None
+    return v
+
+def text(value):return str(value) if value is not None else None
+
+def rows(value,keys=()):
+    if isinstance(value,list):return value
+    if not isinstance(value,dict):return None
+    for key in keys:
+        if isinstance(value.get(key),list):return value[key]
+    if isinstance(value.get('results'),list):return value['results']
+    return None
+
+def part(snapshot,name):
+    p=snapshot.get('broker',{}).get('parts',{}).get(name,{})
+    return p.get('data') if p.get('status')=='BROKER_RESPONSE_RECEIVED' else None
+
+def data(value):return value.get('data',value) if isinstance(value,dict) else value
+
+def total(items,key):
+    values=[num(i.get(key),signed=True) for i in items]
+    known=[v for v in values if v is not None]
+    complete=bool(items) and len(known)==len(items)
+    return {'value':text(sum(known,Decimal(0))) if complete else None,
+            'known_subtotal':text(sum(known,Decimal(0))) if known else None,
+            'known_rows':len(known),'total_rows':len(items),'complete':complete}
+
+def quote_rows(response):
+    values=rows(data(response),('quotes',))
+    result={}
+    if values is None:return result
+    for value in values:
+        if not isinstance(value,dict):continue
+        q=value.get('quote',value)
+        if not isinstance(q,dict):continue
+        symbol=q.get('symbol');price=num(q.get('last_trade_price'))
+        if isinstance(symbol,str) and price is not None and price>0:
+            result[symbol.upper()]={'price':text(price),'kind':'Broker last trade','as_of':q.get('updated_at') or q.get('last_trade_at')}
+    return result
+
+def verified_lot_basis(response,quantity):
+    lots=rows(data(response),('tax_lots','lots'))
+    if not lots:return None
+    qty=Decimal(0);basis=Decimal(0)
+    for lot in lots:
+        if not isinstance(lot,dict):return None
+        q=num(lot.get('quantity'))
+        if q is None:return None
+        # Only unambiguous total/per-share cost-basis fields. Do not guess a generic cost_basis unit.
+        b=num(lot.get('total_cost_basis'))
+        if b is None:
+            unit=num(lot.get('cost_basis_per_share'))
+            if unit is not None:b=unit*q
+        if b is None:return None
+        qty+=q;basis+=b
+    return basis if qty==quantity else None
+
+def position_metric(bot,p,quote=None,basis=None):
+    symbol=p.get('symbol') or p.get('asset_code') or p.get('tradingsymbol')
+    exchange=p.get('exchange')
+    ticker=(exchange+':'+symbol) if bot=='zerodha' and exchange and symbol else (symbol+'-USD' if bot=='crypto' and symbol and not symbol.endswith('-USD') else symbol)
+    q=num(p.get('total_quantity',p.get('quantity')))
+    avg=num(p.get('average_buy_price',p.get('average_price')))
+    price=num((quote or {}).get('price'))
+    if price is None:price=num(p.get('last_price'))
+    value=q*price if q is not None and price is not None else None
+    entry=q*avg if q is not None and avg is not None else None
+    gross=value-entry if value is not None and entry is not None else None
+    net=value-basis if value is not None and basis is not None else None
+    return {'ticker':ticker or 'UNKNOWN','quantity':text(q),'sell_available':p.get('quantity_available_for_trading',p.get('shares_available_for_sells')),
+        'average_entry':text(avg),'current_price':text(price),'price_kind':(quote or {}).get('kind','Broker holding last price'),
+        'price_as_of':(quote or {}).get('as_of'),'position_value':text(value),'entry_value_before_fee_verification':text(entry),
+        'gross_price_pnl':text(gross),'net_pnl':text(net),'net_pnl_per_unit':text(net/q) if net is not None and q is not None and q>0 else None,
+        'net_status':'BROKER_LOT_BASIS_MATCHED_EXIT_FEES_NOT_INCLUDED' if net is not None else 'VERIFIED_FEE_INCLUSIVE_BASIS_REQUIRED',
+        'verified_open_basis':text(basis)}
+
+def history_metric(bot,o,pnl_by_order):
+    q=num(o.get('filled_asset_quantity',o.get('cumulative_quantity',o.get('filled_quantity'))))
+    if q is None or q<=0:return None
+    price=num(o.get('average_price'));side=str(o.get('side',o.get('transaction_type',''))).upper()
+    symbol=o.get('symbol') or o.get('tradingsymbol') or 'UNKNOWN'
+    if bot=='zerodha' and o.get('exchange'):symbol=o['exchange']+':'+symbol
+    broker_id=o.get('id',o.get('order_id'));r=pnl_by_order.get(str(broker_id),{})
+    closed_qty=num(r.get('quantity',r.get('closed_quantity')))
+    net=None
+    # A realized record must identify the same broker order and full displayed filled quantity.
+    if side=='SELL' and closed_qty==q:
+        for key in ('net_realized_pnl','net_pnl','net_profit_loss'):
+            net=num(r.get(key),signed=True)
+            if net is not None:break
+    return {'ticker':symbol,'side':side,'quantity':text(q),'execution_price':text(price),
+        'executed_value':text(q*price) if price is not None else None,
+        'actual_fee':text(num(o.get('fee_charged',o.get('fees')))),
+        'net_pnl':text(net),'net_pnl_per_unit':text(net/q) if net is not None else None,
+        'net_status':'BROKER_NET_RECORD_MATCHED' if net is not None else ('NOT_REALIZED_BUY' if side=='BUY' else 'MATCHED_NET_RECORD_REQUIRED'),
+        'created_at':o.get('created_at',o.get('order_timestamp')),'broker_state':o.get('state',o.get('status'))}
+
+async def mcp_read(name,args):
+    allowed={'get_equity_quotes','get_equity_tax_lots','get_accounts','get_pnl_trade_history'}
+    if name not in allowed:raise ValueError('Read tool not allowed')
+    from rh_equity_review import call
+    value=json.loads(await asyncio.wait_for(call(name,args),timeout=20))
+    if not isinstance(value,dict) or value.get('error') or value.get('errors') or (isinstance(value.get('data'),dict) and (value['data'].get('error') or value['data'].get('errors'))):raise ValueError('Broker read failed')
+    return value
+
+async def equity_extras(snapshot,positions,symbols):
+    quotes={};bases={};history={};notes=[]
+    deadline=time.monotonic()+45
+    async def limited(name,args):
+        remaining=deadline-time.monotonic()
+        if remaining<=0:raise TimeoutError('Valuation read budget exhausted')
+        return await asyncio.wait_for(mcp_read(name,args),timeout=min(20,remaining))
+    for offset in range(0,min(len(symbols),60),20):
+        try:quotes.update(quote_rows(await limited('get_equity_quotes',{'symbols':symbols[offset:offset+20]})))
+        except Exception as exc:notes.append('Equity quotes unavailable: '+type(exc).__name__)
+    config=snapshot.get('saved_state',{}).get('configuration') or {};account=config.get('account_ref')
+    if not isinstance(account,str) or not account:return quotes,bases,history,notes+['Saved Equity account required for basis/history reads']
+    try:
+        accts=data(await limited('get_accounts',{})).get('accounts',[])
+        matches=[a for a in accts if a.get('account_number')==account]
+        if len(matches)!=1:raise ValueError('Account selection mismatch')
+        selected=matches[0]
+    except Exception as exc:return quotes,bases,history,notes+['Account verification unavailable: '+type(exc).__name__]
+    for position in positions[:10]:
+        symbol=position.get('symbol');quantity=num(position.get('quantity'))
+        if not symbol or quantity is None:continue
+        try:
+            lots=await limited('get_equity_tax_lots',{'account_number':account,'symbol':symbol})
+            bases[symbol]=verified_lot_basis(lots,quantity)
+            if bases[symbol] is None:notes.append(symbol+': unambiguous complete cost-basis fields not confirmed')
+        except Exception as exc:notes.append(symbol+': basis unavailable '+type(exc).__name__)
+    # P&L account mapping is read from the already selected account; never substitute another account.
+    rhs=selected.get('rhs_account_number')
+    if isinstance(rhs,str) and rhs:
+        try:
+            response=await limited('get_pnl_trade_history',{'account_number':rhs,'span':'3month'})
+            values=rows(data(response),('trades','trade_history','history'))
+            if values is None:notes.append('Historical P&L response shape not recognized')
+            else:
+                for row in values:
+                    if isinstance(row,dict) and row.get('order_id'):
+                        key=str(row['order_id'])
+                        if key in history:history[key]={}  # multiple lot records need a verified aggregation, not overwriting
+                        else:history[key]=row
+            notes.append('Historical net records, if matched, are for the broker 3-month window; not lifetime totals')
+        except Exception as exc:notes.append('Historical broker P&L unavailable: '+type(exc).__name__)
+    else:notes.append('Selected-account RHS mapping unavailable; no guessed P&L account was used')
+    if len(positions)>10:notes.append('Basis lookups capped at 10 positions; remaining net fields unavailable')
+    return quotes,bases,history,notes
+
+def build(bot,snapshot):
+    positions=rows(data(part(snapshot,'holdings')),('positions',))
+    orders=rows(data(part(snapshot,'orders')),('orders',))
+    if positions is None:positions=[]
+    if orders is None:orders=[]
+    symbols=sorted({str(p.get('symbol') or p.get('asset_code') or p.get('tradingsymbol')) for p in positions if p.get('symbol') or p.get('asset_code') or p.get('tradingsymbol')}|{str(o.get('symbol') or o.get('tradingsymbol')) for o in orders if o.get('symbol') or o.get('tradingsymbol')})
+    quotes={};bases={};pnl={};notes=[]
+    if bot=='equity':quotes,bases,pnl,notes=asyncio.run(equity_extras(snapshot,positions,symbols))
+    elif bot=='crypto':
+        from app.brokers.robinhood.crypto import RobinhoodCrypto
+        adapter=RobinhoodCrypto()
+        try:
+            deadline=time.monotonic()+30
+            for symbol in symbols[:20]:
+                if time.monotonic()>=deadline:
+                    notes.append('Crypto quote time budget reached; remaining quotes unavailable');break
+                ticker=symbol if symbol.endswith('-USD') else symbol+'-USD'
+                try:
+                    value=adapter.quote(ticker);values=value.get('results') if isinstance(value,dict) else None
+                    row=values[0] if isinstance(values,list) and len(values)==1 else value
+                    if not isinstance(row,dict) or row.get('symbol') not in (None,ticker):raise ValueError('Quote mismatch')
+                    price=num(row.get('bid_inclusive_of_sell_spread'))
+                    if price is not None and price>0:quotes[ticker]={'price':text(price),'kind':'Broker bid including sell spread','as_of':row.get('updated_at')}
+                except Exception as exc:notes.append(ticker+': quote unavailable '+type(exc).__name__)
+        finally:adapter.session.close()
+        notes.append('Crypto net basis/history is unavailable in this adapter; gross price change is separate')
+    else:
+        try:
+            from app.brokers.zerodha.kite import ZerodhaKite
+            instruments=sorted({p['exchange']+':'+p['tradingsymbol'] for p in positions if p.get('exchange') in ('NSE','BSE') and p.get('tradingsymbol')})
+            if instruments:
+                raw=ZerodhaKite().quote(*instruments[:50])
+                for key,value in raw.items():
+                    price=num(value.get('last_price'))
+                    if price is not None:quotes[key]={'price':text(price),'kind':'Zerodha last price','as_of':str(value.get('timestamp')) if value.get('timestamp') is not None else None}
+        except Exception as exc:notes.append('Zerodha quote unavailable: '+type(exc).__name__)
+        notes.append('Zerodha charges and matched closed-lot ledger are not supplied by holdings; net fields remain unverified')
+    metric_rows=[]
+    for p in positions:
+        symbol=p.get('symbol') or p.get('asset_code') or p.get('tradingsymbol')
+        key=(p.get('exchange','')+':'+symbol) if bot=='zerodha' and symbol else (symbol+'-USD' if bot=='crypto' and symbol and not symbol.endswith('-USD') else symbol)
+        metric_rows.append(position_metric(bot,p,quotes.get(key),bases.get(symbol)))
+    past=[row for o in orders if (row:=history_metric(bot,o,pnl)) is not None]
+    def totals_for(ps,hs):
+        sells=[r for r in hs if r['side']=='SELL']
+        return {'position_value':total(ps,'position_value'),'open_net_pnl':total(ps,'net_pnl'),'open_gross_price_pnl':total(ps,'gross_price_pnl'),'executed_value':total(hs,'executed_value'),'realized_net_pnl':total(sells,'net_pnl')}
+    keys=sorted({r['ticker'] for r in metric_rows+past})
+    by_ticker={key:totals_for([r for r in metric_rows if r['ticker']==key],[r for r in past if r['ticker']==key]) for key in keys}
+    tickers=[]
+    for symbol,quote in quotes.items():tickers.append({'ticker':symbol,'price':quote['price'],'price_kind':quote['kind'],'as_of':quote.get('as_of')})
+    return {'bot':bot,'currency':'INR' if bot=='zerodha' else 'USD','generated_at':datetime.now(timezone.utc).isoformat(),
+        'position_snapshot_received_at':snapshot.get('broker_fetch_completed_at'),'positions':metric_rows,'past_trades':past,'tickers':tickers,
+        'totals':totals_for(metric_rows,past),'by_ticker':by_ticker,
+        'notes':notes+['Quotes are last available broker observations, not guaranteed executable prices.','Open net P&L excludes future exit fees. Unknown basis/fees are never zeroed.','Totals cover returned rows only; incomplete totals are labelled partial.'],
+        'read_only':True,'automatic_trading_enabled_by_this_api':False}
+
+@router.get('/{bot}')
+def valuation(bot:Literal['equity','crypto','zerodha'],response:Response):
+    response.headers['Cache-Control']='no-store, private'
+    with _locks[bot]:
+        cached=_cache.get(bot)
+        if cached is None or time.monotonic()-cached[0]>=45:
+            snapshot=bot_snapshot(bot,Response())
+            result=build(bot,snapshot);cached=(time.monotonic(),result);_cache[bot]=cached
+        return cached[1]
+
+
+----- /opt/super-intelligence/app/api/dashboard_data_v1.py -----
+"""Authenticated dashboard reads. Never submits or cancels orders."""
+
+import asyncio
+import copy
+import json
+import sqlite3
+import threading
+import time
+from contextlib import closing
+from datetime import datetime, timezone
+from decimal import Decimal
+from pathlib import Path
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+
+from app.api.trading_controls import authorize
+from app.core.config import get_settings
+
+Bot = Literal["equity", "crypto", "zerodha"]
+
+router = APIRouter(
+    prefix="/api/dashboard/v1",
+    dependencies=[Depends(authorize)],
+)
+
+_cache = {}
+_locks = {
+    name: threading.Lock()
+    for name in ("equity", "crypto", "zerodha")
+}
+CACHE_SECONDS = 30
+
+
+def timestamp():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def private(response):
+    response.headers["Cache-Control"] = "no-store, private"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+
+
+def scrub(value):
+    denied = {
+        "access_token", "refresh_token", "api_key", "apikey",
+        "password", "authorization", "private_key",
+        "private_key_b64", "secret", "enctoken",
+        "public_token", "request_token",
+    }
+    if isinstance(value, dict):
+        return {
+            str(key): scrub(item)
+            for key, item in value.items()
+            if str(key).lower() not in denied
+        }
+    if isinstance(value, list):
+        return [scrub(item) for item in value]
+    return value
+
+
+def saved_state(bot):
+    try:
+        path = Path(get_settings().database_path).resolve()
+
+        with closing(sqlite3.connect(
+            path.as_uri() + "?mode=ro",
+            uri=True,
+            timeout=5,
+        )) as db:
+            db.row_factory = sqlite3.Row
+            db.execute("PRAGMA query_only=ON")
+            db.execute("BEGIN")
+
+            config_row = db.execute(
+                """
+                SELECT revision, config_json, updated_at
+                FROM independent_bot_configurations
+                WHERE bot=?
+                """,
+                (bot,),
+            ).fetchone()
+
+            control_row = db.execute(
+                """
+                SELECT revision, state_json
+                FROM dashboard_control_state
+                WHERE singleton=1
+                """
+            ).fetchone()
+
+            if config_row is None or control_row is None:
+                raise ValueError("Saved state missing")
+
+            configuration = json.loads(config_row["config_json"])
+            controls = json.loads(control_row["state_json"])[bot]
+
+            return {
+                "status": "SAVED_STATE_ONLY",
+                "configuration": configuration,
+                "configuration_revision": config_row["revision"],
+                "configuration_updated_at": config_row["updated_at"],
+                "control_revision": control_row["revision"],
+                "controls": {
+                    "requested": controls,
+                    "effective": None,
+                    "enforcement_connected": False,
+                },
+                "remaining_automatic_budget": None,
+                "budget_status": "EXECUTION_LEDGER_NOT_IMPLEMENTED",
+            }
+
+    except Exception as exc:
+        return {
+            "status": "SAVED_STATE_UNAVAILABLE",
+            "error_type": type(exc).__name__,
+            "configuration": None,
+            "controls": None,
+        }
+
+
+def read_part(function):
+    requested_at = timestamp()
+
+    try:
+        value = function()
+
+        if value is None:
+            raise ValueError("Empty broker response")
+
+        if isinstance(value, dict):
+            if value.get("error") or value.get("errors"):
+                raise ValueError("Broker returned error")
+
+        return {
+            "status": "BROKER_RESPONSE_RECEIVED",
+            "requested_at": requested_at,
+            "received_at": timestamp(),
+            "source_timestamp": None,
+            "data": scrub(value),
+        }
+
+    except Exception as exc:
+        return {
+            "status": "UNAVAILABLE",
+            "requested_at": requested_at,
+            "received_at": timestamp(),
+            "source_timestamp": None,
+            "error_type": type(exc).__name__,
+            "data": None,
+        }
+
+
+def broker_data(bot):
+    client = None
+
+    try:
+        if bot == 'equity':
+            from app.core.equity_reads_v1 import equity_dashboard_payload
+            return equity_dashboard_payload()
+
+        if bot == "crypto":
+            from app.brokers.robinhood.dashboard_crypto_reader_v1 import DashboardCryptoReader
+            client = DashboardCryptoReader()
+            methods = ("accounts", "holdings", "orders", "pairs")
+        else:
+            from app.brokers.zerodha.kite import ZerodhaKite
+            client = ZerodhaKite()
+            methods = (
+                "profile", "margins", "holdings",
+                "positions", "orders", "trades",
+            )
+
+        return {
+            "source": "existing_" + bot + "_adapter",
+            "coverage": "RAW_BROKER_RESPONSES",
+            "parts": {
+                name: read_part(getattr(client, name))
+                for name in methods
+            },
+        }
+
+    except Exception as exc:
+        return {
+            "source": bot,
+            "coverage": "UNAVAILABLE",
+            "parts": {},
+            "error_type": type(exc).__name__,
+        }
+
+    finally:
+        session = getattr(client, "session", None)
+        if session is not None:
+            session.close()
+
+
+@router.get("/layout")
+def layout(response: Response):
+    private(response)
+
+    return {
+        "schema_version": 1,
+        "default_page": "equity",
+        "pages": [
+            {
+                "bot": "equity",
+                "title": "Equity-Trading",
+                "ticker_rows": ["NYSE_NASDAQ_BULL", "NYSE_NASDAQ_BEAR"],
+            },
+            {
+                "bot": "crypto",
+                "title": "Crypto",
+                "ticker_rows": ["CRYPTO_BULL", "CRYPTO_BEAR"],
+            },
+            {
+                "bot": "zerodha",
+                "title": "IN-Zerodha",
+                "ticker_rows": [
+                    "NSE_BULL", "NSE_BEAR",
+                    "BSE_BULL", "BSE_BEAR",
+                ],
+            },
+        ],
+        "colors": {
+            "bull": "#39ff88",
+            "bear": "#ffaaaa",
+        },
+        "deduplication": "exchange_and_instrument_id",
+        "manual_order_api_available": False,
+        "automatic_execution_readiness": "NOT_ESTABLISHED_BY_THIS_API",
+    }
+
+
+@router.get("/bots/{bot}")
+def bot_snapshot(bot: Bot, response: Response):
+    private(response)
+    state = saved_state(bot)
+
+    with _locks[bot]:
+        entry = _cache.get(bot)
+
+        if entry is None or time.monotonic() - entry[0] >= CACHE_SECONDS:
+            payload = broker_data(bot)
+            entry = (time.monotonic(), timestamp(), payload)
+            _cache[bot] = entry
+
+        payload = copy.deepcopy(entry[2])
+        age = round(max(0, time.monotonic() - entry[0]), 2)
+
+    parts = list(payload.get("parts", {}).values())
+    received = sum(
+        part["status"] == "BROKER_RESPONSE_RECEIVED"
+        for part in parts
+    )
+
+    if received == 0:
+        status = "UNAVAILABLE"
+    elif received != len(parts) or bot == "equity":
+        status = "PARTIAL"
+
+----- /opt/super-intelligence/app/api/dashboard_connections_v1.py -----
+"""Authenticated API contract catalog; no broker calls, writes or activation."""
+import hashlib
+from datetime import datetime,timezone
+from fastapi import APIRouter,Depends,Request,Response,HTTPException
+from app.api.trading_controls import authorize
+router=APIRouter(prefix='/api/dashboard-connections/v1',dependencies=[Depends(authorize)])
+APPROVED_READS={
+ '/health','/api/status','/api/trading-policy','/api/bot-controls','/api/configurations',
+ '/api/dashboard/v1/layout','/api/dashboard/v1/bots/{bot}',
+ '/api/dashboard/v1/bots/{bot}/capital','/api/dashboard/v1/bots/{bot}/market-movers',
+ '/api/valuation/v1/{bot}','/api/dashboard-bridge/v2/events',
+ '/api/dashboard-integration/v1/catalog','/api/dashboard-integration/v1/market/{bot}',
+ '/api/dashboard-connections/v1/catalog',
+}
+WRITE_FORMS={
+ ('PATCH','/api/configurations'):'Saved configuration editor',
+ ('PATCH','/api/bot-controls'):'Saved control-request form — NOT effective runtime control',
+ ('POST','/api/dashboard-bridge/v2/equity/review'):'Equity review dialog — NO order submission',
+}
+
+def identifier(method,path):return hashlib.sha256((method+' '+path).encode()).hexdigest()[:20]
+
+def schema_details(schema,components,depth=0,seen=None):
+ if not isinstance(schema,dict):return {}
+ seen=set() if seen is None else set(seen)
+ ref=schema.get('$ref')
+ if isinstance(ref,str) and ref.startswith('#/components/schemas/'):
+  key=ref.rsplit('/',1)[-1]
+  if key in seen or depth>=4:return {'reference':key}
+  seen.add(key);return schema_details(components.get(key,{}),components,depth+1,seen)
+ result={k:schema[k] for k in ('type','title','description','format','pattern','readOnly','writeOnly','enum','required','minimum','maximum','minLength','maxLength','minItems','maxItems') if k in schema}
+ if depth<4:
+  if isinstance(schema.get('properties'),dict):result['properties']={k:schema_details(v,components,depth+1,seen) for k,v in schema['properties'].items()}
+  if isinstance(schema.get('items'),dict):result['items']=schema_details(schema['items'],components,depth+1,seen)
+  for key in ('anyOf','oneOf','allOf'):
+   if isinstance(schema.get(key),list):result[key]=[schema_details(v,components,depth+1,seen) for v in schema[key]]
+ return result
+
+def describe(application):
+ schema=application.openapi();paths=schema.get('paths') if isinstance(schema,dict) else None
+ if not isinstance(paths,dict):raise ValueError('Resolved API paths unavailable')
+ components=schema.get('components',{}).get('schemas',{});operations=[]
+ for path,methods in sorted(paths.items()):
+  if not isinstance(path,str) or not (path.startswith('/api/') or path=='/health') or not isinstance(methods,dict):continue
+  for lower,operation in methods.items():
+   if lower not in {'get','post','put','patch','delete','head','options','trace'} or not isinstance(operation,dict):continue
+   method=lower.upper();parameters=[]
+   for p in operation.get('parameters',[]):
+    if isinstance(p,dict):parameters.append({'name':p.get('name'),'in':p.get('in'),'required':p.get('required',False),'schema':schema_details(p.get('schema',{}),components)})
+   request_schema=operation.get('requestBody',{}).get('content',{}).get('application/json',{}).get('schema',{})
+   operations.append({'id':identifier(method,path),'path':path,'method':method,
+    'summary':operation.get('summary',''),'description':operation.get('description',''),
+    'parameters':parameters,'request_schema':schema_details(request_schema,components),
+    'response_codes':sorted(operation.get('responses',{})),'backend_security':operation.get('security',schema.get('security',[])),
+    'read_probe_enabled':method=='GET' and path in APPROVED_READS,
+    'write_form':WRITE_FORMS.get((method,path)),
+    'frontend_binding':('/api/backend-read?id='+identifier(method,path)+'&bot={bot}') if method=='GET' and path in APPROVED_READS else ({('PATCH','/api/configurations'):'/api/settings',('PATCH','/api/bot-controls'):'/api/controls',('POST','/api/dashboard-bridge/v2/equity/review'):'/api/equity-review'}.get((method,path))),
+    'state':'REGISTERED — runtime readiness not inferred'})
+ if not operations:raise ValueError('Empty effective API catalog')
+ return {'status':'API_CONTRACTS_RECEIVED','generated_at':datetime.now(timezone.utc).isoformat(),
+  'operations':operations,'registered_operation_count':len(operations),
+  'proxy_authentication':'Dashboard login required for every request',
+  'automatic_trading_activated':False,
+  'warning':'Registration and HTTP success are not proof of funding, broker execution, effective controls or complete reconciliation.'}
+
+@router.get('/catalog')
+def catalog(request:Request,response:Response):
+ response.headers['Cache-Control']='no-store, private'
+ try:return describe(request.app)
+ except Exception as exc:raise HTTPException(503,{'status':'API_CATALOG_UNAVAILABLE','error_type':type(exc).__name__}) from None
+
+
+----- /opt/super-intelligence/app/api/dashboard_bridge_v2.py -----
+"""Authenticated review and audit reads; never submits or cancels broker orders."""
+import asyncio
+import json
+import re
+from datetime import datetime, timezone
+from decimal import Decimal
+from uuid import UUID
+from contextlib import closing
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import Literal
+from app.api.trading_controls import authorize
+from app.core.database import connect_database
+
+router=APIRouter(prefix="/api/dashboard-bridge/v2",dependencies=[Depends(authorize)])
+
+def safe(value):
+    denied={"access_token","refresh_token","api_key","apikey","password","authorization","private_key","private_key_b64","secret","enctoken","public_token","request_token"}
+    if isinstance(value,dict):
+        result={}
+        for k,v in value.items():
+            key=str(k).lower()
+            if key in denied:continue
+            if key in {"account_number","rhs_account_number","account_ref","crypto_account_number"} and isinstance(v,str):
+                result[k]="****"+v[-4:]
+            else:result[k]=safe(v)
+        return result
+    if isinstance(value,list):return [safe(v) for v in value]
+    return value
+
+class Review(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    request_id: UUID
+    symbol: str = Field(min_length=1,max_length=24)
+    side: Literal["buy","sell"]
+    size_kind: Literal["dollar_amount","quantity"]
+    amount: str = Field(min_length=1,max_length=40)
+    order_type: Literal["market"]
+    @model_validator(mode="after")
+    def check_fields(self):
+        self.symbol=self.symbol.strip().upper()
+        if not re.fullmatch(r"[A-Z0-9][A-Z0-9.\-]{0,23}",self.symbol):raise ValueError("Invalid US equity ticker")
+        try:n=Decimal(self.amount)
+        except Exception:raise ValueError("Amount must be a decimal string")
+        if not n.is_finite() or n<=0 or n>Decimal("1000000000000") or n.as_tuple().exponent < -12:raise ValueError("Invalid positive amount")
+        self.amount=format(n,"f")
+        return self
+
+@router.post("/equity/review")
+async def review_equity(request:Review):
+    from rh_equity_review import call
+    with closing(connect_database()) as db:
+        db.row_factory=__import__('sqlite3').Row
+        row=db.execute("SELECT revision,config_json FROM independent_bot_configurations WHERE bot='equity'").fetchone()
+        if row is None:raise HTTPException(409,"Saved Equity configuration required")
+        config=json.loads(row["config_json"]);revision=row["revision"]
+    account=config.get("account_ref")
+    if config.get("currency")!="USD" or not isinstance(account,str) or not account or account!=account.strip():raise HTTPException(409,"Exact saved USD Equity account required")
+    async def invoke(tool,args):
+        raw=await asyncio.wait_for(call(tool,args),timeout=25)
+        value=json.loads(raw)
+        if not isinstance(value,dict) or not isinstance(value.get("data"),dict) or value.get("error") or value.get("errors") or value["data"].get("error") or value["data"].get("errors"):raise ValueError("Broker read/review failed")
+        return value
+    try:
+        response=await invoke("get_accounts",{})
+        accounts=response["data"].get("accounts")
+        if not isinstance(accounts,list):raise ValueError("Account list missing")
+        matches=[a for a in accounts if isinstance(a,dict) and a.get("account_number")==account and a.get("agentic_allowed") is True]
+        if len(matches)!=1:raise HTTPException(409,"Configured Equity account is not uniquely verified")
+        args={"account_number":account,"symbol":request.symbol,"side":request.side,"type":request.order_type,request.size_kind:request.amount}
+        result=await invoke("review_equity_order",args)
+    except HTTPException:raise
+    except Exception as exc:raise HTTPException(502,{"status":"BROKER_REVIEW_FAILED","error_type":type(exc).__name__}) from None
+    # Confirm the operator has not changed account/configuration while the review ran.
+    with closing(connect_database()) as db:
+        db.row_factory=__import__('sqlite3').Row
+        db.execute("BEGIN IMMEDIATE")
+        current=db.execute("SELECT revision,config_json FROM independent_bot_configurations WHERE bot='equity'").fetchone()
+        if current is None or current['revision']!=revision or json.loads(current['config_json']).get('account_ref')!=account:
+            db.rollback();raise HTTPException(409,"Configuration changed during review; refresh and review again")
+        details={"symbol":request.symbol,"side":request.side,"order_type":request.order_type,"size_kind":request.size_kind,"amount":request.amount,"account_ending":account[-4:],"configuration_revision":revision,"order_submitted":False}
+        db.execute("INSERT INTO audit_events (event_type,bot_name,correlation_id,details_json) VALUES ('DASHBOARD_EQUITY_REVIEW','equity',?,?)",(str(request.request_id),json.dumps(details)))
+        db.commit()
+    return {"status":"REVIEW_ONLY","request_id":str(request.request_id),"reviewed_at":datetime.now(timezone.utc).isoformat(),"parameters":details,"broker_review":safe(result),"order_submitted":False,"submission_available":False,"warning":"Broker review is not order acceptance or execution. This endpoint cannot submit orders."}
+
+@router.get("/events")
+def events():
+    with closing(connect_database()) as db:
+        db.row_factory=__import__('sqlite3').Row
+        rows=db.execute("SELECT id,event_type,bot_name,created_at,correlation_id,details_json FROM audit_events WHERE event_type IN ('DASHBOARD_EQUITY_REVIEW','INDEPENDENT_BOT_CONFIGURATION_SAVED','DASHBOARD_CONTROL_REQUEST_SAVED','EQUITY_READ_IMPORT') ORDER BY id DESC LIMIT 100").fetchall()
+    result=[]
+    for row in rows:
+        item=dict(row)
+        try:item['details']=safe(json.loads(item.pop('details_json')))
+        except Exception:item.pop('details_json',None);item['details']={"status":"DETAILS_UNAVAILABLE"}
+        result.append(item)
+    return {"status":"AUDIT_ROWS_RECEIVED","coverage":"LATEST_100_SUPPORTED_EVENTS_NOT_FULL_HISTORY","events":result}
+
+
+----- /opt/super-intelligence/app/api/status.py -----
+from fastapi import APIRouter
+from datetime import datetime, timezone
+import time
+
+from app.core.config import get_settings
+from app.core.database import connect_database
+from app.core.readiness import BOT_NAMES, evaluate_readiness
+from app.brokers.healthcheck import run_check
+
+router = APIRouter()
+_cache = {"checked_at": 0.0, "reports": {}}
+_CACHE_SECONDS = 60
+
+
+def broker_connectivity():
+    # Cache read-only checks briefly to avoid repeated broker API calls.
+    now = time.monotonic()
+    if now - _cache["checked_at"] < _CACHE_SECONDS and _cache["reports"]:
+        return _cache["reports"]
+
+    from app.brokers.robinhood.crypto import RobinhoodCrypto
+    from app.brokers.zerodha.kite import ZerodhaKite
+
+    reports = {
+        "US-CRYPTO": run_check("US-CRYPTO", RobinhoodCrypto, [
+            ("accounts", lambda c: c.accounts()),
+            ("holdings", lambda c: c.holdings()),
+            ("pairs", lambda c: c.pairs()),
+            ("orders", lambda c: c.orders()),
+        ]),
+        "IN-ZERODHA": run_check("IN-ZERODHA", ZerodhaKite, [
+            ("profile", lambda c: c.profile()),
+            ("holdings", lambda c: c.holdings()),
+            ("positions", lambda c: c.positions()),
+            ("orders", lambda c: c.orders()),
+        ]),
+        "US-EQUITY": {
+            "bot": "US-EQUITY",
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "status": "NOT_IMPLEMENTED",
+            "checks": {},
+            "reason": "Robinhood equity adapter is not implemented",
+        },
+    }
+    _cache["reports"] = reports
+    _cache["checked_at"] = now
+    return reports
+
+
+@router.get("/health")
+def health():
+    return {"status": "ok", "component": "super-intelligence"}
+
+
+@router.get("/api/status")
+def status():
+    settings = get_settings()
+
+    with connect_database() as db:
+        table_count = db.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table'"
+        ).fetchone()[0]
+        audit_count = db.execute(
+            "SELECT COUNT(*) FROM audit_events"
+        ).fetchone()[0]
+
+    connectivity = broker_connectivity()
+    enabled_by_bot = {
+        "US-CRYPTO": settings.crypto_bot_enabled,
+        "US-EQUITY": settings.equity_bot_enabled,
+        "IN-ZERODHA": settings.zerodha_bot_enabled,
+    }
+
+    reports = []
+    for name in BOT_NAMES:
+        connected = (
+            connectivity.get(name, {}).get("status") == "READ_CONNECTIVITY_PASS"
+        )
+        report = evaluate_readiness(
+            bot_name=name,
+            bot_enabled=enabled_by_bot[name],
+            live_trading_enabled=settings.live_trading_enabled,
+            broker_authenticated=connected,
+            # These remain false until their real checks are implemented.
+            market_data_healthy=False,
+            risk_checks_passed=False,
+            reconciliation_passed=False,
+            duplicate_order_protection_ready=False,
+        )
+        reports.append({
+            "name": report.bot_name,
+            "status": report.status,
+            "checks": report.checks,
+            "blockers": list(report.blockers),
+        })
+
+    return {
+        "environment": settings.app_env,
+        "trading_mode": settings.trading_mode,
+        "live_trading_enabled": settings.live_trading_enabled,
+        "database": {
+            "reachable": True,
+            "table_count": table_count,
+            "audit_event_count": audit_count,
+        },
+        "broker_connectivity": connectivity,
+        "bots": reports,
+    }
+
+----- /opt/super-intelligence/app/api/bot_configuration.py -----
+"""Independent saved configurations. Does not authorize broker execution."""
+
+import json
+from decimal import Decimal, InvalidOperation
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from app.api.trading_controls import authorize
+from app.core.database import connect_database
+from app.core.trading_policy_config import load_policy
+
+router = APIRouter(
+    prefix="/api/configurations",
+    dependencies=[Depends(authorize)],
+)
+BOT_IDS = ("crypto", "equity", "zerodha")
+BotId = Literal["crypto", "equity", "zerodha"]
+
+
+def decimal_value(value, *, positive=False, percentage=False):
+    try:
+        number = Decimal(value)
+    except (InvalidOperation, ValueError, TypeError) as exc:
+        raise ValueError("Invalid decimal string") from exc
+
+    if not number.is_finite() or number < 0:
+        raise ValueError("Value must be finite and nonnegative")
+    if positive and number <= 0:
+        raise ValueError("Quantity must be positive")
+    if percentage and number >= 100:
+        raise ValueError("Reserve percentage must be below 100")
+    if number > Decimal("1000000000000"):
+        raise ValueError("Value exceeds supported maximum")
+    if number.as_tuple().exponent < -12:
+        raise ValueError("At most 12 decimal places are supported")
+
+    return number
+
+
+class SellProtection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    symbol: str = Field(min_length=1, max_length=80)
+    mode: Literal["all", "quantity"]
+    quantity: str | None = None
+
+    @model_validator(mode="after")
+    def validate_rule(self):
+        self.symbol = self.symbol.strip().upper()
+        if not self.symbol or any(c.isspace() for c in self.symbol):
+            raise ValueError("Invalid symbol")
+        if self.mode == "all":
+            if self.quantity is not None:
+                raise ValueError("All-position protection takes no quantity")
+        else:
+            if self.quantity is None:
+                raise ValueError("Quantity is required")
+            decimal_value(self.quantity, positive=True)
+        return self
+
+
+class BuyRestriction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    symbol: str = Field(min_length=1, max_length=80)
+    mode: Literal["block_all"] = "block_all"
+
+    @model_validator(mode="after")
+    def validate_rule(self):
+        self.symbol = self.symbol.strip().upper()
+        if not self.symbol or any(c.isspace() for c in self.symbol):
+            raise ValueError("Invalid symbol")
+        return self
+
+
+class Changes(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    account_ref: str | None = Field(default=None, min_length=1, max_length=120)
+    allocated_capital: str | None = None
+    cash_reserve_pct: str | None = None
+    sell_protections: list[SellProtection] | None = Field(
+        default=None, max_length=500
+    )
+    buy_restrictions: list[BuyRestriction] | None = Field(
+        default=None, max_length=500
+    )
+
+    @model_validator(mode="after")
+    def validate_changes(self):
+        if not self.model_fields_set:
+            raise ValueError("Supply at least one changed field")
+
+        for field in self.model_fields_set:
+            if getattr(self, field) is None:
+                raise ValueError("Explicit null changes are not supported")
+
+        if self.allocated_capital is not None:
+            decimal_value(self.allocated_capital)
+        if self.cash_reserve_pct is not None:
+            decimal_value(self.cash_reserve_pct, percentage=True)
+
+        for rules in (self.sell_protections, self.buy_restrictions):
+            if rules is not None:
+                symbols = [rule.symbol for rule in rules]
+                if len(symbols) != len(set(symbols)):
+                    raise ValueError("Duplicate symbols in a restriction list")
+        return self
+
+
+class BotUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    bot: BotId
+    expected_revision: int = Field(ge=0)
+    changes: Changes
+
+
+class BatchUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: str = Field(min_length=8, max_length=200)
+    updates: list[BotUpdate] = Field(min_length=1, max_length=3)
+
+
+def initialize(db):
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS independent_bot_configurations (
+            bot TEXT PRIMARY KEY,
+            revision INTEGER NOT NULL,
+            config_json TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS independent_config_requests (
+            request_id TEXT PRIMARY KEY,
+            payload_json TEXT NOT NULL,
+            response_json TEXT NOT NULL
+        )
+    """)
+
+    missing = [
+        bot for bot in BOT_IDS
+        if db.execute(
+            "SELECT 1 FROM independent_bot_configurations WHERE bot=?",
+            (bot,),
+        ).fetchone() is None
+    ]
+    if not missing:
+        return
+
+    policy = load_policy()
+    for bot in missing:
+        source = policy["bots"][bot]
+        reserve = source.get(
+            "cash_reserve_pct", policy["defaults"]["cash_reserve_pct"]
+        )
+        config = {
+            "account_ref": None,
+            "currency": source["currency"],
+            "allocated_capital": source["allocated_capital"],
+            "cash_reserve_pct": str(reserve),
+            "sell_protections": [],
+            "buy_restrictions": [],
+        }
+        db.execute("""
+            INSERT INTO independent_bot_configurations
+            (bot,revision,config_json,updated_at)
+            VALUES (?,0,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        """, (bot, json.dumps(config)))
+
+
+def snapshot(db, bot):
+    row = db.execute(
+        "SELECT * FROM independent_bot_configurations WHERE bot=?",
+        (bot,),
+    ).fetchone()
+    config = json.loads(row["config_json"])
+    allocated = config["allocated_capital"]
+    reserve = None
+    ceiling = None
+
+    if allocated is not None:
+        capital = decimal_value(allocated)
+        rate = decimal_value(config["cash_reserve_pct"], percentage=True)
+        reserve = format(capital * rate / 100, "f")
+        ceiling = format(capital - Decimal(reserve), "f")
+
+    return {
+        "bot": bot,
+        "revision": row["revision"],
+        "updated_at": row["updated_at"],
+        "configuration": config,
+        "configured_reserve": reserve,
+        "configured_deployment_ceiling": ceiling,
+        "funded_capital": None,
+        "remaining_automatic_budget": None,
+        "attributable_realized_net_profit": None,
+        "enforcement_connected": False,
+        "runner_enforcement_verified": False,
+        "broker_positions_validated": False,
+        "status": "SAVED_CONFIGURATION_ONLY",
+        "warning": (
+            "These saved settings are not connected to automatic execution. "
+            "No broker orders are placed or canceled by this API. "
+            "Saving an account or symbol does not verify broker ownership."
+        ),
+    }
+
+
+@router.get("")
+def read_configurations(
+    bots: list[BotId] | None = Query(default=None),
+):
+    selected = list(BOT_IDS) if bots is None else bots
+    if not selected or len(selected) != len(set(selected)):
+        raise HTTPException(422, "Select unique bot IDs")
+
+    with connect_database() as db:
+        db.execute("BEGIN IMMEDIATE")
+        initialize(db)
+        return {
+            "selected_bots": selected,
+            "configurations": [snapshot(db, bot) for bot in selected],
+        }
+
+
+@router.patch("")
+def update_configurations(request: BatchUpdate):
+    selected = [item.bot for item in request.updates]
+    if len(selected) != len(set(selected)):
+        raise HTTPException(422, "A bot may appear only once per request")
+
+    payload = json.dumps(
+        request.model_dump(), sort_keys=True, separators=(",", ":")
+    )
+    with connect_database() as db:
+        db.execute("BEGIN IMMEDIATE")
+        initialize(db)
+
+        prior = db.execute(
+            "SELECT payload_json,response_json "
+            "FROM independent_config_requests WHERE request_id=?",
+            (request.request_id,),
+        ).fetchone()
+        if prior:
+            if prior["payload_json"] != payload:
+                raise HTTPException(409, "Request ID belongs to another change")
+            return json.loads(prior["response_json"])
+
+        current = {bot: snapshot(db, bot) for bot in selected}
+        conflicts = [
+            {
+                "bot": item.bot,
+                "expected_revision": item.expected_revision,
+                "actual_revision": current[item.bot]["revision"],
+            }
+            for item in request.updates
+            if item.expected_revision != current[item.bot]["revision"]
+        ]
+        if conflicts:
+            raise HTTPException(409, {
+
+----- /opt/super-intelligence/app/api/mcp_crypto_evidence_v1.py -----
+"""Authenticated read endpoint only; no order-placement handlers."""
+import asyncio
+from fastapi import APIRouter, Depends, HTTPException, Response
+from app.api.trading_controls import authorize
+from app.core.config import get_settings
+from app.core.mcp_crypto_read_service_v1 import authenticated_session, collect, load_state, safe_failure
+router=APIRouter(prefix='/api/dashboard/v1/mcp',dependencies=[Depends(authorize)])
+_lock=asyncio.Lock()
+@router.get('/crypto')
+async def crypto_evidence(response: Response, include_order_details: bool=True):
+    response.headers['Cache-Control']='no-store, private'
+    response.headers['Pragma']='no-cache'
+    response.headers['X-Content-Type-Options']='nosniff'
+    try:
+        async with _lock:
+            before=load_state(get_settings().database_path)
+            async with authenticated_session() as read:
+                value=await collect(read,before,include_order_details=include_order_details)
+            if load_state(get_settings().database_path)!=before:
+                raise HTTPException(409,detail={'status':'CONFIGURATION_CHANGED_DURING_READ','orders_submitted':False})
+        return value
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(503,detail={
+            'status':'MCP_CRYPTO_EVIDENCE_UNAVAILABLE','error_details':safe_failure(exc),
+            'orders_submitted':False,'configuration_changed':False,
+        },headers={'Cache-Control':'no-store, private'}) from None
+
+----- /opt/super-intelligence/app/brokers/zerodha/kite.py -----
+import os
+from kiteconnect import KiteConnect
+
+class ZerodhaKite:
+    def __init__(self):
+        api_key = os.getenv("ZERODHA_API_KEY", "")
+        access_token = os.getenv("ZERODHA_ACCESS_TOKEN", "")
+        if not api_key or not access_token:
+            raise RuntimeError("Missing Zerodha API key or access token")
+        self.client = KiteConnect(api_key=api_key)
+        self.client.set_access_token(access_token)
+
+    def profile(self):
+        return self.client.profile()
+
+    def holdings(self):
+        return self.client.holdings()
+
+    def positions(self):
+        return self.client.positions()
+
+    def margins(self):
+        return self.client.margins()
+
+    def orders(self):
+        return self.client.orders()
+
+    def trades(self):
+        return self.client.trades()
+
+    def quote(self, *instruments):
+        if not instruments:
+            raise ValueError("Provide exchange:symbol instruments")
+        return self.client.quote(*instruments)
+
+    def submit_order(self, **kwargs):
+        """Submit a validated Zerodha Kite regular order."""
+        if os.getenv(
+            "ZERODHA_WRITE_ENABLED", "false"
+        ).strip().lower() != "true":
+            raise RuntimeError("Zerodha order submission is disabled")
+
+        required = {
+            "exchange", "tradingsymbol", "transaction_type",
+            "quantity", "product", "order_type",
+        }
+        missing = required - kwargs.keys()
+        if missing:
+            raise ValueError(
+                "Missing required fields: " + ", ".join(sorted(missing))
+            )
+
+        exchange = str(kwargs["exchange"]).upper()
+        side = str(kwargs["transaction_type"]).upper()
+        order_type = str(kwargs["order_type"]).upper()
+        product = str(kwargs["product"]).upper()
+
+        if exchange not in {"NSE", "BSE"}:
+            raise ValueError("Only NSE and BSE equity exchanges are allowed")
+        if side not in {"BUY", "SELL"}:
+            raise ValueError("transaction_type must be BUY or SELL")
+        if order_type not in {"MARKET", "LIMIT", "SL", "SL-M"}:
+            raise ValueError("Unsupported order_type")
+        if product not in {"CNC", "MIS"}:
+            raise ValueError("product must be CNC or MIS")
+
+        try:
+            quantity = int(kwargs["quantity"])
+        except (ValueError, TypeError) as exc:
+            raise ValueError("quantity must be a positive integer") from exc
+        if quantity <= 0:
+            raise ValueError("quantity must be positive")
+
+        if order_type == "LIMIT":
+            try:
+                price = float(kwargs.get("price", 0))
+            except (ValueError, TypeError) as exc:
+                raise ValueError("LIMIT orders require a valid price") from exc
+            if not price > 0:
+                raise ValueError("LIMIT orders require price > 0")
+
+        order = dict(kwargs)
+        order["exchange"] = exchange
+        order["transaction_type"] = side
+        order["order_type"] = order_type
+        order["product"] = product
+        order["quantity"] = quantity
+        order.setdefault("variety", self.client.VARIETY_REGULAR)
+        order.setdefault("validity", self.client.VALIDITY_DAY)
+
+        return self.client.place_order(**order)
+
+----- /opt/super-intelligence/app/brokers/robinhood/crypto.py -----
+import base64
+import json
+import os
+import time
+from urllib.parse import urlencode
+
+import requests
+from nacl.signing import SigningKey
+
+BASE_URL = "https://trading.robinhood.com"
+class RobinhoodCrypto:
+    def __init__(self):
+        self.api_key = os.getenv("ROBINHOOD_CRYPTO_API_KEY", "")
+        encoded = os.getenv("ROBINHOOD_CRYPTO_PRIVATE_KEY_B64", "")
+        if not self.api_key or not encoded:
+            raise RuntimeError("Missing Robinhood Crypto API credentials")
+        key = base64.b64decode(encoded, validate=True)
+        if len(key) not in (32, 64):
+            raise RuntimeError("Invalid Ed25519 private key length")
+        self.signer = SigningKey(key[:32])
+        self.session = requests.Session()
+
+    def request(self, method, path, params=None, payload=None):
+        query = "?" + urlencode(params, doseq=True) if params else ""
+        signed_path = path + query
+        body = json.dumps(payload, separators=(",", ":")) if payload is not None else ""
+        timestamp = str(int(time.time()))
+        message = (
+            self.api_key + timestamp + signed_path + method.upper() + body
+        ).encode()
+        signature = base64.b64encode(
+            self.signer.sign(message).signature
+        ).decode()
+        response = self.session.request(
+            method.upper(),
+            BASE_URL + signed_path,
+            headers={
+                "x-api-key": self.api_key,
+                "x-timestamp": timestamp,
+                "x-signature": signature,
+                "Content-Type": "application/json; charset=utf-8",
+            },
+            data=body if body else None,
+            timeout=(5, 20),
+        )
+        response.raise_for_status()
+        return response.json() if response.content else {}
+
+    def accounts(self):
+        return self.request("GET", "/api/v1/crypto/trading/accounts/")
+
+    def holdings(self):
+        return self.request("GET", "/api/v1/crypto/trading/holdings/")
+
+    def pairs(self):
+        return self.request("GET", "/api/v1/crypto/trading/trading_pairs/")
+
+    def orders(self):
+        return self.request("GET", "/api/v1/crypto/trading/orders/")
+
+    def quote(self, symbol):
+        return self.request(
+            "GET", "/api/v1/crypto/marketdata/best_bid_ask/",
+            {"symbol": symbol},
+        )
+
+    def submit_order(self, payload):
+        """Submit a validated Robinhood Crypto v1 order."""
+        import uuid
+
+        if os.getenv(
+            "ROBINHOOD_CRYPTO_WRITE_ENABLED", "false"
+        ).strip().lower() != "true":
+            raise RuntimeError("Crypto order submission is disabled")
+
+        if not isinstance(payload, dict):
+            raise ValueError("payload must be a JSON object")
+
+        required = {"client_order_id", "side", "type", "symbol"}
+        missing = required - payload.keys()
+        if missing:
+            raise ValueError(
+                "Missing required fields: " + ", ".join(sorted(missing))
+            )
+
+        try:
+            uuid.UUID(str(payload["client_order_id"]))
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise ValueError("client_order_id must be a UUID") from exc
+
+        symbol = str(payload["symbol"]).upper()
+        if not symbol.endswith("-USD") or symbol != payload["symbol"]:
+            raise ValueError("symbol must be uppercase, e.g. BTC-USD")
+
+        side = str(payload["side"]).lower()
+        order_type = str(payload["type"]).lower()
+        if side not in {"buy", "sell"}:
+            raise ValueError("side must be buy or sell")
+        if order_type not in {"market", "limit", "stop_loss", "stop_limit"}:
+            raise ValueError("Unsupported crypto order type")
+
+        config_key = f"{order_type}_order_config"
+        config = payload.get(config_key)
+        if not isinstance(config, dict):
+            raise ValueError(f"{config_key} is required")
+
+        # Require exactly one size field, and positive numeric values.
+        size_fields = {"asset_quantity", "quote_amount"} & config.keys()
+        if len(size_fields) != 1:
+            raise ValueError(
+                "Provide exactly one of asset_quantity or quote_amount"
+            )
+        from decimal import Decimal, InvalidOperation
+        try:
+            size = Decimal(str(config[next(iter(size_fields))]))
+        except (InvalidOperation, ValueError, TypeError) as exc:
+            raise ValueError("Invalid order size") from exc
+        if not size.is_finite() or size <= 0:
+            raise ValueError("Order size must be finite and positive")
+
+        if order_type in {"limit", "stop_limit"}:
+            if "limit_price" not in config:
+                raise ValueError("limit_price is required")
+        if order_type in {"stop_loss", "stop_limit"}:
+            if "stop_price" not in config:
+                raise ValueError("stop_price is required")
+
+        # Only send the documented order fields, not arbitrary caller data.
+        clean = {
+            "client_order_id": str(payload["client_order_id"]),
+            "side": side,
+            "type": order_type,
+            "symbol": symbol,
+            config_key: config,
+        }
+        return self.request(
+            "POST", "/api/v1/crypto/trading/orders/", payload=clean
+        )
+
+----- /opt/super-intelligence/app/brokers/robinhood/equity.py -----
+"""Fail-closed Robinhood equity adapter scaffold.
+
+Live execution remains disabled until a supported equity API/authentication
+contract and the application's order-journal integration are implemented.
+"""
+from __future__ import annotations
+
+import os
+
+
+class RobinhoodEquity:
+    broker = "robinhood"
+    asset_class = "equity"
+
+    def __init__(self, *args, **kwargs):
+        self.write_enabled = (
+            os.getenv("ROBINHOOD_EQUITY_WRITE_ENABLED", "false").lower()
+            == "true"
+        )
+
+    def health(self) -> dict:
+        return {
+            "broker": self.broker,
+            "asset_class": self.asset_class,
+            "status": "NOT_IMPLEMENTED",
+            "live_write_enabled": False,
+            "reason": (
+                "A supported Robinhood equity API client and verified "
+                "account-routing implementation are required."
+            ),
+        }
+
+    def submit_order(self, payload: dict) -> dict:
+        raise RuntimeError(
+            "LIVE_EQUITY_SUBMISSION_BLOCKED: equity execution adapter "
+            "is not implemented. No order was submitted."
+        )
+
+----- /opt/super-intelligence/app/brokers/robinhood/dashboard_crypto_reader_v1.py -----
+"""Account-scoped, GET-only Crypto reader for the dashboard."""
+import json
+import sqlite3
+from contextlib import closing
+from pathlib import Path
+from urllib.parse import parse_qsl, urlparse
+
+from app.brokers.robinhood.crypto import RobinhoodCrypto
+from app.core.config import get_settings
+
+
+class DashboardCryptoReader:
+    MAX_PAGES = 20
+    MAX_RECORDS = 10000
+
+    @staticmethod
+    def _read_config():
+        path = Path(get_settings().database_path).resolve()
+        with closing(sqlite3.connect(
+            path.as_uri() + "?mode=ro", uri=True, timeout=5
+        )) as db:
+            db.execute("PRAGMA query_only=ON")
+            row = db.execute(
+                "SELECT revision,config_json "
+                "FROM independent_bot_configurations WHERE bot=?",
+                ("crypto",),
+            ).fetchone()
+        if row is None:
+            raise ValueError("Crypto configuration missing")
+        return tuple(row)
+
+    def __init__(self):
+        self._configuration = self._read_config()
+        config = json.loads(self._configuration[1])
+        self._account = config.get("account_ref")
+        if (
+            not isinstance(self._account, str)
+            or not self._account
+            or self._account != self._account.strip()
+        ):
+            raise ValueError("Valid configured Crypto account required")
+        self._client = RobinhoodCrypto()
+        self.session = self._client.session
+        self.session.max_redirects = 0
+        self._verified = False
+
+    def _assert_config(self):
+        if self._read_config() != self._configuration:
+            raise ValueError("Crypto configuration changed during read")
+
+    def _collect(self, endpoint, scoped=False):
+        allowed = {
+            "/api/v2/crypto/trading/accounts/",
+            "/api/v2/crypto/trading/holdings/",
+            "/api/v2/crypto/trading/orders/",
+        }
+        if endpoint not in allowed:
+            raise ValueError("Unsupported dashboard endpoint")
+        self._assert_config()
+        params = [("account_number", self._account)] if scoped else []
+        records = []
+        visited = set()
+
+        for _ in range(self.MAX_PAGES):
+            key = (endpoint, tuple(params))
+            if key in visited:
+                raise ValueError("Pagination loop")
+            visited.add(key)
+
+            response = self._client.request(
+                "GET", endpoint, params=params
+            )
+            if (
+                not isinstance(response, dict)
+                or not isinstance(response.get("results"), list)
+                or any(
+                    not isinstance(item, dict)
+                    for item in response["results"]
+                )
+            ):
+                raise ValueError("Invalid broker response")
+
+            batch = response["results"]
+            if scoped and any(
+                item.get("account_number") != self._account
+                for item in batch
+            ):
+                raise ValueError("Broker account scope mismatch")
+
+            records.extend(batch)
+            if len(records) > self.MAX_RECORDS:
+                raise ValueError("Dashboard record limit reached")
+
+            next_link = response.get("next")
+            if not next_link:
+                self._assert_config()
+                return {
+                    "results": records,
+                    "next": None,
+                    "previous": None,
+                }
+
+            if not isinstance(next_link, str):
+                raise ValueError("Invalid pagination link")
+
+            parsed = urlparse(next_link)
+            if parsed.scheme or parsed.netloc:
+                if (
+                    parsed.scheme != "https"
+                    or parsed.hostname != "trading.robinhood.com"
+                    or parsed.port not in (None, 443)
+                    or parsed.username
+                    or parsed.password
+                ):
+                    raise ValueError("Untrusted pagination origin")
+
+            if parsed.path != endpoint or parsed.fragment:
+                raise ValueError("Pagination endpoint changed")
+
+            params = parse_qsl(parsed.query, keep_blank_values=True)
+            refs = [
+                value for key, value in params
+                if key == "account_number"
+            ]
+            if scoped:
+                if refs and refs != [self._account]:
+                    raise ValueError("Pagination account scope changed")
+                if not refs:
+                    params.append(("account_number", self._account))
+            elif refs:
+                raise ValueError("Unexpected account-list filter")
+
+        raise ValueError("Pagination limit reached")
+
+    def accounts(self):
+        self._verified = False
+        records = self._collect(
+            "/api/v2/crypto/trading/accounts/"
+        )["results"]
+        selected = [
+            item for item in records
+            if item.get("account_number") == self._account
+        ]
+        if len(selected) != 1:
+            raise ValueError("Configured account missing or ambiguous")
+        if selected[0].get("is_api_tradable") is not True:
+            raise ValueError("Configured account not API-tradable")
+        self._verified = True
+        return selected[0]
+
+    def _scoped(self, resource):
+        if not self._verified:
+            self.accounts()
+        return self._collect(
+            f"/api/v2/crypto/trading/{resource}/",
+            scoped=True,
+        )
+
+    def holdings(self):
+        return self._scoped("holdings")
+
+    def orders(self):
+        return self._scoped("orders")
+
+    def pairs(self):
+        self._assert_config()
+        result = self._client.request(
+            "GET", "/api/v1/crypto/trading/trading_pairs/"
+        )
+        self._assert_config()
+        return result
+
+----- /opt/super-intelligence/app/brokers/robinhood/readonly_client.py -----
+import base64
+import os
+import time
+from urllib.parse import urlencode
+
+import httpx
+from nacl.signing import SigningKey
+
+
+BASE_URL = "https://trading.robinhood.com"
+
+
+class RobinhoodCryptoReadOnly:
+    """Read-only Robinhood Crypto API client. No order methods are provided."""
+
+    def __init__(self):
+        self.api_key = os.environ.get("ROBINHOOD_CRYPTO_API_KEY", "").strip()
+        private_key = os.environ.get(
+            "ROBINHOOD_CRYPTO_PRIVATE_KEY_B64", ""
+        ).strip()
+
+        if not self.api_key or not private_key:
+            raise RuntimeError(
+                "Robinhood Crypto credentials are not configured."
+            )
+
+        try:
+            seed = base64.b64decode(private_key, validate=True)
+            self.signing_key = SigningKey(seed)
+        except Exception as exc:
+            raise RuntimeError(
+                "Robinhood Crypto private-key format is invalid."
+            ) from exc
+
+        self.timeout = httpx.Timeout(15.0, connect=5.0)
+
+    def _get(self, path, params=None):
+        query = urlencode(params or [], doseq=True)
+        signed_path = f"{path}?{query}" if query else path
+        timestamp = str(int(time.time()))
+        message = (
+            f"{self.api_key}{timestamp}{signed_path}GET"
+        ).encode("utf-8")
+        signature = self.signing_key.sign(message).signature
+
+        headers = {
+            "x-api-key": self.api_key,
+            "x-signature": base64.b64encode(signature).decode("ascii"),
+            "x-timestamp": timestamp,
+            "Content-Type": "application/json; charset=utf-8",
+        }
+
+        with httpx.Client(
+            base_url=BASE_URL,
+            timeout=self.timeout,
+            follow_redirects=False,
+        ) as client:
+            response = client.get(
+                signed_path,
+                headers=headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    def get_accounts(self):
+        return self._get("/api/v2/crypto/trading/accounts/")
+
+    def get_btc_quote(self):
+        return self._get(
+            "/api/v2/crypto/marketdata/best_bid_ask/",
+            [("symbol", "BTC-USD")],
+        )
+
+----- /opt/super-intelligence/app/brokers/healthcheck.py -----
+import json
+import os
+from datetime import datetime, timezone
+
+def run_check(name, factory, methods):
+    report = {
+        "bot": name,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "status": "BLOCKED",
+        "checks": {},
+    }
+    try:
+        client = factory()
+        for label, method in methods:
+            method(client)
+            report["checks"][label] = "PASS"
+        report["status"] = "READ_CONNECTIVITY_PASS"
+    except Exception as exc:
+        # Avoid printing secrets, request headers, or stack traces.
+        report["error_type"] = type(exc).__name__
+        report["reason"] = str(exc)[:200]
+    return report
+
+def main():
+    from app.brokers.robinhood.crypto import RobinhoodCrypto
+    from app.brokers.zerodha.kite import ZerodhaKite
+
+    results = [
+        run_check("US-CRYPTO", RobinhoodCrypto, [
+            ("accounts", lambda c: c.accounts()),
+            ("holdings", lambda c: c.holdings()),
+            ("pairs", lambda c: c.pairs()),
+            ("orders", lambda c: c.orders()),
+        ]),
+        run_check("IN-ZERODHA", ZerodhaKite, [
+            ("profile", lambda c: c.profile()),
+            ("holdings", lambda c: c.holdings()),
+            ("positions", lambda c: c.positions()),
+            ("orders", lambda c: c.orders()),
+        ]),
+    ]
+    print(json.dumps(results, indent=2))
+    return 0 if all(x["status"] == "READ_CONNECTIVITY_PASS" for x in results) else 2
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+----- /opt/super-intelligence/app/core/equity_reads_v1.py -----
+"""Account-scoped Equity reads and fill imports. No order submission."""
+import asyncio
+import json
+import sqlite3
+from contextlib import closing
+from datetime import datetime, timezone
+from decimal import Decimal
+from pathlib import Path
+
+BROKER = "robinhood_equity"
+
+def stamp():
+    return datetime.now(timezone.utc).isoformat()
+
+def number(value, positive=False):
+    if isinstance(value, bool) or value is None:
+        raise ValueError("Missing numeric broker value")
+    result = Decimal(str(value))
+    if not result.is_finite() or result < 0 or (positive and result == 0):
+        raise ValueError("Invalid numeric broker value")
+    return result
+
+def scrub(value):
+    denied = {"access_token", "refresh_token", "api_key", "apikey", "password", "authorization", "private_key", "private_key_b64", "public_token", "request_token", "secret", "enctoken"}
+    if isinstance(value, dict):
+        return {k: scrub(v) for k,v in value.items() if str(k).lower() not in denied}
+    if isinstance(value, list):
+        return [scrub(v) for v in value]
+    return value
+
+def check_response(value):
+    if not isinstance(value, dict) or not isinstance(value.get("data"), dict):
+        raise ValueError("Broker response envelope missing")
+    if value.get("error") or value.get("errors") or value["data"].get("error") or value["data"].get("errors"):
+        raise ValueError("Broker returned an error")
+    return value
+
+async def fetch(config, revision, *, call=None, last4=None):
+    if call is None:
+        from rh_equity_review import call, LAST4
+        last4 = LAST4
+    async def invoke(tool, arguments):
+        raw = await asyncio.wait_for(call(tool, arguments), timeout=25)
+        return check_response(json.loads(raw))
+    requested = stamp()
+    response = await invoke("get_accounts", {})
+    accounts = response["data"].get("accounts")
+    if not isinstance(accounts, list):
+        raise ValueError("Account list missing")
+    configured = config.get("account_ref")
+    if configured is not None and (not isinstance(configured,str) or not configured or configured != configured.strip()):
+        raise ValueError("Configured Equity account is invalid")
+    if configured:
+        candidates = [a for a in accounts if isinstance(a,dict) and a.get("account_number") == configured and a.get("agentic_allowed") is True]
+    else:
+        if not isinstance(last4,str) or len(last4)!=4 or not last4.isdigit():
+            raise ValueError("Existing read-helper account selector missing")
+        candidates = [a for a in accounts if isinstance(a,dict) and isinstance(a.get("account_number"),str) and a["account_number"].endswith(last4) and a.get("agentic_allowed") is True]
+    if len(candidates) != 1:
+        raise ValueError("Equity account selection is not unique")
+    account = candidates[0]["account_number"]
+    parts = {"accounts": {"status":"BROKER_RESPONSE_RECEIVED", "requested_at":requested,
+              "received_at":stamp(), "source_timestamp":None,
+              "data":scrub({"data":{"accounts":[candidates[0]]}})}}
+    for name, tool, field in [("holdings","get_equity_positions","positions"),("orders","get_equity_orders","orders")]:
+        started = stamp()
+        try:
+            value = await invoke(tool,{"account_number":account})
+            if not isinstance(value["data"].get(field),list):
+                raise ValueError("Expected Equity " + field + " list")
+            parts[name] = {"status":"BROKER_RESPONSE_RECEIVED", "requested_at":started,
+                "received_at":stamp(), "source_timestamp":None, "data":scrub(value)}
+        except Exception as exc:
+            parts[name] = {"status":"UNAVAILABLE", "requested_at":started, "received_at":stamp(),
+                "source_timestamp":None,"data":None,"error_type":type(exc).__name__}
+    return {"source":"existing_robinhood_mcp", "coverage":"EQUITY_POSITIONS_AND_ORDERS_READ",
+        "parts":parts, "account_ref":account, "configuration_revision":revision,
+        "configured_account_match":bool(configured and configured==account),
+        "selection_basis":"CONFIGURED_ACCOUNT" if configured else "EXISTING_READ_HELPER_LAST4_READ_ONLY",
+        "history_completeness_verified":False, "automatic_execution_enabled_by_this_adapter":False}
+
+def configuration(db):
+    row=db.execute("SELECT revision,config_json FROM independent_bot_configurations WHERE bot='equity'").fetchone()
+    if row is None:
+        raise ValueError("Saved Equity configuration missing")
+    value=json.loads(row["config_json"])
+    if value.get("currency")!="USD":
+        raise ValueError("Equity configuration must be USD")
+    return value, row["revision"]
+
+def load_snapshot():
+    from app.core.config import get_settings
+    p=Path(get_settings().database_path).resolve()
+    with closing(sqlite3.connect(p.as_uri()+"?mode=ro",uri=True,timeout=5)) as db:
+        db.row_factory=sqlite3.Row
+        db.execute("PRAGMA query_only=ON")
+        config,revision=configuration(db)
+    return asyncio.run(fetch(config,revision))
+
+def equity_dashboard_payload():
+    return load_snapshot()
+
+def rows(snapshot,name,field):
+    part=snapshot["parts"][name]
+    if part.get("status")!="BROKER_RESPONSE_RECEIVED":
+        raise ValueError("Equity "+name+" read failed")
+    value=part["data"]["data"][field]
+    if not isinstance(value,list):
+        raise ValueError("Equity list missing")
+    return value
+
+def extract_fills(orders):
+    fills=[]
+    seen=set()
+    for order in orders:
+        if not isinstance(order,dict):
+            raise ValueError("Invalid order row")
+        executions=order.get("executions")
+        if not isinstance(executions,list):
+            raise ValueError("Order executions list missing")
+        cumulative=number(order.get("cumulative_quantity"))
+        if cumulative==0 and not executions:
+            continue
+        symbol=order.get("symbol")
+        side=order.get("side")
+        order_id=order.get("id")
+        if not isinstance(symbol,str) or not symbol or side not in ("buy","sell") or not isinstance(order_id,str) or not order_id:
+            raise ValueError("Order identity missing")
+        order_rows=[]
+        for execution in executions:
+            fill_id=execution.get("id")
+            if not isinstance(fill_id,str) or not fill_id or fill_id in seen:
+                raise ValueError("Missing or duplicate execution identity")
+            seen.add(fill_id)
+            quantity=number(execution.get("quantity"),positive=True)
+            price=number(execution.get("price"),positive=True)
+            fee=number(execution["fees"]) if execution.get("fees") is not None else None
+            when=datetime.fromisoformat(execution["timestamp"].replace("Z","+00:00"))
+            if when.tzinfo is None:
+                raise ValueError("Execution timezone missing")
+            order_rows.append({"id":fill_id,"order_id":order_id,"symbol":symbol.upper(),"side":side.upper(),
+                "quantity":str(quantity),"price":str(price),"fee":str(fee) if fee is not None else None,
+                "filled_at":when.astimezone(timezone.utc).isoformat(),
+                "raw":json.dumps({"order":order,"execution":execution},separators=(",",":"))})
+        if sum((Decimal(x["quantity"]) for x in order_rows),Decimal(0))!=cumulative:
+            raise ValueError("Executions do not match cumulative filled quantity; incomplete history")
+        if order.get("fees") is not None and all(x["fee"] is not None for x in order_rows):
+            if number(order["fees"])!=sum((Decimal(x["fee"]) for x in order_rows),Decimal(0)):
+                raise ValueError("Execution fees disagree with order fee total")
+        fills.extend(order_rows)
+    return fills
+
+def import_snapshot(db,snapshot):
+    """Atomic, idempotent ledger import. Never writes capital PASS or submits orders."""
+    if db.in_transaction:
+        raise ValueError("Importer requires its own transaction")
+    if snapshot.get("configured_account_match") is not True:
+        raise ValueError("Exact configured Equity account required before ledger import")
+    account=snapshot["account_ref"]
+    positions=rows(snapshot,"holdings","positions")
+    fills=extract_fills(rows(snapshot,"orders","orders"))
+    db.execute("BEGIN IMMEDIATE")
+    try:
+        cfg,revision=configuration(db)
+        if cfg.get("account_ref")!=account or revision!=snapshot["configuration_revision"]:
+            raise ValueError("Equity account/configuration changed during read")
+        inserted=resolved=0
+        for f in fills:
+            old=db.execute("SELECT * FROM fills WHERE broker=? AND account_ref=? AND broker_fill_id=?",(BROKER,account,f["id"])).fetchone()
+            if old:
+                if old["broker_order_id"]!=f["order_id"] or old["symbol"]!=f["symbol"] or old["side"]!=f["side"] or Decimal(old["quantity"])!=Decimal(f["quantity"]) or Decimal(old["price"])!=Decimal(f["price"]) or old["currency"]!="USD" or datetime.fromisoformat(old["filled_at"].replace("Z","+00:00"))!=datetime.fromisoformat(f["filled_at"]):
+                    raise ValueError("Conflicting existing execution; manual review required")
+                if old["fee"] is not None and f["fee"] is not None and Decimal(old["fee"])!=Decimal(f["fee"]):
+                    raise ValueError("Conflicting existing execution fee")
+                if old["fee"] is None and f["fee"] is not None:
+                    db.execute("UPDATE fills SET fee=?,raw_json=? WHERE id=?",(f["fee"],f["raw"],old["id"]))
+                    resolved+=1
+            else:
+                db.execute("INSERT INTO fills (broker,account_ref,broker_fill_id,broker_order_id,symbol,side,quantity,price,fee,currency,filled_at,raw_json) VALUES (?,?,?,?,?,?,?,?,?,'USD',?,?)",(BROKER,account,f["id"],f["order_id"],f["symbol"],f["side"],f["quantity"],f["price"],f["fee"],f["filled_at"],f["raw"]))
+                inserted+=1
+        observed=stamp()
+        for position in positions:
+            symbol=position.get("symbol")
+            if not isinstance(symbol,str) or not symbol:
+                raise ValueError("Position symbol missing")
+            quantity=number(position.get("quantity"))
+            average=number(position["average_buy_price"]) if position.get("average_buy_price") is not None else None
+            db.execute("INSERT INTO position_snapshots (broker,account_ref,symbol,quantity,average_cost,market_value,currency,observed_at,raw_json) VALUES (?,?,?,?,?,NULL,'USD',?,?)",(BROKER,account,symbol.upper(),str(quantity),str(average) if average is not None else None,observed,json.dumps(position)))
+        report={"status":"READ_IMPORT_ONLY","account_ending":account[-4:],"inserted_fills":inserted,
+            "fees_resolved":resolved,"position_rows":len(positions),
+            "unknown_fee_executions_in_response":sum(f["fee"] is None for f in fills),
+            "history_completeness_verified":False,"capital_baseline_verified":False,
+            "manual_requests_reconciled":False,"automatic_execution_enabled":False}
+        db.execute("INSERT INTO reconciliation_runs (broker,account_ref,finished_at,status,discrepancies_json) VALUES (?,?,?,'READ_IMPORT_ONLY',?)",(BROKER,account,observed,json.dumps(report)))
+        db.execute("INSERT INTO audit_events (event_type,bot_name,details_json) VALUES ('EQUITY_READ_IMPORT','equity',?)",(json.dumps(report),))
+        db.commit()
+        return report
+    except BaseException:
+        db.rollback()
+        raise
+
+def main():
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--import-fills",action="store_true")
+    args=parser.parse_args()
+    snapshot=load_snapshot()
+    if args.import_fills:
+        from app.core.config import get_settings
+        with closing(sqlite3.connect(get_settings().database_path,timeout=10)) as db:
+            db.row_factory=sqlite3.Row
+            print(json.dumps(import_snapshot(db,snapshot),indent=2))
+    else:
+        print(json.dumps({"status":"READ_ONLY","account_ending":snapshot["account_ref"][-4:],
+            "configured_account_match":snapshot["configured_account_match"],
+            "positions_read_status":snapshot["parts"]["holdings"]["status"],
+            "orders_read_status":snapshot["parts"]["orders"]["status"],
+            "automatic_execution_enabled":False},indent=2))
+
+if __name__=="__main__":
+    main()
+
+
+----- /opt/super-intelligence/app/core/automatic_order_guard.py -----
+"""Restrictive automatic-order preflight.
+
+This module never submits broker orders or authorizes execution.
+Missing, invalid, or unverified state always blocks.
+"""
+import json
+import sqlite3
+from decimal import Decimal, InvalidOperation
+from pathlib import Path
+
+from app.core.config import get_settings
+
+BOT_IDS = frozenset(("crypto", "equity", "zerodha"))
+
+
+def _number(value):
+    if isinstance(value, bool) or value is None:
+        raise ValueError("Invalid numeric value")
+    result = Decimal(str(value))
+    if not result.is_finite() or result < 0:
+        raise ValueError("Invalid numeric value")
+    return result
+
+
+def automatic_order_preflight(
+    bot,
+    *,
+    side=None,
+    symbol=None,
+    account_ref=None,
+):
+    if bot not in BOT_IDS:
+        return False, "UNKNOWN_BOT"
+
+    try:
+        path = Path(get_settings().database_path).resolve()
+        uri = path.as_uri() + "?mode=ro"
+
+        with sqlite3.connect(
+            uri,
+            uri=True,
+            timeout=5,
+        ) as db:
+            db.execute("PRAGMA query_only=ON")
+            db.execute("BEGIN")
+
+            control_row = db.execute(
+                """
+                SELECT state_json
+                FROM dashboard_control_state
+                WHERE singleton = 1
+                """
+            ).fetchone()
+
+            config_row = db.execute(
+                """
+                SELECT config_json
+                FROM independent_bot_configurations
+                WHERE bot = ?
+                """,
+                (bot,),
+            ).fetchone()
+
+        if control_row is None:
+            return False, "CONTROL_STATE_MISSING"
+        if config_row is None:
+            return False, "BOT_CONFIGURATION_MISSING"
+
+        controls = json.loads(control_row[0])[bot]
+        config = json.loads(config_row[0])
+
+        if not isinstance(controls, dict):
+            return False, "CONTROL_STATE_INVALID"
+        if not isinstance(config, dict):
+            return False, "BOT_CONFIGURATION_INVALID"
+
+        for key in ("bot_enabled", "buy_enabled", "sell_enabled"):
+            value = controls.get(key)
+            if value is not None and type(value) is not bool:
+                return False, "CONTROL_STATE_INVALID"
+
+        # The legacy runner does not yet supply trustworthy side,
+        # symbol and account context. Do not guess them.
+        if side not in ("BUY", "SELL"):
+            return False, "ORDER_SIDE_CONTEXT_REQUIRED"
+
+        if not isinstance(symbol, str) or not symbol.strip():
+            return False, "ORDER_SYMBOL_CONTEXT_REQUIRED"
+
+        symbol = symbol.strip().upper()
+
+        if side == "BUY":
+            if controls.get("bot_enabled") is not True:
+                return False, "AUTOMATIC_ENTRY_RUNTIME_NOT_ENABLED"
+            if controls.get("buy_enabled") is not True:
+                return False, "AUTOMATIC_BUY_NOT_ENABLED"
+        else:
+            # Entry/runtime stop does not implicitly disable exits.
+            # SELL permission remains an independent control.
+            if controls.get("sell_enabled") is not True:
+                return False, "AUTOMATIC_SELL_NOT_ENABLED"
+
+        configured_account = config.get("account_ref")
+        if (
+            not isinstance(configured_account, str)
+            or not configured_account.strip()
+        ):
+            return False, "CONFIGURED_ACCOUNT_REQUIRED"
+
+        if not account_ref or account_ref != configured_account:
+            return False, "VERIFIED_ACCOUNT_CONTEXT_REQUIRED"
+
+        expected_currency = "INR" if bot == "zerodha" else "USD"
+        if config.get("currency") != expected_currency:
+            return False, "CONFIGURATION_CURRENCY_INVALID"
+
+        reserve_pct = _number(config.get("cash_reserve_pct"))
+        if reserve_pct >= 100:
+            return False, "RESERVE_PERCENTAGE_INVALID"
+
+        allocation = config.get("allocated_capital")
+        if allocation is not None:
+            if _number(allocation) <= 0:
+                return False, "AUTOMATIC_ALLOCATION_NOT_POSITIVE"
+        elif bot != "zerodha":
+            return False, "AUTOMATIC_ALLOCATION_REQUIRED"
+
+        buy_rules = config.get("buy_restrictions", [])
+        sell_rules = config.get("sell_protections", [])
+
+        if not isinstance(buy_rules, list):
+            return False, "BUY_RESTRICTIONS_INVALID"
+        if not isinstance(sell_rules, list):
+            return False, "SELL_PROTECTIONS_INVALID"
+
+        for rule in buy_rules:
+            if not isinstance(rule, dict):
+                return False, "BUY_RESTRICTIONS_INVALID"
+
+            restricted = str(rule.get("symbol", "")).strip().upper()
+            if side == "BUY" and restricted == symbol:
+                return False, "SYMBOL_AUTOMATIC_BUY_RESTRICTED"
+
+        for rule in sell_rules:
+            if not isinstance(rule, dict):
+                return False, "SELL_PROTECTIONS_INVALID"
+
+            protected = str(rule.get("symbol", "")).strip().upper()
+
+            if side == "SELL" and protected == symbol:
+                if rule.get("mode") == "all":
+                    return False, "POSITION_FULLY_SELL_PROTECTED"
+
+                # Partial protection requires verified holdings,
+                # pending SELL reservations and order quantity.
+                return False, "PARTIAL_PROTECTION_VERIFICATION_REQUIRED"
+
+    except (ValueError, TypeError, KeyError, InvalidOperation):
+        return False, "SAVED_AUTOMATIC_POLICY_INVALID"
+    except Exception:
+        return False, "SAVED_AUTOMATIC_POLICY_UNAVAILABLE"
+
+    # Saved configuration is not proof of funding, ownership,
+    # available sellable quantity or successful reconciliation.
+    return False, "AUTOMATIC_ENFORCEMENT_NOT_IMPLEMENTED"
+
+----- /opt/super-intelligence/app/core/write_policy.py -----
+"""Central write policy for the three trading bots.
+
+WRITE_ENABLED permits submission only when all required safety
+checks pass. It does not bypass broker-specific order validation.
+"""
+
+from dataclasses import dataclass
+from datetime import datetime
+from zoneinfo import ZoneInfo
+import os
+
+
+@dataclass(frozen=True)
+class BotPolicy:
+    name: str
+    broker: str
+    timezone: str
+    start_hour: int | None
+    end_hour: int | None
+    continuous: bool = False
+
+
+BOT_POLICIES = {
+    "crypto": BotPolicy(
+        name="US Crypto",
+        broker="robinhood_crypto",
+        timezone="UTC",
+        start_hour=None,
+        end_hour=None,
+        continuous=True,
+    ),
+    "equity": BotPolicy(
+        name="US Equity",
+        broker="robinhood_equity",
+        timezone="America/New_York",
+        start_hour=8,
+        end_hour=20,
+    ),
+    "zerodha": BotPolicy(
+        name="India Zerodha",
+        broker="zerodha",
+        timezone="Asia/Kolkata",
+        start_hour=8,
+        end_hour=17,
+    ),
+}
+
+
+def _enabled(name: str) -> bool:
+    return os.getenv(name, "false").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+
+
+def is_market_window_open(
+    bot: str,
+    now: datetime | None = None,
+) -> bool:
+    policy = BOT_POLICIES.get(bot)
+    if policy is None:
+        return False
+
+    if policy.continuous:
+        return True
+
+    current = now or datetime.now(ZoneInfo(policy.timezone))
+    current = current.astimezone(ZoneInfo(policy.timezone))
+
+    # Requested window; holidays and exchange sessions must also
+    # be checked by the broker-specific market calendar.
+    return policy.start_hour <= current.hour < policy.end_hour
+
+
+def can_submit_order(
+    bot: str,
+    *,
+    risk_passed: bool,
+    market_calendar_passed: bool,
+    account_verified: bool,
+    reconciliation_healthy: bool,
+    durable_order_intent_saved: bool,
+) -> tuple[bool, str]:
+    """Return permission and an explicit reason."""
+
+    # LIVE_ONLY_ENFORCEMENT_GUARD_V1
+    return False, "AUTOMATIC_ENFORCEMENT_NOT_IMPLEMENTED"
+
+    policy = BOT_POLICIES.get(bot)
+    if policy is None:
+        return False, "UNKNOWN_BOT"
+
+    if not _enabled("WRITE_ENABLED"):
+        return False, "WRITE_DISABLED"
+
+    bot_env = {
+        "crypto": "CRYPTO_BOT_ENABLED",
+        "equity": "EQUITY_BOT_ENABLED",
+        "zerodha": "ZERODHA_BOT_ENABLED",
+    }[bot]
+
+    if not _enabled(bot_env):
+        return False, "BOT_DISABLED"
+
+    if not is_market_window_open(bot):
+        return False, "OUTSIDE_CONFIGURED_MARKET_WINDOW"
+
+    checks = {
+        "RISK_CHECK_FAILED": risk_passed,
+        "MARKET_CALENDAR_CHECK_FAILED": market_calendar_passed,
+        "BROKER_ACCOUNT_NOT_VERIFIED": account_verified,
+        "RECONCILIATION_NOT_HEALTHY": reconciliation_healthy,
+        "ORDER_INTENT_NOT_PERSISTED": durable_order_intent_saved,
+    }
+
+    for reason, passed in checks.items():
+        if not passed:
+            return False, reason
+
+    return True, "WRITE_PERMITTED"
+
+
+# SAVED_AUTOMATIC_POLICY_GATE_V1
+_previous_can_submit_order = can_submit_order
+
+
+def can_submit_order(
+    bot,
+    *,
+    side=None,
+    symbol=None,
+    account_ref=None,
+    **checks,
+):
+    from app.core.automatic_order_guard import automatic_order_preflight
+
+    allowed, reason = automatic_order_preflight(
+        bot,
+        side=side,
+        symbol=symbol,
+        account_ref=account_ref,
+    )
+    if not allowed:
+        return False, reason
+
+    return _previous_can_submit_order(bot, **checks)
+===== SERVICE LOGS (last 100 lines; credentials filtered) =====
+Oct 27 02:40:20 vmi3619462 python[16637]: 2026-10-27 02:40:20,957 INFO strategy price=80111.954119555 sma=80099.20 buy_below=79298.21
+Oct 27 02:40:20 vmi3619462 python[16637]: 2026-10-27 02:40:20,959 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:40:20 vmi3619462 python[16637]: 2026-10-27 02:40:20,959 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:40:49 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:40998 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:41:20 vmi3619462 python[16637]: 2026-10-27 02:41:20,961 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:41:21 vmi3619462 python[16637]: 2026-10-27 02:41:21,988 INFO strategy price=80122.10556425 sma=80100.03 buy_below=79299.03
+Oct 27 02:41:21 vmi3619462 python[16637]: 2026-10-27 02:41:21,993 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:41:21 vmi3619462 python[16637]: 2026-10-27 02:41:21,993 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:41:49 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:43482 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:42:21 vmi3619462 python[16637]: 2026-10-27 02:42:21,994 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:42:22 vmi3619462 python[16637]: 2026-10-27 02:42:22,452 INFO strategy price=80127.31241335 sma=80100.88 buy_below=79299.88
+Oct 27 02:42:22 vmi3619462 python[16637]: 2026-10-27 02:42:22,460 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:42:22 vmi3619462 python[16637]: 2026-10-27 02:42:22,460 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:42:49 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:54500 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:43:22 vmi3619462 python[16637]: 2026-10-27 02:43:22,461 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:43:22 vmi3619462 python[16637]: 2026-10-27 02:43:22,838 INFO strategy price=80204.6177802 sma=80102.54 buy_below=79301.51
+Oct 27 02:43:22 vmi3619462 python[16637]: 2026-10-27 02:43:22,846 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:43:22 vmi3619462 python[16637]: 2026-10-27 02:43:22,850 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:43:49 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:46042 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:44:22 vmi3619462 python[16637]: 2026-10-27 02:44:22,852 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:44:23 vmi3619462 python[16637]: 2026-10-27 02:44:23,295 INFO strategy price=80190.236643 sma=80103.98 buy_below=79302.94
+Oct 27 02:44:23 vmi3619462 python[16637]: 2026-10-27 02:44:23,297 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:44:23 vmi3619462 python[16637]: 2026-10-27 02:44:23,297 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:44:49 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:50298 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:45:23 vmi3619462 python[16637]: 2026-10-27 02:45:23,299 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:45:23 vmi3619462 python[16637]: 2026-10-27 02:45:23,754 INFO strategy price=80171.1537272 sma=80105.27 buy_below=79304.22
+Oct 27 02:45:23 vmi3619462 python[16637]: 2026-10-27 02:45:23,817 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:45:23 vmi3619462 python[16637]: 2026-10-27 02:45:23,819 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:45:49 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:59048 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:46:23 vmi3619462 python[16637]: 2026-10-27 02:46:23,843 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:46:24 vmi3619462 python[16637]: 2026-10-27 02:46:24,239 INFO strategy price=80195.369374175 sma=80106.56 buy_below=79305.50
+Oct 27 02:46:24 vmi3619462 python[16637]: 2026-10-27 02:46:24,247 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:46:24 vmi3619462 python[16637]: 2026-10-27 02:46:24,247 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:46:50 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:49568 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:47:24 vmi3619462 python[16637]: 2026-10-27 02:47:24,253 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:47:24 vmi3619462 python[16637]: 2026-10-27 02:47:24,767 INFO strategy price=80157.12268315 sma=80107.58 buy_below=79306.51
+Oct 27 02:47:24 vmi3619462 python[16637]: 2026-10-27 02:47:24,775 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:47:24 vmi3619462 python[16637]: 2026-10-27 02:47:24,775 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:47:50 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:33246 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:48:24 vmi3619462 python[16637]: 2026-10-27 02:48:24,779 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:48:25 vmi3619462 python[16637]: 2026-10-27 02:48:25,263 INFO strategy price=80103.1312975 sma=80107.96 buy_below=79306.88
+Oct 27 02:48:25 vmi3619462 python[16637]: 2026-10-27 02:48:25,270 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:48:25 vmi3619462 python[16637]: 2026-10-27 02:48:25,270 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:48:50 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:37496 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:49:25 vmi3619462 python[16637]: 2026-10-27 02:49:25,274 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:49:25 vmi3619462 python[16637]: 2026-10-27 02:49:25,728 INFO strategy price=80084.03143125 sma=80108.23 buy_below=79307.15
+Oct 27 02:49:25 vmi3619462 python[16637]: 2026-10-27 02:49:25,731 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:49:25 vmi3619462 python[16637]: 2026-10-27 02:49:25,731 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:49:50 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:38970 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:50:25 vmi3619462 python[16637]: 2026-10-27 02:50:25,733 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:50:26 vmi3619462 python[16637]: 2026-10-27 02:50:26,603 INFO strategy price=80027.51921225 sma=80108.33 buy_below=79307.25
+Oct 27 02:50:26 vmi3619462 python[16637]: 2026-10-27 02:50:26,612 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:50:26 vmi3619462 python[16637]: 2026-10-27 02:50:26,612 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:50:50 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:54216 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:51:26 vmi3619462 python[16637]: 2026-10-27 02:51:26,615 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:51:27 vmi3619462 python[16637]: 2026-10-27 02:51:27,077 INFO strategy price=80008.06950265 sma=80108.48 buy_below=79307.40
+Oct 27 02:51:27 vmi3619462 python[16637]: 2026-10-27 02:51:27,083 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:51:27 vmi3619462 python[16637]: 2026-10-27 02:51:27,084 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:51:50 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:50446 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:52:27 vmi3619462 python[16637]: 2026-10-27 02:52:27,103 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:52:27 vmi3619462 python[16637]: 2026-10-27 02:52:27,607 INFO strategy price=79933.779569545 sma=80108.07 buy_below=79306.99
+Oct 27 02:52:27 vmi3619462 python[16637]: 2026-10-27 02:52:27,613 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:52:27 vmi3619462 python[16637]: 2026-10-27 02:52:27,614 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:52:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:35862 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:53:27 vmi3619462 python[16637]: 2026-10-27 02:53:27,618 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:53:28 vmi3619462 python[16637]: 2026-10-27 02:53:28,031 INFO strategy price=79936.536271925 sma=80107.65 buy_below=79306.58
+Oct 27 02:53:28 vmi3619462 python[16637]: 2026-10-27 02:53:28,039 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:53:28 vmi3619462 python[16637]: 2026-10-27 02:53:28,039 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:53:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:55114 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,046 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,454 INFO strategy price=79914.9739502 sma=80106.99 buy_below=79305.92
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,459 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:54:28 vmi3619462 python[16637]: 2026-10-27 02:54:28,459 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:54:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:39132 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:55:28 vmi3619462 python[16637]: 2026-10-27 02:55:28,477 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:55:28 vmi3619462 python[16637]: 2026-10-27 02:55:28,990 INFO strategy price=79943.8264393 sma=80106.67 buy_below=79305.61
+Oct 27 02:55:29 vmi3619462 python[16637]: 2026-10-27 02:55:29,030 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:55:29 vmi3619462 python[16637]: 2026-10-27 02:55:29,030 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:55:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:40646 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:55:52 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:40658 - "GET /health HTTP/1.1" 200 OK
+Oct 27 02:56:29 vmi3619462 python[16637]: 2026-10-27 02:56:29,033 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:56:29 vmi3619462 python[16637]: 2026-10-27 02:56:29,445 INFO strategy price=79971.25644788 sma=80106.59 buy_below=79305.52
+Oct 27 02:56:29 vmi3619462 python[16637]: 2026-10-27 02:56:29,446 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:56:29 vmi3619462 python[16637]: 2026-10-27 02:56:29,446 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:56:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:34930 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:57:29 vmi3619462 python[16637]: 2026-10-27 02:57:29,448 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:57:29 vmi3619462 python[16637]: 2026-10-27 02:57:29,943 INFO strategy price=79919.98814005 sma=80105.80 buy_below=79304.75
+Oct 27 02:57:29 vmi3619462 python[16637]: 2026-10-27 02:57:29,945 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:57:29 vmi3619462 python[16637]: 2026-10-27 02:57:29,945 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:57:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:50956 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:58:29 vmi3619462 python[16637]: 2026-10-27 02:58:29,946 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:58:30 vmi3619462 python[16637]: 2026-10-27 02:58:30,487 INFO strategy price=79917.4461407 sma=80105.05 buy_below=79303.99
+Oct 27 02:58:30 vmi3619462 python[16637]: 2026-10-27 02:58:30,489 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:58:30 vmi3619462 python[16637]: 2026-10-27 02:58:30,489 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:58:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:42480 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+Oct 27 02:59:30 vmi3619462 python[16637]: 2026-10-27 02:59:30,493 INFO heartbeat mode=live crypto=True equity=True zerodha=True
+Oct 27 02:59:30 vmi3619462 python[16637]: 2026-10-27 02:59:30,967 INFO strategy price=79924.9154112 sma=80104.37 buy_below=79303.33
+Oct 27 02:59:30 vmi3619462 python[16637]: 2026-10-27 02:59:30,967 WARNING equity: no verified broker adapter; skipped
+Oct 27 02:59:30 vmi3619462 python[16637]: 2026-10-27 02:59:30,968 WARNING zerodha: daily token [REDACTED] and strategy not implemented; skipped
+Oct 27 02:59:51 vmi3619462 uvicorn[93482]: INFO:     127.0.0.1:54384 - "GET /api/dashboard/v1/bots/crypto/capital HTTP/1.1" 200 OK
+===== END AUDIT; NO ORDERS SUBMITTED =====
