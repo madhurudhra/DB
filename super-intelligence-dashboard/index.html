@@ -1,0 +1,2781 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super Intelligence</title>
+<style>
+:root{--ink:#15345b;--muted:#627b95;--line:#dceaf5;--teal:#079f9a;--red:#df5966}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f8fd;color:var(--ink);font:14px system-ui,-apple-system,sans-serif}
+header{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px}
+.brand{font-size:21px;font-weight:750}
+.header-actions{display:flex;gap:12px}
+button{font:inherit;cursor:pointer}
+header button,.nav button{border:0;background:transparent;color:var(--ink);padding:11px;border-radius:8px}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 68px)}
+aside{background:#fff;border-right:1px solid var(--line);padding:18px 10px}
+.nav{display:grid;gap:5px}
+.nav button{text-align:left}
+.nav button.active{background:#dbf5f3;color:#087c7b;font-weight:700}
+main{padding:22px;min-width:0}
+.summary,.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.box,.bot,.panel{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 18px #244a7310}
+.box{padding:18px}
+.label{font-size:12px;color:var(--muted)}
+.value{font-size:23px;font-weight:700;margin-top:8px}
+.bots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}
+.bot{padding:18px;cursor:pointer;border:2px solid transparent;outline:1px solid var(--line)}
+.bot.selected{border-color:var(--teal);outline:0;background:#faffff}
+.bot h3{margin:0 0 8px;font-size:17px}
+.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.control{display:grid;grid-template-columns:85px 1fr 1fr;gap:7px;align-items:center;margin-top:10px}
+.control button{padding:7px 4px;border-radius:8px;border:1px solid #b9dfdf;background:#fff;color:#087b7b;font-size:12px}
+.control button.off{border-color:#efc3c8;color:var(--red)}
+.control button.chosen{background:var(--teal);color:white}
+.control button.off.chosen{background:var(--red);color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+h2{font-size:21px;margin:24px 0 6px}
+.panel{padding:18px;margin-top:16px;overflow:auto}
+.panel h3{margin:0 0 14px}
+table{width:100%;border-collapse:collapse;white-space:nowrap}
+th,td{padding:12px;text-align:left;border-bottom:1px solid var(--line);font-size:12px}
+th{background:#eef7fd}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.detail-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.notice{padding:16px;background:#edf6ff;border-radius:8px;line-height:1.7}
+#connection{margin:12px 0;color:var(--muted);font-size:12px}
+#action-result{white-space:pre-wrap;overflow-wrap:anywhere}
+.page[hidden]{display:none}
+:focus-visible{outline:3px solid #65b9f5;outline-offset:3px}
+@media(max-width:1100px){.layout{grid-template-columns:175px 1fr}.bots{grid-template-columns:1fr}.summary,.metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.layout{display:block}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap}aside{border-bottom:1px solid var(--line)}header{height:auto;min-height:68px;flex-wrap:wrap;padding:12px}main{padding:12px}.details{grid-template-columns:1fr}}
+
+/* SI_HEADER_SUMMARY_V1 */
+header {
+    height:auto;
+    min-height:88px;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    gap:20px;
+    padding:12px 24px;
+}
+.brand { white-space:nowrap; }
+.header-summary { min-width:0; }
+.header-summary .summary {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+}
+.header-summary .box {
+    padding:9px 12px;
+    border-radius:9px;
+    box-shadow:none;
+    background:#f7fbff;
+}
+.header-summary .label {
+    font-size:11px;
+    line-height:1.35;
+}
+.header-summary .value {
+    font-size:19px;
+    margin-top:3px;
+}
+.header-summary #connection {
+    margin:6px 0 0;
+    font-size:10px;
+    line-height:1.4;
+    overflow-wrap:anywhere;
+}
+.header-actions {
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+}
+.layout { min-height:calc(100vh - 100px); }
+@media(max-width:1200px) {
+    header { grid-template-columns:1fr auto; gap:12px; }
+    .header-summary { grid-column:1 / -1; grid-row:2; }
+}
+@media(max-width:600px) {
+    header { padding:12px; }
+    .brand { font-size:17px; }
+    .header-actions { gap:3px; }
+    .header-actions button { padding:7px; font-size:12px; }
+    .header-summary .summary {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+
+
+/* SI_BROKER_THEME_V1_START */
+:root {
+    --ink:#19324d;
+    --muted:#657d95;
+    --line:#cfdae6;
+    --teal:#008f88;
+    --red:#cc4056;
+}
+body {
+    background:
+        radial-gradient(ellipse at 85% 5%,#d6e6f5 0,transparent 48%),
+        linear-gradient(135deg,#e7edf4,#dce5ef);
+    color:var(--ink);
+}
+header {
+    background:linear-gradient(110deg,#101e33,#17314c);
+    border-bottom:1px solid #35516b;
+    box-shadow:0 4px 20px #0d203528;
+}
+.brand {
+    color:#eaf6ff;
+    letter-spacing:-.5px;
+}
+.header-actions button {
+    color:#d9e9f7;
+    border:1px solid #ffffff1c;
+    background:#ffffff08;
+    transition:background .18s ease,transform .18s ease;
+}
+.header-actions button:hover {
+    background:#ffffff18;
+    transform:translateY(-1px);
+}
+.header-summary .box {
+    background:#ffffff08;
+    border:1px solid #ffffff1b;
+    box-shadow:inset 0 1px 0 #ffffff08;
+}
+.header-summary .label { color:#b2c7dc; }
+.header-summary .value {
+    color:#f0f8ff;
+    font-variant-numeric:tabular-nums;
+}
+.header-summary #connection { color:#adc6dc; }
+
+aside {
+    background:linear-gradient(180deg,#14253b,#192e45);
+    border-right:1px solid #31475e;
+}
+.nav { gap:7px; }
+.nav button {
+    color:#bdcfe0;
+    border:1px solid transparent;
+    transition:background .18s ease,color .18s ease;
+}
+.nav button:hover {
+    background:#ffffff0b;
+    color:#fff;
+}
+.nav button.active {
+    color:#82f1de;
+    background:linear-gradient(90deg,#008f8838,#008f8815);
+    border-color:#2ba89d45;
+    box-shadow:inset 3px 0 0 #21b7aa;
+}
+main { padding-top:18px; }
+.bots { gap:18px; }
+
+.box,.bot,.panel {
+    background:linear-gradient(145deg,#f8fbfd,#edf3f8);
+    border-color:#cbd8e5;
+    box-shadow:0 5px 16px #1b365514,inset 0 1px 0 #ffffff;
+}
+.bot {
+    position:relative;
+    overflow:hidden;
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.bot:hover {
+    transform:translateY(-3px);
+    box-shadow:0 10px 24px #1b365523;
+}
+.bot.selected {
+    background:linear-gradient(135deg,#e5f5f2,#eef6fa);
+    border-color:#079b91;
+    box-shadow:0 7px 22px #008f881c,inset 0 1px 0 #fff;
+}
+.bot.selected::before {
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:4px;
+    background:linear-gradient(90deg,#008f88,#52c6b8);
+}
+.bot h3 { letter-spacing:-.3px; }
+.bot .hint { margin-bottom:14px; }
+.control {
+    border-top:1px solid #19324d0b;
+    padding-top:9px;
+    margin-top:4px;
+}
+.control > span { font-size:12px;font-weight:650; }
+.control button {
+    background:#e9f3f4;
+    border-color:#b6d6d7;
+    font-weight:650;
+    transition:background .15s ease,box-shadow .15s ease,transform .15s ease;
+}
+.control button.off {
+    background:#f7edef;
+    border-color:#e2c5cb;
+}
+.control button.chosen {
+    background:linear-gradient(135deg,#009e93,#007f7c);
+    border-color:#008c83;
+    color:#fff;
+    box-shadow:0 3px 8px #008f8824;
+}
+.control button.off.chosen {
+    background:linear-gradient(135deg,#d95567,#bc354e);
+    border-color:#bc4053;
+}
+.control button:not(:disabled):hover {
+    transform:translateY(-1px);
+    box-shadow:0 4px 10px #19324d22;
+}
+.control button:not(:disabled):active { transform:translateY(1px); }
+button:disabled { opacity:.45; }
+.metrics .box {
+    border-top:3px solid #91adc6;
+}
+.metrics .box:first-child { border-top-color:#089b91; }
+.value {
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-.5px;
+}
+h2 { color:#173651;letter-spacing:-.5px; }
+.panel h3 {
+    padding-bottom:12px;
+    border-bottom:1px solid #d4e0eb;
+    color:#21425e;
+}
+.notice {
+    background:linear-gradient(120deg,#e0edf8,#e8f0f7);
+    border:1px solid #c9dcec;
+    border-left:3px solid #5d94bd;
+    color:#456782;
+}
+th {
+    background:#dfeaf4;
+    color:#35536d;
+    font-size:11px;
+    letter-spacing:.25px;
+}
+td { color:#4c6880; }
+tbody tr:hover { background:#dfeef577; }
+.detail-row { border-bottom-color:#d7e2eb; }
+#action-result {
+    padding:12px;
+    border:1px solid #d1deea;
+    border-radius:8px;
+    background:#e7eef5;
+    color:#375570;
+    line-height:1.6;
+}
+button:focus-visible,.bot:focus-visible {
+    outline:3px solid #3bafc5;
+    outline-offset:3px;
+}
+@media(prefers-reduced-motion:reduce) {
+    *,*::before,*::after {
+        transition:none!important;
+        animation:none!important;
+    }
+}
+/* SI_BROKER_THEME_V1_END */
+
+
+
+
+
+/* SI_FINANCIAL_SINGLE_ROW_START */
+#dashboard-page .details {
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    min-width:0;
+}
+#dashboard-page .details > div:first-child {
+    display:grid;
+    grid-template-columns:repeat(7,minmax(155px,1fr));
+    gap:0;
+    overflow-x:auto;
+    padding:4px 0 12px;
+}
+#dashboard-page .detail-row {
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    min-width:0;
+    padding:10px 16px;
+    border-bottom:0;
+    border-right:1px solid #cbd8e5;
+}
+#dashboard-page .detail-row:last-child {
+    border-right:0;
+}
+#dashboard-page .detail-row > span:first-child {
+    font-size:12px;
+    line-height:1.5;
+    color:var(--muted);
+}
+#dashboard-page .detail-row > span:last-child {
+    font-size:21px;
+    font-weight:700;
+    line-height:1.2;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+}
+#dashboard-page .details > .notice {
+    padding:10px 14px;
+    font-size:12px;
+    line-height:1.5;
+}
+/* SI_FINANCIAL_SINGLE_ROW_END */
+
+
+/* SI_FREEZE_HEADER_SIDEBAR_START */
+html {
+    height:100%;
+    overflow:hidden;
+}
+body {
+    margin:0;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr);
+}
+body > header {
+    position:relative;
+    z-index:100;
+    min-width:0;
+}
+body > .layout {
+    min-height:0;
+    min-width:0;
+    height:100%;
+    overflow:hidden;
+}
+body > .layout > aside {
+    min-height:0;
+    min-width:0;
+    overflow:auto;
+    overscroll-behavior:contain;
+}
+body > .layout > main {
+    min-height:0;
+    min-width:0;
+    height:100%;
+    box-sizing:border-box;
+    overflow:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+}
+@media(max-width:600px) {
+    body > .layout {
+        display:grid;
+        grid-template-columns:minmax(0,1fr);
+        grid-template-rows:auto minmax(0,1fr);
+    }
+}
+/* SI_FREEZE_HEADER_SIDEBAR_END */
+
+
+/* SI_COMPACT_DASHBOARD_START */
+body > .layout > main {
+    padding:12px;
+}
+
+#dashboard-page h2 {
+    margin:8px 0 4px;
+    font-size:20px;
+}
+#dashboard-page > .hint {
+    font-size:11px;
+    line-height:1.4;
+}
+
+#dashboard-page .metrics {
+    gap:8px;
+    margin-top:10px !important;
+}
+#dashboard-page .metrics > .box {
+    padding:10px 12px;
+    min-height:0;
+    border-radius:10px;
+}
+#dashboard-page .metrics .label {
+    font-size:11px;
+    line-height:1.35;
+}
+#dashboard-page .metrics .value {
+    margin-top:4px;
+    font-size:22px;
+    line-height:1.2;
+}
+
+#dashboard-page .panel {
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+}
+#dashboard-page .panel h3 {
+    margin:0 0 8px;
+    padding-bottom:8px;
+    font-size:16px;
+}
+
+#dashboard-page .details {
+    gap:8px;
+}
+#dashboard-page .details > div:first-child {
+    padding:0 0 4px;
+}
+#dashboard-page .detail-row {
+    padding:6px 10px;
+    gap:8px;
+    min-height:0;
+}
+#dashboard-page .detail-row > span:first-child {
+    font-size:11px;
+    line-height:1.35;
+}
+#dashboard-page .detail-row > span:last-child {
+    font-size:19px;
+    line-height:1.2;
+}
+#dashboard-page .details > .notice {
+    padding:7px 10px;
+    font-size:11px;
+    line-height:1.4;
+    margin:0;
+}
+
+#bots.bots {
+    gap:10px;
+    margin:10px 0;
+}
+#bots .bot {
+    padding:12px;
+    border-radius:10px;
+}
+#bots .bot h3 {
+    margin:0 0 5px;
+    font-size:16px;
+}
+#bots .bot .hint {
+    font-size:11px;
+    line-height:1.4;
+}
+#bots .control {
+    margin-top:6px;
+    padding-top:6px;
+    padding-bottom:0;
+    gap:6px;
+    grid-template-columns:78px minmax(0,1fr) minmax(0,1fr);
+    font-size:12px;
+}
+#bots .control button {
+    padding:6px 4px;
+    min-height:30px;
+    font-size:11px;
+    line-height:1.2;
+    border-radius:7px;
+}
+#bots .bot:hover {
+    transform:none;
+}
+
+#dashboard-page th,
+#dashboard-page td {
+    padding:8px 10px;
+}
+/* SI_COMPACT_DASHBOARD_END */
+
+</style>
+<style>
+
+/* SI_SINGLE_ACCOUNT_PANEL_START */
+#si-unified-financial {
+    padding:10px;
+    margin:8px 0;
+    min-width:0;
+}
+#si-unified-financial .si-financial-scroll {
+    overflow-x:auto;
+    min-width:0;
+}
+#si-financial-row {
+    display:grid !important;
+    grid-template-columns:repeat(10,minmax(128px,1fr)) !important;
+    min-width:1280px !important;
+    gap:0 !important;
+}
+#si-inline-broker-metrics {
+    display:contents !important;
+}
+#si-inline-broker-metrics > div {
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+    padding:7px 10px;
+    min-height:58px;
+    min-width:0;
+    border:0;
+    border-right:1px solid #cbd5e1;
+    border-radius:0;
+    background:transparent;
+}
+#si-inline-broker-metrics > div:last-child {
+    border-right:0;
+}
+#si-inline-broker-metrics small {
+    display:block;
+    margin:0;
+    font-size:11px;
+    line-height:1.35;
+    color:var(--muted);
+    font-weight:400;
+}
+#si-inline-broker-metrics strong {
+    display:block;
+    margin:0;
+    font-size:20px;
+    line-height:1.2;
+    color:var(--ink);
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+}
+#si-unified-financial > #si-live-state {
+    margin:8px 0 0;
+    padding-top:7px;
+    border-top:1px solid #d5dfe9;
+    font-size:11px;
+    line-height:1.4;
+}
+#si-unified-financial .notice {
+    display:none !important;
+}
+/* SI_SINGLE_ACCOUNT_PANEL_END */
+
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- SI_UNIFORM_COMPACT_LAYOUT_START -->
+<style>
+/* Same font size for tabs, panel headings, labels and values. */
+body .nav button,
+body header button,
+body main h2,
+body main h3,
+body main h4,
+body main .label,
+body main .value,
+body main .hint,
+body main .control,
+body main .control button,
+body main .detail-row > span,
+body #si-unified-financial .detail-row > span,
+body #si-inline-broker-metrics small,
+body #si-inline-broker-metrics strong,
+body #si-financial-row small,
+body #si-financial-row strong,
+body main th,
+body main td {
+    font-size: 6.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    letter-spacing: normal !important;
+}
+
+/* Tighter spaces between boxes and tabs. */
+body main .summary,
+body main .metrics,
+body main .bots,
+body #bots.bots,
+body main .details,
+body main .details > div:first-child,
+body #si-financial-row,
+body .nav,
+body .header-actions {
+    gap: 3px !important;
+}
+
+body .layout > main {
+    padding: 5px !important;
+}
+
+body .layout > aside {
+    padding: 5px 3px !important;
+}
+
+body .nav button,
+body header button {
+    padding: 4px 5px !important;
+    border-radius: 4px !important;
+}
+
+/* Smaller panels and boxes. */
+body main .box,
+body main .bot,
+body main .panel,
+body #bots .bot,
+body #dashboard-page .metrics > .box,
+body #dashboard-page .panel,
+body #si-unified-financial {
+    padding: 5px !important;
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
+    min-height: 0 !important;
+    border-radius: 5px !important;
+}
+
+body main .detail-row,
+body #dashboard-page .detail-row,
+body #si-inline-broker-metrics > div {
+    padding: 4px 5px !important;
+    gap: 3px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+}
+
+body #si-financial-row {
+    grid-template-columns: repeat(10, minmax(85px, 1fr)) !important;
+    min-width: 850px !important;
+}
+
+body main .details > div:first-child {
+    padding-bottom: 3px !important;
+}
+
+body main .value,
+body #dashboard-page .metrics .value,
+body #dashboard-page .detail-row > span:last-child,
+body #si-inline-broker-metrics strong {
+    margin-top: 3px !important;
+}
+
+body main h2,
+body main h3,
+body main h4,
+body #dashboard-page h2,
+body #dashboard-page .panel h3 {
+    margin: 3px 0 !important;
+    padding-bottom: 3px !important;
+}
+
+body main .control,
+body #bots .control {
+    gap: 3px !important;
+    margin-top: 3px !important;
+    padding-top: 3px !important;
+    grid-template-columns: 45px minmax(0,1fr) minmax(0,1fr) !important;
+}
+
+body main .control button,
+body #bots .control button {
+    padding: 3px !important;
+    min-height: 16px !important;
+    border-radius: 4px !important;
+}
+
+body main th,
+body main td,
+body #dashboard-page th,
+body #dashboard-page td {
+    padding: 4px 5px !important;
+}
+</style>
+<!-- SI_UNIFORM_COMPACT_LAYOUT_END -->
+
+</head>
+<body>
+<header>
+<div class="brand">◈ Super Intelligence</div>
+<!-- SI_HEADER_SUMMARY_V1 -->
+<div class="header-summary">
+<div class="summary">
+<div class="box"><div class="label">Total P&amp;L · by currency</div><div class="value">—</div></div>
+<div class="box"><div class="label">Verified Active Bots</div><div class="value">—</div></div>
+<div class="box"><div class="label">Total Trades</div><div class="value">—</div></div>
+<div class="box"><div class="label">Pending Action Alerts</div><div class="value">—</div></div>
+</div>
+<div id="connection" role="status">Loading saved configuration…</div>
+</div>
+<div class="header-actions">
+<button data-page="Messages">✉ Messages —</button>
+<button data-page="Alerts">♧ Alerts —</button>
+<button id="refresh">↻ Refresh</button>
+</div>
+</header>
+<div class="layout">
+<aside><nav class="nav" id="navigation"></nav></aside>
+<main>
+<section class="page" id="dashboard-page">
+<h2 id="overview-title">Crypto · Account &amp; Investment Overview</h2>
+<div class="hint">Only the selected bot’s values, positions and trades appear below.</div>
+<div class="metrics" style="margin-top:16px">
+<div class="box"><div class="label">Total Limit — Allocated</div><div class="value" id="allocation">—</div></div>
+<div class="box"><div class="label">Realized P&amp;L</div><div class="value">—</div></div>
+<div class="box"><div class="label">Unrealized P&amp;L</div><div class="value">—</div></div>
+<div class="box"><div class="label">Current Investment Value</div><div class="value">—</div></div>
+</div>
+<div class="panel">
+<h3>Financial Details</h3>
+<div class="details"><div>
+<div class="detail-row"><span>Available Limit · verified spendable</span><span>—</span></div>
+<div class="detail-row"><span>Invested Limit</span><span>—</span></div>
+<div class="detail-row"><span>Realized P&amp;L</span><span>—</span></div>
+<div class="detail-row"><span>Unrealized P&amp;L</span><span>—</span></div>
+<div class="detail-row"><span>Total Value of Investment — Current Value</span><span>—</span></div>
+<div class="detail-row"><span>Configured Spendable Ceiling</span><span id="ceiling">—</span></div>
+<div class="detail-row"><span>Configured Reserve</span><span id="reserve">—</span></div>
+</div><div class="notice" id="data-note"></div></div>
+</div>
+</section>
+
+<div class="bots" id="bots"></div>
+
+
+
+<section class="page panel" id="positions-page">
+<h3 id="positions-title">Crypto · Current Positions</h3>
+<table><thead><tr><th>Asset</th><th>Shares / Units</th><th>Buy Price</th><th>Current Price</th><th>Diff Amt / Unit</th><th>Invested Value</th><th>Buy Fee</th><th>Current Value</th></tr></thead>
+<tbody><tr><td colspan="8">Position feed not connected to this dashboard. Holdings are unknown, not zero.</td></tr></tbody></table>
+</section>
+
+<section class="page panel" id="trades-page">
+<h3 id="trades-title">Crypto · Closed Trades &amp; Rebuy Executioner</h3>
+<table><thead><tr><th>Timestamp</th><th>Symbol</th><th>Type</th><th>Qty</th><th>Invested</th><th>Sold</th><th>P&amp;L</th><th>Action</th></tr></thead>
+<tbody><tr><td colspan="8">Trade history and rebuy execution are not connected to this dashboard.</td></tr></tbody></table>
+</section>
+
+<section class="page panel" id="other-page" hidden>
+<h3 id="page-title"></h3><p id="page-description"></p>
+</section>
+
+<div class="panel">
+<h3>Action Result</h3>
+<div id="action-result" role="status">No action submitted from this session.</div>
+<div class="hint" style="margin-top:10px">Configuration controls save requested settings only. Worker enforcement is not verified. Restart/Stop and broker data will be connected separately.</div>
+</div>
+</main>
+</div>
+<script>
+'use strict';
+const defs=[
+ {id:'crypto',name:'Crypto',broker:'Robinhood',currency:'USD'},
+ {id:'zerodha',name:'Zerodha',broker:'NSE / BSE',currency:'INR'},
+ {id:'equity',name:'US Equity',broker:'Robinhood',currency:'USD'}
+];
+const pages=['Dashboard','Bot Status','Positions','Trade History','Messages','Alerts','Servers & Services','System Errors','Settings'];
+let selected='crypto',page='Dashboard',state=null,busy=false,reading=false;
+const el=id=>document.getElementById(id);
+const result=text=>{el('action-result').textContent=text};
+function money(value,currency){
+ if(value===null||value===undefined||value===''||!Number.isFinite(Number(value)))return '—';
+ return new Intl.NumberFormat('en-US',{style:'currency',currency}).format(Number(value));
+}
+function selectBot(id){selected=id;render()}
+function showPage(name){page=name;render()}
+pages.forEach(name=>{
+ const b=document.createElement('button');b.textContent=name;
+ b.onclick=()=>showPage(name);b.dataset.page=name;el('navigation').append(b);
+});
+document.querySelectorAll('header [data-page]').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function render(){
+ const configs=state?.bot_allocations||{};
+ el('bots').replaceChildren();
+ defs.forEach(d=>{
+  const config=configs[d.id];
+  const card=document.createElement('article');
+  card.className='bot'+(selected===d.id?' selected':'');
+  card.tabIndex=0;card.setAttribute('aria-label','Select '+d.name);
+  card.onclick=()=>selectBot(d.id);
+  card.onkeydown=e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectBot(d.id)}};
+  const title=document.createElement('h3');title.textContent=d.name+' · '+d.broker;card.append(title);
+  const note=document.createElement('div');note.className='hint';
+  note.textContent=config?'Saved settings · runtime unverified':'No saved configuration';
+  card.append(note);
+  [['Auto Trade','auto_trade'],['Buy','buy'],['Sell','sell'],['Bot','lifecycle']].forEach(([label,key])=>{
+   const row=document.createElement('div');row.className='control';
+   const text=document.createElement('span');text.textContent=label;row.append(text);
+   ['ON','OFF'].forEach(value=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent=key==='lifecycle'?(value==='ON'?'ON (Restart)':'OFF (Stop)'):value;
+    b.className=(value==='OFF'?'off ':'')+(key!=='lifecycle'&&config?.[key]===value?'chosen':'');
+    b.disabled=busy||!config||key==='lifecycle';
+    b.title=key==='lifecycle'?'Worker action API not connected':'Save requested setting; enforcement unverified';
+    if(key!=='lifecycle')b.setAttribute('aria-pressed',String(config?.[key]===value));
+    b.onclick=e=>{e.stopPropagation();save(d.id,key,value)};
+    row.append(b);
+   });card.append(row);
+  });el('bots').append(card);
+ });
+ const d=defs.find(x=>x.id===selected),c=configs[selected];
+ el('overview-title').textContent=d.name+' · Account & Investment Overview';
+ el('allocation').textContent=money(c?.allocated_capital,d.currency);
+ el('ceiling').textContent=money(c?.spendable_ceiling,d.currency);
+ el('reserve').textContent=money(c?.reserve_capital,d.currency);
+ el('data-note').textContent=c
+  ?'Allocation and ceiling are saved configuration, not verified broker funds. Live account valuation, positions, fees and P&L are not connected yet.'
+  :'This bot has no saved configuration. No allocation or account values have been invented.';
+ el('positions-title').textContent=d.name+' · Current Positions';
+ el('trades-title').textContent=d.name+' · Closed Trades & Rebuy Executioner ('+d.broker+')';
+ el('dashboard-page').hidden=page!=='Dashboard';
+ el('positions-page').hidden=!['Dashboard','Positions'].includes(page);
+ el('trades-page').hidden=!['Dashboard','Trade History'].includes(page);
+ const other=!['Dashboard','Positions','Trade History'].includes(page);
+ el('other-page').hidden=!other;
+ el('page-title').textContent=page;
+ const descriptions={
+  'Bot Status':'Actual worker and broker status API is not connected. Saved ON values are not proof of a running bot.',
+  'Messages':'Persistent Messages API is pending. Unread counts are unknown; no simulated messages or blinking counters are displayed.',
+  'Alerts':'Persistent Alerts and action-resolution APIs are pending. Pending counts are unknown.',
+  'Servers & Services':'Service diagnostics API is pending.',
+  'System Errors':'Persistent error feed is pending.',
+  'Settings':'Allocation editing is not enabled in this release. Existing saved settings are preserved.'
+ };
+ el('page-description').textContent=descriptions[page]||'';
+ document.querySelectorAll('#navigation button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+}
+async function request(path,options={}){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+ try{
+  const r=await fetch(path,{...options,cache:'no-store',signal:controller.signal});
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.message||data.code||('HTTP '+r.status));
+  return data;
+ }finally{clearTimeout(timer)}
+}
+async function refresh(){
+ if(busy||reading)return;
+ reading=true;
+ try{
+  const data=await request('/api/v1/config');
+  if(!data||typeof data.bot_allocations!=='object'||!data.bot_allocations)throw new Error('Unexpected configuration response');
+  state=data;
+  el('connection').textContent='Saved configuration refreshed '+new Date().toLocaleTimeString()+' · broker/runtime feeds not connected';
+  render();
+ }catch(e){
+  el('connection').textContent='Configuration connection failed: '+e.message+' · last known settings retained';
+ }finally{reading=false}
+}
+async function save(bot,key,value){
+ if(busy||reading)return;
+ const d=defs.find(x=>x.id===bot);
+ if(!state?.bot_allocations?.[bot])return;
+ if(!confirm('Save '+d.name+' '+key+' = '+value+'?\nThis changes saved settings only. Worker enforcement is not verified.'))return;
+ busy=true;render();result('Saving '+d.name+' '+key+' = '+value+'…');
+ try{
+  const data=await request('/api/v1/config/update',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({bots:[bot],[key]:value})
+  });
+  if(data.updated_state?.bot_allocations?.[bot]?.[key]!==value)throw new Error('Server did not confirm the requested saved value');
+  state=data.updated_state;
+  result(d.name+': saved '+key+' = '+value+'.\nNo worker acknowledgment or order submission is established by this response.');
+ }catch(e){
+  result('Save failed or outcome uncertain: '+e.message+'.\nRefreshing saved state; do not assume the change failed or succeeded.');
+ }finally{busy=false;render();await refresh()}
+}
+el('refresh').onclick=refresh;
+render();refresh();setInterval(refresh,10000);
+</script>
+
+<!-- SI_TRUTHFUL_STATUS_V1_START -->
+<style>
+.si-state {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:11px;
+    line-height:1.35;
+    font-weight:600;
+}
+.si-state::before {
+    content:"";
+    flex:0 0 8px;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:currentColor;
+}
+.si-green { color:#15803d; }
+.si-red { color:#b91c1c; }
+.si-orange { color:#b45309; }
+.si-gray { color:#374151; }
+#bots .si-bot-state { margin:6px 0; }
+#bots .control .si-control-state {
+    grid-column:1 / -1;
+    margin:0 0 3px;
+}
+
+/* SI_UNVERIFIED_BUTTONS_NEUTRAL */
+#bots .bot[data-si-unverified="true"] .control button.chosen {
+    background:#e2e8f0 !important;
+    color:#334155 !important;
+    border:1px solid #94a3b8 !important;
+    box-shadow:none !important;
+}
+#bots .bot[data-si-unverified="true"] .control button.chosen::after {
+    content:" · saved";
+    font-size:10px;
+}
+#bots .si-bot-state {
+    padding:8px 10px;
+    border:1px solid currentColor;
+    border-radius:7px;
+    font-weight:700;
+}
+
+</style>
+<script>
+(() => {
+    const statusByBot = {};
+    let requestFailed = false;
+    let lastChecked = "";
+    let busy = false;
+
+    function badge(parent, className) {
+        let el = parent.querySelector(":scope > ." + className);
+        if (!el) {
+            el = document.createElement("div");
+            el.className = "si-state " + className;
+            el.setAttribute("role", "status");
+            parent.appendChild(el);
+        }
+        return el;
+    }
+
+    function setBadge(el, color, text) {
+        el.classList.remove(
+            "si-green", "si-red", "si-orange", "si-gray"
+        );
+        el.classList.add("si-" + color);
+        el.textContent = text;
+        el.title = lastChecked
+            ? "Gateway status checked: " + lastChecked
+            : "No successful gateway status check yet";
+    }
+
+    function value(v) {
+        if (v === true || v === "ON") return "ON";
+        if (v === false || v === "OFF") return "OFF";
+        return null;
+    }
+
+    function botId(card) {
+        const title = (
+            card.querySelector("h3")?.textContent || ""
+        ).toLowerCase();
+        if (title.includes("crypto")) return "crypto";
+        if (title.includes("zerodha")) return "zerodha";
+        if (title.includes("equity")) return "equity";
+        return null;
+    }
+
+    function render() {
+        document.querySelectorAll("#bots .bot").forEach(card => {
+            const id = botId(card);
+            if (!id) return;
+            const state = statusByBot[id];
+            card.dataset.siUnverified = String(
+                requestFailed ||
+                state?.automatic_execution_verified !== true ||
+                state?.dashboard_execution_integration !== "CONNECTED"
+            );
+            const header = badge(card, "si-bot-state");
+            const unreachable = state &&
+                ["UNREACHABLE", "OFFLINE"].includes(
+                    state.dashboard_execution_integration
+                );
+
+            if (requestFailed) {
+                setBadge(header, "gray",
+                    "Status check failed — current bot state unavailable");
+            } else if (!state) {
+                setBadge(header, "orange",
+                    "Awaiting gateway status — worker not verified");
+            } else if (unreachable) {
+                setBadge(header, "gray",
+                    "Worker connection unavailable");
+            } else if (state.worker_status === "RUNNING_VERIFIED") {
+                setBadge(header, "green", "Worker online — verified");
+            } else if (state.worker_status === "STOPPED_VERIFIED") {
+                setBadge(header, "red", "Worker stopped — verified");
+            } else {
+                setBadge(header, "orange",
+                    "Trading NOT VERIFIED — worker link: " +
+                    (state.dashboard_execution_integration ||
+                     "connection unknown"));
+            }
+
+            card.querySelectorAll(".control").forEach(row => {
+                const label = Array.from(row.childNodes)
+                    .filter(n => !(
+                        n.nodeType === 1 &&
+                        (n.matches("button") ||
+                         n.classList.contains("si-control-state"))
+                    ))
+                    .map(n => n.textContent)
+                    .join(" ").trim().toLowerCase();
+
+                const key = label.includes("auto") ? "auto_trade" :
+                    label.startsWith("buy") ? "buy" :
+                    label.startsWith("sell") ? "sell" : null;
+
+                const el = badge(row, "si-control-state");
+                if (!key) {
+                    setBadge(el, requestFailed ? "gray" : "orange",
+                        "Bot runtime unknown — start/stop not connected");
+                    return;
+                }
+                if (requestFailed || unreachable) {
+                    setBadge(el, "gray",
+                        "Applied state unavailable — not confirmed");
+                    return;
+                }
+                const saved = value(state?.requested?.[key]);
+                const applied = value(state?.applied?.[key]);
+                const verified =
+                    state?.automatic_execution_verified === true &&
+                    state?.dashboard_execution_integration === "CONNECTED" &&
+                    applied !== null;
+
+                if (verified) {
+                    const master = value(state.applied.auto_trade);
+                    if (key !== "auto_trade" && master === "OFF") {
+                        setBadge(el, "red",
+                            "Blocked by Auto Trade OFF — worker confirmed");
+                    } else if (key !== "auto_trade" && master !== "ON") {
+                        setBadge(el, "orange",
+                            "Applied permission " + applied +
+                            " — master permission unknown");
+                    } else {
+                        setBadge(el, applied === "ON" ? "green" : "red",
+                            applied + " — worker confirmed");
+                    }
+                } else if (saved !== null) {
+                    setBadge(el, "orange",
+                        "Requested " + saved + " — NOT confirmed active");
+                } else {
+                    setBadge(el, "orange",
+                        "Not configured — trading state unknown");
+                }
+            });
+        });
+    }
+
+    async function refresh() {
+        if (busy) return;
+        busy = true;
+        try {
+            const response = await fetch("/api/v1/status", {
+                cache:"no-store",
+                signal:AbortSignal.timeout(8000)
+            });
+            if (!response.ok) throw new Error("Status HTTP error");
+            const data = await response.json();
+            if (!data.bots || typeof data.bots !== "object")
+                throw new Error("Missing bot status");
+            for (const key of Object.keys(statusByBot))
+                delete statusByBot[key];
+            Object.assign(statusByBot, data.bots);
+            lastChecked = data.checked_at || new Date().toISOString();
+            requestFailed = false;
+        } catch (_) {
+            requestFailed = true;
+        } finally {
+            busy = false;
+            render();
+        }
+    }
+
+    function start() {
+        const root = document.getElementById("bots");
+        if (root) {
+            new MutationObserver(records => {
+                if (records.some(record =>
+                    [...record.addedNodes].some(node =>
+                        node.nodeType === 1 &&
+                        (node.matches?.(".bot") ||
+                         node.querySelector?.(".bot"))
+                    )
+                )) render();
+            }).observe(root, {childList:true, subtree:true});
+        }
+        render();
+        refresh();
+        setInterval(refresh, 10000);
+        document.addEventListener("click", event => {
+            if (event.target.closest("#bots .control button"))
+                setTimeout(refresh, 1000);
+        });
+    }
+
+    if (document.readyState === "loading")
+        document.addEventListener("DOMContentLoaded", start);
+    else start();
+})();
+</script>
+<!-- SI_TRUTHFUL_STATUS_V1_END -->
+
+
+<!-- SI_DYNAMIC_FEED_START -->
+<style>
+#si-live-panel { margin:10px 0; padding:12px; }
+#si-live-panel h3 { margin:0 0 8px; }
+#si-live-state { font-size:12px; margin-bottom:8px; }
+.si-live-grid {
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+ gap:8px;margin-bottom:12px;
+}
+.si-live-grid > div {
+ padding:8px;border:1px solid #cbd5e1;border-radius:7px;
+}
+.si-live-grid small { display:block;margin-bottom:4px; }
+.si-live-table { overflow:auto;margin:8px 0 14px; }
+</style>
+<script>
+(() => {
+ let feed = null, failed = false, loading = false;
+
+ const panel = document.createElement("section");
+ panel.id = "si-live-panel";
+ panel.className = "panel";
+ const bots = document.getElementById("bots");
+ if (!bots) return;
+ bots.before(panel);
+
+ const text = v => v === null || v === undefined || v === "" ? "—" : String(v);
+ const usd = v => {
+   if (v === null || v === undefined || v === "" ||
+       !Number.isFinite(Number(v))) return "—";
+   return new Intl.NumberFormat("en-US",{
+     style:"currency",currency:"USD",maximumFractionDigits:4
+   }).format(Number(v));
+ };
+ function add(parent, tag, content) {
+   const node = document.createElement(tag);
+   node.textContent = content;
+   parent.append(node);
+   return node;
+ }
+ function table(title, headers, rows) {
+   add(panel,"h4",title);
+   const wrap = document.createElement("div");
+   wrap.className = "si-live-table";
+   const t = document.createElement("table");
+   const head = t.createTHead().insertRow();
+   headers.forEach(v => add(head,"th",v));
+   const body = t.createTBody();
+   rows.forEach(values => {
+     const r = body.insertRow();
+     values.forEach(v => add(r,"td",text(v)));
+   });
+   if (!rows.length) {
+     const cell = body.insertRow().insertCell();
+     cell.colSpan = headers.length;
+     cell.textContent = "Broker returned no records for this section.";
+   }
+   wrap.append(t);panel.append(wrap);
+ }
+ 
+// SI_BROKER_PNL_V3
+function v3num(v) {
+  if(v===null||v===undefined||v==="") return null;
+  const n=Number(v);
+  return Number.isFinite(n)?n:null;
+}
+
+function v3calc(d,id) {
+  const crypto=id==="crypto",book=new Map(),trades=[],seen=new Set();
+  const orders=[...(d.orders||[])].sort(
+    (a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)
+  );
+
+  for(const o of orders) {
+    const q=v3num(o.cumulative_quantity);
+    const asset=o.currency_code||o.symbol;
+
+    if(!o.id||seen.has(o.id)||q===null||q<=0||!asset) continue;
+    seen.add(o.id);
+
+    if(!["filled","canceled","cancelled",
+         "partially_filled_rest_cancelled"].includes(o.state)) continue;
+
+    let cash=v3num(o.net_rounded_executed_notional);
+    const fee=v3num(o.fee??(
+      typeof o.fees==="string"?o.fees:null
+    ));
+
+    if(!crypto&&cash===null) {
+      const price=v3num(o.average_price);
+      if(price!==null&&fee!==null)
+        cash=q*price+(o.side==="buy"?fee:-fee);
+    }
+
+    if(!book.has(asset)) book.set(asset,[]);
+    const lots=book.get(asset);
+
+    if(o.side==="buy") {
+      lots.push({q,cash,fee,date:o.created_at});
+      continue;
+    }
+    if(o.side!=="sell") continue;
+
+    let left=q,cost=0,buyFee=0,known=true,feeKnown=true;
+    const dates=[];
+
+    while(left>1e-12&&lots.length) {
+      const lot=lots[0];
+      const take=Math.min(left,lot.q);
+      const fraction=take/lot.q;
+
+      if(lot.cash===null) known=false;
+      else {
+        const used=lot.cash*fraction;
+        cost+=used;
+        lot.cash-=used;
+      }
+
+      if(lot.fee===null) feeKnown=false;
+      else {
+        const used=lot.fee*fraction;
+        buyFee+=used;
+        lot.fee-=used;
+      }
+
+      dates.push(lot.date);
+      lot.q-=take;
+      left-=take;
+      if(lot.q<1e-12) lots.shift();
+    }
+
+    known=known&&left<=1e-12;
+    const net=known&&cash!==null?cash-cost:null;
+
+    trades.push({
+      asset,
+      buy:known?[...new Set(dates)].join(" / "):"Unreconciled",
+      sell:o.created_at,q,
+      cost:known?cost:null,
+      cash,
+      price:v3num(o.average_price),
+      net,
+      buyFee:feeKnown&&left<=1e-12?buyFee:null,
+      sellFee:fee
+    });
+  }
+
+  const quotes=new Map((d.quotes||[]).map(q=>[
+    String(q.symbol).replaceAll("-",""),q
+  ]));
+
+  const positions=(d.positions||[])
+    .filter(p=>v3num(p.quantity)>0)
+    .map(p=>{
+      const asset=p.symbol||p.currency?.code;
+      const q=v3num(p.quantity);
+      const lots=book.get(asset)||[];
+      const matched=
+        Math.abs(lots.reduce((s,l)=>s+l.q,0)-q)<1e-12&&
+        lots.every(l=>l.cash!==null);
+
+      let cost=matched?lots.reduce((s,l)=>s+l.cash,0):null;
+      const source=matched
+        ?"FIFO net acquisition debits"
+        :"Broker basis; acquisition-fee treatment unverified";
+
+      if(cost===null) {
+        const bases=p.cost_bases||[];
+        if(crypto&&bases.length===1&&
+           v3num(bases[0].direct_quantity)===q&&
+           v3num(bases[0].direct_cost_basis)>0) {
+          cost=v3num(bases[0].direct_cost_basis);
+        } else if(!crypto&&v3num(p.average_buy_price)>0) {
+          cost=q*v3num(p.average_buy_price);
+        }
+      }
+
+      const quote=quotes.get(asset+"USD");
+      const age=quote
+        ?(Date.now()-Date.parse(quote.updated_at))/1000
+        :Infinity;
+
+      let price=quote?v3num(quote.mark_price):null;
+
+      if(!(age>=0&&age<=180&&price>0&&
+           v3num(quote.bid_price)>0&&
+           v3num(quote.ask_price)>0&&
+           Number(quote.bid_price)<=Number(quote.ask_price))) {
+        price=null;
+      }
+
+      const value=price===null?null:q*price;
+      const net=matched&&value!==null?value-cost:null;
+
+      return {
+        asset,q,cost,price,value,net,source,
+        date:matched
+          ?[...new Set(lots.map(l=>l.date))].join(" / ")
+          :"Unavailable",
+        quoteAt:quote?.updated_at||"Quote unavailable"
+      };
+    });
+
+  const today=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"America/New_York",
+    year:"numeric",month:"2-digit",day:"2-digit"
+  }).format(new Date());
+
+  const closed=trades.filter(t=>(t.sell||"").slice(0,10)===today);
+
+  const realized=Array.isArray(d.orders)&&
+    closed.every(t=>t.net!==null)
+      ?closed.reduce((s,t)=>s+t.net,0):null;
+
+  const unrealized=Array.isArray(d.positions)&&
+    positions.every(p=>p.net!==null)
+      ?positions.reduce((s,p)=>s+p.net,0):null;
+
+  return {
+    positions,trades,today,realized,unrealized,
+    current:realized!==null&&unrealized!==null
+      ?realized+unrealized:null
+  };
+}
+
+function v3money(value) {
+  if(value===null||value===undefined) return "Unavailable";
+  if(Math.abs(value)<0.0000001) value=0;
+  return new Intl.NumberFormat("en-US",{
+    style:"currency",currency:"USD",
+    minimumFractionDigits:2,maximumFractionDigits:6
+  }).format(value);
+}
+
+function v3percent(net,cost) {
+  return net===null||cost===null||cost<=0
+    ?"Unavailable":(net/cost*100).toFixed(2)+"%";
+}
+
+function v3table(sectionId,title,headers,rows) {
+  const section=document.getElementById(sectionId);
+
+  if(!section) {
+    table(title,headers,rows);
+    return;
+  }
+
+  section.querySelectorAll(
+    ":scope > table, :scope > .si-v3-table"
+  ).forEach(node=>node.remove());
+
+  table(title,headers,rows);
+
+  const wrap=panel.lastElementChild;
+  const heading=wrap.previousElementSibling;
+  if(heading?.tagName==="H4") heading.remove();
+
+  wrap.classList.add("si-v3-table");
+  section.append(wrap);
+
+  const titleNode=section.querySelector("h3");
+  if(titleNode) titleNode.textContent=title;
+}
+
+function render() {
+   const id = typeof selected !== "undefined" ? selected : "crypto";
+   panel.hidden = typeof page !== "undefined" &&
+      !["Dashboard","Positions","Trade History"].includes(page);
+   const d = feed?.bots?.[id];
+   panel.replaceChildren();
+   add(panel,"h3",
+       (id === "equity" ? "US Equity" :
+        id === "crypto" ? "Crypto" : "Zerodha") +
+       " · Broker account data");
+
+   if (!d?.portfolio) {
+     const n = add(panel,"div",id === "zerodha"
+       ? "Zerodha broker collector is not configured. No values invented."
+       : "Awaiting authenticated broker data. No values invented.");
+     n.style.color = "#b45309";
+     return;
+   }
+
+   const age = (Date.now() - Date.parse(d.fetched_at)) / 1000;
+   const stale = !Number.isFinite(age) || age > 180;
+   const healthy = !failed && d.status === "READ_OK" && !stale;
+   const info = add(panel,"div",
+     (healthy ? "Broker read OK" : "STALE / READ FAILED — last successful data") +
+     " · Account " + d.account +
+     " · Fetched " + text(d.fetched_at) +
+     " · Age " + (Number.isFinite(age) ? Math.max(0,Math.floor(age))+"s" : "unknown") +
+     " · Trading-worker control remains separate");
+   info.id = "si-live-state";
+   info.style.color = healthy ? "#15803d" : "#b45309";
+   const unifiedPanel = document.getElementById("si-unified-financial");
+   if (unifiedPanel) {
+     const previousStatus = unifiedPanel.querySelector("#si-live-state");
+     if (previousStatus && previousStatus !== info) previousStatus.remove();
+     unifiedPanel.append(info);
+   }
+
+   const p = d.portfolio;
+   const assetValue = id === "crypto" ? p.crypto_value : p.equity_value;
+   const bp = id === "crypto"
+     ? p.crypto_buying_power?.buying_power
+     : p.buying_power?.buying_power;
+   const grid = document.createElement("div");
+   grid.className = "si-live-grid";
+   [
+     ["Whole brokerage account value",p.total_value],
+     ["Broker cash",p.cash],
+     ["Broker buying power—not bot allocation",bp],
+     [id === "crypto" ? "Crypto holdings value" : "Equity holdings value",
+      assetValue]
+   ].forEach(([label,value]) => {
+     const box = document.createElement("div");
+     add(box,"small",label);add(box,"strong",usd(value));grid.append(box);
+   });
+   const summaryRow = document.getElementById("si-financial-row");
+   const previousGrid = document.getElementById("si-inline-broker-metrics");
+   if (previousGrid) previousGrid.remove();
+   grid.id = "si-inline-broker-metrics";
+   if (summaryRow) summaryRow.append(grid);
+   else panel.append(grid);
+
+   document.querySelectorAll("#dashboard-page .metrics .box").forEach(box=>{
+     const label = box.querySelector(".label")?.textContent || "";
+     if (/current investment value/i.test(label)) {
+       const v = box.querySelector(".value");
+       if (v) v.textContent = usd(assetValue);
+     }
+   });
+
+
+   const model=v3calc(d,id);
+   const title=id==="crypto"?"Crypto":"US Equity";
+
+   document.querySelectorAll(
+     "#dashboard-page .metrics .box"
+   ).forEach(box=>{
+     const label=box.querySelector(".label");
+     const value=box.querySelector(".value");
+     if(!label||!value) return;
+
+     const name=label.textContent.toLowerCase();
+     let number;
+     if(name.includes("unrealized")) {
+       number=model.unrealized;
+     } else if(name.includes("realized")) {
+       number=model.realized;
+     } else if(/current.*(?:p&l|pnl)/i.test(name)) {
+       number=model.current;
+     } else return;
+
+     value.textContent=v3money(number)+(healthy?"":" · stale");
+     value.title="Account asset-class calculation; not bot-attributed.";
+   });
+
+   document.querySelectorAll(
+     "#dashboard-page .detail-row, #si-unified-financial .detail-row"
+   ).forEach(row=>{
+     const cells=row.querySelectorAll("span");
+     if(cells.length!==2) return;
+     const name=cells[0].textContent.toLowerCase();
+     if(name.includes("unrealized"))
+       cells[1].textContent=v3money(model.unrealized);
+     else if(name.includes("realized"))
+       cells[1].textContent=v3money(model.realized);
+     else if(/current.*(?:p&l|pnl)/i.test(name))
+       cells[1].textContent=v3money(model.current);
+   });
+
+   v3table("positions-page",title+" · Existing Positions",[
+     "Asset","Buy Date","Quantity",
+     "Actual Price / Unit","Current Price / Unit",
+     "Unrealized P&L / Unit","Unrealized P&L %",
+     "Total Actual Cost","Total Current Value",
+     "Total Unrealized P&L","Quote Timestamp","Basis"
+   ],model.positions.map(p=>[
+     p.asset,p.date,p.q,
+     v3money(p.cost===null?null:p.cost/p.q),
+     v3money(p.price),
+     v3money(p.net===null?null:p.net/p.q),
+     v3percent(p.net,p.cost),
+     v3money(p.cost),v3money(p.value),v3money(p.net),
+     p.quoteAt,p.source
+   ]));
+
+   v3table("trades-page",title+" · Completed Trades — FIFO",[
+     "Asset","Buy Date","Sell Date","Matched Quantity",
+     "Actual Price / Unit","Sold Price / Unit",
+     "Net P&L / Unit","Net P&L %",
+     "Total Actual Cost","Total Sold Value","Total Net P&L",
+     "Buy Fee — included","Sell Fee — included"
+   ],[...model.trades].reverse().map(t=>[
+     t.asset,t.buy,t.sell,t.q,
+     v3money(t.cost===null?null:t.cost/t.q),
+     v3money(t.price),
+     v3money(t.net===null?null:t.net/t.q),
+     v3percent(t.net,t.cost),
+     v3money(t.cost),v3money(t.cash),v3money(t.net),
+     v3money(t.buyFee),v3money(t.sellFee)
+   ]));
+
+   const orders=Array.isArray(d.orders)?d.orders:[];
+   table("Raw broker order history — separate from matched trades",[
+     "Created","Asset","Side","State","Filled quantity",
+     "Average fill price","Actual Net Debit / Credit","Reported fee"
+   ],orders.map(x=>[
+     x.created_at,x.symbol||x.currency_code,x.side,x.state,
+     x.cumulative_quantity,usd(x.average_price),
+     usd(x.net_rounded_executed_notional),
+     x.fee!=null?usd(x.fee):
+       typeof x.fees==="string"?usd(x.fees):"Unavailable"
+   ]));
+
+   add(panel,"small",
+     "Scope: selected asset class in this brokerage account, including "+
+     "manual activity—not exclusively the bot. Realized summary: sales on "+
+     model.today+" (US Eastern). Matching is a FIFO reconstruction, "+
+     "not broker-confirmed tax-lot accounting. Acquisition cost and sold "+
+     "total use net cash debits/credits; listed fees are not charged again. "+
+     "Open P&L is mark value minus net acquisition cost, before future "+
+     "selling fees. Current P&L combines today's realized result with "+
+     "all open-position P&L; it is not daily account return. "+
+     "Missing quotes or unmatched costs remain unavailable. "+
+     (d.quote_error?"Quote collection error: "+d.quote_error:"")
+   );
+
+ }
+ async function refresh() {
+   if (loading) return;
+   loading = true;
+   try {
+     const r = await fetch("/api/v1/live",{
+       cache:"no-store",signal:AbortSignal.timeout(8000)
+     });
+     if (!r.ok) throw new Error("Feed unavailable");
+     const data = await r.json();
+     if (!data.bots) throw new Error("Invalid feed");
+     feed = data;failed = false;
+   } catch (_) { failed = true; }
+   finally { loading = false;render(); }
+ }
+ refresh();
+ setInterval(refresh,10000);
+ setInterval(render,2000);
+})();
+</script>
+<!-- SI_DYNAMIC_FEED_END -->
+
+
+<!-- SI_TOP_CONTROLS_COMPACT_V1_START -->
+<style>
+/* Hide only the obsolete disconnected placeholders.
+   The live broker tables inside #si-live-panel stay visible. */
+#positions-page,
+#trades-page {
+    display:none !important;
+}
+
+body > .layout > main {
+    padding:10px;
+    min-width:0;
+}
+
+#bots.bots {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    margin:0 0 10px;
+}
+#bots .bot {
+    padding:10px;
+    min-width:0;
+    border-radius:9px;
+}
+#bots .bot h3 {
+    font-size:15px;
+    margin:0 0 4px;
+}
+#bots .bot .hint {
+    font-size:11px;
+    line-height:1.3;
+}
+#bots .control {
+    grid-template-columns:76px minmax(0,1fr) minmax(0,1fr);
+    gap:4px;
+    margin-top:5px;
+    padding:5px 0 0;
+    font-size:12px;
+}
+#bots .control button {
+    min-height:30px;
+    padding:5px 4px;
+    font-size:12px;
+    line-height:1.2;
+    border-radius:6px;
+}
+#bots .si-state {
+    font-size:11px;
+    line-height:1.3;
+}
+#bots .control .si-control-state {
+    margin:0;
+}
+#bots .si-bot-state {
+    margin:6px 0 0;
+    padding:6px 8px;
+}
+
+main .panel,
+#si-live-panel {
+    padding:10px;
+    margin:8px 0;
+    border-radius:9px;
+}
+main .panel h3,
+#si-live-panel h3 {
+    font-size:15px;
+    margin:0 0 7px;
+    padding-bottom:6px;
+}
+#si-live-panel h4 {
+    font-size:13px;
+    margin:8px 0 5px;
+}
+#si-live-panel .si-live-grid {
+    gap:6px;
+    margin-bottom:8px;
+}
+#si-live-panel .si-live-grid > div {
+    padding:6px 8px;
+}
+#si-live-panel .si-live-grid small {
+    font-size:11px;
+}
+#si-live-panel .si-live-grid strong {
+    font-size:16px;
+}
+#si-live-panel .si-live-table {
+    max-height:240px;
+    max-height:min(240px,30vh);
+    overflow:auto;
+    margin:5px 0 10px;
+}
+#si-live-panel th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#e2edf7;
+}
+main th,
+main td {
+    padding:7px 8px;
+    font-size:12px;
+}
+
+#dashboard-page h2 {
+    font-size:19px;
+    margin:6px 0 4px;
+}
+#dashboard-page .metrics {
+    gap:7px;
+    margin-top:8px !important;
+}
+#dashboard-page .metrics .box {
+    padding:8px 10px;
+    min-height:0;
+}
+#dashboard-page .metrics .value {
+    font-size:21px;
+    margin-top:3px;
+}
+#dashboard-page .details {
+    gap:6px;
+}
+#dashboard-page .detail-row {
+    padding:5px 8px;
+    gap:6px;
+}
+#dashboard-page .detail-row > span:last-child {
+    font-size:18px;
+}
+#dashboard-page .details > .notice {
+    padding:6px 8px;
+    font-size:11px;
+    line-height:1.35;
+}
+
+.nav {
+    gap:3px;
+}
+.nav button {
+    padding:8px 10px;
+    font-size:12px;
+}
+header .header-actions {
+    gap:5px;
+}
+header .header-actions button {
+    padding:7px 9px;
+    font-size:12px;
+}
+
+@media(max-width:900px) {
+    #bots.bots {
+        grid-template-columns:minmax(0,1fr);
+    }
+}
+</style>
+
+<script>
+(() => {
+    function arrange() {
+        const main = document.querySelector("body > .layout > main");
+        const bots = document.getElementById("bots");
+        if (!main || !bots) return;
+
+        main.prepend(bots);
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", arrange);
+    } else {
+        arrange();
+    }
+})();
+</script>
+<!-- SI_TOP_CONTROLS_COMPACT_V1_END -->
+
+
+<!-- SI_UNIFIED_FINANCIAL_ROW_START -->
+<style>
+#si-unified-financial {
+    padding:10px;
+    margin:8px 0;
+    border-radius:9px;
+    min-width:0;
+}
+#si-unified-financial .si-financial-scroll {
+    overflow-x:auto;
+    min-width:0;
+}
+#si-financial-row {
+    display:grid;
+    grid-template-columns:repeat(8,minmax(135px,1fr));
+    min-width:1080px;
+    gap:0;
+}
+#si-financial-row > .box,
+#si-financial-row > .detail-row {
+    display:flex !important;
+    flex-direction:column;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+    padding:8px 10px !important;
+    margin:0 !important;
+    min-height:62px;
+    min-width:0;
+    background:transparent !important;
+    border:0 !important;
+    border-right:1px solid #cbd5e1 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    outline:0 !important;
+}
+#si-financial-row > :last-child {
+    border-right:0 !important;
+}
+#si-financial-row .label,
+#si-financial-row .detail-row > span:first-child {
+    font-size:11px !important;
+    line-height:1.35;
+    color:var(--muted);
+    font-weight:400;
+}
+#si-financial-row .value,
+#si-financial-row .detail-row > span:last-child {
+    font-size:20px !important;
+    line-height:1.2;
+    font-weight:700;
+    margin:0 !important;
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+}
+#si-unified-financial .notice {
+    margin-top:8px;
+    padding:6px 8px;
+    font-size:11px;
+    line-height:1.35;
+}
+#si-financial-original-panel {
+    display:none !important;
+}
+</style>
+
+<script>
+(() => {
+    function combine() {
+        if (document.getElementById("si-unified-financial")) return;
+
+        const overview = document.getElementById("dashboard-page");
+        const metrics = overview?.querySelector(".metrics");
+        const details = overview?.querySelector(".details");
+        const oldPanel = details?.closest(".panel");
+
+        if (!overview || !metrics || !details || !oldPanel) return;
+
+        const boxes = Array.from(metrics.querySelectorAll(":scope > .box"));
+        const rows = Array.from(details.querySelectorAll(".detail-row"));
+
+        const boxFor = pattern => boxes.find(box =>
+            pattern.test(box.querySelector(".label")?.textContent || "")
+        );
+        const rowFor = pattern => rows.find(row =>
+            pattern.test(row.querySelector("span")?.textContent || "")
+        );
+
+        const ordered = [
+            boxFor(/total limit|allocated/i),
+            rowFor(/^available limit/i),
+            rowFor(/^invested limit/i),
+            boxFor(/^realized/i),
+            boxFor(/^unrealized/i),
+            boxFor(/^current investment value/i),
+            rowFor(/^configured spendable ceiling/i),
+            rowFor(/^configured reserve/i)
+        ];
+
+        if (ordered.some(node => !node) ||
+            new Set(ordered).size !== 8) {
+            console.warn(
+                "Financial consolidation skipped: expected metrics missing."
+            );
+            return;
+        }
+
+        const component = document.createElement("section");
+        component.id = "si-unified-financial";
+        component.className = "panel";
+        component.setAttribute("aria-label", "Account financial summary");
+
+        const scroll = document.createElement("div");
+        scroll.className = "si-financial-scroll";
+
+        const row = document.createElement("div");
+        row.id = "si-financial-row";
+
+        metrics.before(component);
+        ordered.forEach(node => row.append(node));
+        scroll.append(row);
+        component.append(scroll);
+
+        const notice = details.querySelector(".notice");
+        if (notice) component.append(notice);
+
+        metrics.remove();
+        oldPanel.id = "si-financial-original-panel";
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", combine);
+    } else {
+        combine();
+    }
+})();
+</script>
+<!-- SI_UNIFIED_FINANCIAL_ROW_END -->
+
+
+<!-- SI_BOT_TWO_ROW_CONTROLS_START -->
+<style>
+#bots .si-controls-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px 10px;
+    margin-top:8px;
+}
+#bots .si-controls-grid > .control {
+    display:grid;
+    grid-template-columns:minmax(55px,auto) minmax(0,1fr) minmax(0,1fr);
+    align-items:center;
+    align-content:start;
+    gap:4px;
+    margin:0;
+    padding:6px 0;
+    min-width:0;
+}
+#bots .si-controls-grid > .control > span:first-child {
+    font-size:11px;
+    line-height:1.25;
+}
+#bots .si-controls-grid .control button {
+    min-height:30px;
+    padding:5px 3px;
+    font-size:11px;
+    line-height:1.2;
+    min-width:0;
+}
+#bots .si-controls-grid .si-control-state {
+    grid-column:1 / -1;
+    margin:2px 0 0;
+    font-size:10px;
+    line-height:1.3;
+}
+#bots .si-bot-state {
+    margin-top:6px;
+    font-size:10px;
+    line-height:1.3;
+}
+@media(max-width:1200px) and (min-width:901px) {
+    #bots.bots {
+        grid-template-columns:minmax(0,1fr);
+    }
+}
+</style>
+
+<script>
+(() => {
+    function arrangeCards() {
+        document.querySelectorAll("#bots .bot").forEach(card => {
+            if (card.querySelector(":scope > .si-controls-grid")) return;
+
+            const controls = Array.from(
+                card.querySelectorAll(":scope > .control")
+            );
+            if (controls.length !== 4) return;
+
+            function label(row) {
+                return (
+                    row.querySelector(":scope > span")?.textContent || ""
+                ).trim().toLowerCase();
+            }
+
+            const auto = controls.find(r => label(r) === "auto trade");
+            const bot = controls.find(r => label(r) === "bot");
+            const buy = controls.find(r => label(r) === "buy");
+            const sell = controls.find(r => label(r) === "sell");
+
+            if (!auto || !bot || !buy || !sell) return;
+
+            const grid = document.createElement("div");
+            grid.className = "si-controls-grid";
+            auto.before(grid);
+            [auto, bot, buy, sell].forEach(row => grid.append(row));
+        });
+    }
+
+    function start() {
+        const root = document.getElementById("bots");
+        if (!root) return;
+
+        arrangeCards();
+
+        new MutationObserver(() => arrangeCards()).observe(root, {
+            childList:true,
+            subtree:true
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start);
+    } else {
+        start();
+    }
+})();
+</script>
+<!-- SI_BOT_TWO_ROW_CONTROLS_END -->
+
+
+<!-- SI_NET_SUMMARY_LAYOUT_START -->
+<style>
+#si-financial-row {
+    grid-template-columns:repeat(6,minmax(145px,1fr)) !important;
+    min-width:870px !important;
+}
+#si-financial-row > .box,
+#si-financial-row > .detail-row {
+    min-height:58px;
+    padding:7px 10px !important;
+}
+#si-financial-row .value,
+#si-financial-row .detail-row > span:last-child {
+    font-size:20px !important;
+}
+</style>
+
+<script>
+(() => {
+    function apply() {
+        const row = document.getElementById("si-financial-row");
+        if (!row || row.dataset.netLayout === "done") return;
+
+        const items = Array.from(row.children);
+        const label = node => (
+            node.querySelector(".label")?.textContent ||
+            node.querySelector("span")?.textContent || ""
+        ).trim();
+
+        const find = pattern => items.find(n => pattern.test(label(n)));
+
+        const allocated = find(/total limit|allocated/i);
+        const realized = find(/^realized/i);
+        const unrealized = find(/^unrealized/i);
+        const ceiling = find(/^configured spendable ceiling/i);
+        const reserve = find(/^configured reserve/i);
+
+        if (![allocated, realized, unrealized, ceiling, reserve].every(Boolean))
+            return;
+
+        function setLabel(node, text) {
+            const target = node.querySelector(".label") ||
+                           node.querySelector("span");
+            if (target) target.textContent = text;
+        }
+
+        setLabel(realized, "Realized Net P&L");
+        setLabel(unrealized, "Unrealized Net P&L");
+
+        const current = document.createElement("div");
+        current.className = "box";
+
+        const heading = document.createElement("div");
+        heading.className = "label";
+        heading.textContent = "Current Net P&L";
+
+        const value = document.createElement("div");
+        value.className = "value";
+        value.id = "si-current-net-pnl";
+        value.textContent = "—";
+
+        current.append(heading, value);
+        current.title =
+            "Realized net P&L plus unrealized net P&L. "+
+            "Unavailable until both components are verified.";
+
+        const storage = document.createElement("div");
+        storage.hidden = true;
+        storage.id = "si-retained-financial-elements";
+
+        const keep = new Set([
+            allocated, realized, unrealized, ceiling, reserve
+        ]);
+        items.filter(n => !keep.has(n)).forEach(n => storage.append(n));
+
+        row.replaceChildren(
+            allocated, realized, unrealized, current, ceiling, reserve
+        );
+        row.parentElement.append(storage);
+        row.dataset.netLayout = "done";
+
+        const notice = document.querySelector(
+            "#si-unified-financial .notice"
+        );
+        if (notice) {
+            notice.textContent =
+                "Allocation, ceiling and reserve are saved configuration. "+
+                "Broker data refreshes separately. Net P&L is unavailable "+
+                "until cost basis, fees and remaining holdings are reconciled.";
+        }
+    }
+
+    if (document.readyState === "loading")
+        document.addEventListener("DOMContentLoaded", apply);
+    else apply();
+})();
+</script>
+<!-- SI_NET_SUMMARY_LAYOUT_END -->
+
+
+<!-- SI_CRYPTO_WORKER_VIEW_V1 -->
+<script>
+(() => {
+  const main=document.querySelector("body > .layout > main");
+  if(!main)return;
+  const panel=document.createElement("section");
+  panel.className="panel";
+  panel.id="si-crypto-worker-view";
+  const cards=document.getElementById("bots");
+  if(cards)cards.after(panel);else main.prepend(panel);
+
+  let data=null,error="",busy=false;
+
+  function add(parent,tag,text){
+    const n=document.createElement(tag);
+    n.textContent=text;
+    parent.append(n);
+    return n;
+  }
+  function show(v){
+    return v===null||v===undefined?"Unknown":String(v);
+  }
+  function paint(){
+    const current=typeof page==="string"?page:"Dashboard";
+    panel.hidden=!["Dashboard","Bot Status"].includes(current);
+    panel.replaceChildren();
+    add(panel,"h3","BTC Worker — Live Status");
+
+    if(error||!data){
+      const n=add(panel,"p",error||"Loading worker state…");
+      n.style.color="#b45309";
+      return;
+    }
+
+    const state=data.display_state;
+    const active=data.process==="active"&&data.heartbeat_fresh;
+    const processing=active&&state==="PROCESSING"&&
+      data.applied_entries_enabled===true&&
+      typeof data.status.score==="number";
+
+    const banner=add(panel,"p",state.replaceAll("_"," "));
+    banner.style.color=processing?"#15803d":
+      state==="ENTRIES_PAUSED"?"#b91c1c":"#b45309";
+    banner.style.fontWeight="700";
+
+    const table=document.createElement("table");
+    const body=table.createTBody();
+    const s=data.status;
+    const rows=[
+      ["Account / instrument",data.account+" / "+data.symbol],
+      ["Worker process",data.process],
+      ["Heartbeat age",show(data.heartbeat_age_seconds)+" seconds"],
+      ["Applied new-entry permission",
+        data.applied_entries_enabled===true?"ON":
+        data.applied_entries_enabled===false?"OFF":"UNKNOWN"],
+      ["Last completed cycle",s.last_cycle_completed],
+      ["Samples / score",show(s.sample_count)+" / "+show(s.score)],
+      ["Factors",JSON.stringify(s.factors||{})],
+      ["Last decision",s.decision],
+      ["Blocking reason",s.reason||"None reported"],
+      ["Managed quantity",s.managed_quantity],
+      ["Pricing source",s.quote_source],
+      ["Source timestamp",s.source_quote_timestamp],
+      ["Capital / entry budget",
+        "$"+show(data.configuration.capital_usd)+" / $"+
+        show(data.configuration.entry_budget_usd)],
+      ["Trading execution",
+        "Installed path; this status endpoint does not verify fills"]
+    ];
+    for(const [label,value] of rows){
+      const row=body.insertRow();
+      add(row,"th",label);add(row,"td",show(value));
+    }
+    panel.append(table);
+
+    add(panel,"h4","Recent worker events");
+    const history=add(panel,"pre",data.recent_events.map(e=>
+      e.at+" "+e.kind+" "+JSON.stringify(e.data)
+    ).join("\n"));
+    history.style.whiteSpace="pre-wrap";
+    history.style.overflowWrap="anywhere";
+    history.style.maxHeight="220px";
+    history.style.overflow="auto";
+
+    add(panel,"p",
+      "Read-only worker evidence. Existing dashboard buttons are not "+
+      "connected to this worker yet. Use the authorized CLI for commands.");
+  }
+
+  async function refresh(){
+    if(busy)return;
+    busy=true;
+    try{
+      const r=await fetch("/api/v1/workers/crypto",{
+        cache:"no-store",signal:AbortSignal.timeout(8000)
+      });
+      const body=await r.json();
+      if(!r.ok)throw new Error(body.message||body.error||("HTTP "+r.status));
+      data=body;error="";
+    }catch(e){
+      error="Current worker status unavailable: "+e.message+
+        ". No previous state is being presented as current.";
+    }finally{busy=false;paint();}
+  }
+
+  document.addEventListener("click",()=>setTimeout(paint,0));
+  refresh();
+  setInterval(refresh,10000);
+})();
+</script>
+
+
+<!-- SI_POSITION_TRADE_AMOUNTS_V1 -->
+<style>
+#si-amounts-view { margin:18px 0; padding:18px; }
+#si-amounts-view .si-scroll { overflow-x:auto; margin:12px 0 22px; }
+#si-amounts-view table { width:100%; border-collapse:collapse; }
+#si-amounts-view th,#si-amounts-view td {
+  padding:9px; text-align:right; white-space:nowrap;
+  border-bottom:1px solid #cbd5e1;
+}
+#si-amounts-view th:first-child,#si-amounts-view td:first-child {
+  text-align:left;
+}
+#si-amounts-view .si-note { font-size:13px; line-height:1.5; }
+#si-amounts-view .si-loss { color:#dc2626; }
+#si-amounts-view .si-gain { color:#16a34a; }
+#si-amounts-view label { display:inline-block; margin:8px 18px 8px 0; }
+</style>
+
+
+
+
+
+
+<!-- SI_UNIFORM_9PX_COMPACT_START -->
+<style>
+:is(#siFontA#siFontB#siFontC#siFontD, body),
+:is(#siFontA#siFontB#siFontC#siFontD, body) * {
+    font-size: 10.8px !important;
+    line-height: 1.2 !important;
+    letter-spacing: normal !important;
+}
+
+body > header {
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+body .box,
+body .bot,
+body .control button,
+body .nav button,
+body #si-inline-broker-metrics > div {
+    min-height: 0 !important;
+}
+</style>
+
+<script>
+(() => {
+    const processed = new WeakSet();
+    const skipped = new Set([
+        "SCRIPT", "STYLE", "LINK", "META", "NOSCRIPT",
+        "SVG", "PATH"
+    ]);
+
+    const spacing = [
+        "padding-top", "padding-right",
+        "padding-bottom", "padding-left",
+        "margin-top", "margin-right",
+        "margin-bottom", "margin-left",
+        "row-gap", "column-gap"
+    ];
+
+    function compact(element) {
+        if (!(element instanceof HTMLElement)) return;
+        if (skipped.has(element.tagName)) return;
+
+        element.style.setProperty("font-size", "10.8px", "important");
+        element.style.setProperty("line-height", "1.2", "important");
+        element.style.setProperty("letter-spacing", "normal", "important");
+
+        if (processed.has(element)) return;
+        processed.add(element);
+
+        const computed = getComputedStyle(element);
+        const original = spacing.map(property => [
+            property, computed.getPropertyValue(property).trim()
+        ]);
+
+        for (const [property, value] of original) {
+            if (/^-?(?:\d+|\d*\.\d+)px$/.test(value)) {
+                const smaller = Number.parseFloat(value) * 0.1;
+                element.style.setProperty(
+                    property,
+                    smaller.toFixed(3) + "px",
+                    "important"
+                );
+            }
+        }
+    }
+
+    function apply(root) {
+        compact(root);
+        root.querySelectorAll("*").forEach(compact);
+    }
+
+    apply(document.body);
+
+    const pending = new Set();
+    let scheduled = false;
+
+    new MutationObserver(records => {
+        for (const record of records) {
+            for (const node of record.addedNodes) {
+                if (node instanceof HTMLElement) pending.add(node);
+            }
+        }
+
+        if (!pending.size || scheduled) return;
+        scheduled = true;
+
+        requestAnimationFrame(() => {
+            scheduled = false;
+            const roots = [...pending];
+            pending.clear();
+            roots.forEach(root => {
+                if (root.isConnected) apply(root);
+            });
+        });
+    }).observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+})();
+</script>
+<!-- SI_UNIFORM_9PX_COMPACT_END -->
+
+<!-- SI_PNL_RECOVERY_START -->
+
+<script>
+(() => {
+"use strict";
+
+function v3num(v) {
+  if(v===null||v===undefined||v==="") return null;
+  const n=Number(v);
+  return Number.isFinite(n)?n:null;
+}
+
+function v3calc(d,id) {
+  const crypto=id==="crypto",book=new Map(),trades=[],seen=new Set();
+  const orders=[...(d.orders||[])].sort(
+    (a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)
+  );
+
+  for(const o of orders) {
+    const q=v3num(o.cumulative_quantity);
+    const asset=o.currency_code||o.symbol;
+
+    if(!o.id||seen.has(o.id)||q===null||q<=0||!asset) continue;
+    seen.add(o.id);
+
+    if(!["filled","canceled","cancelled",
+         "partially_filled_rest_cancelled"].includes(o.state)) continue;
+
+    let cash=v3num(o.net_rounded_executed_notional);
+    const fee=v3num(o.fee??(
+      typeof o.fees==="string"?o.fees:null
+    ));
+
+    if(!crypto&&cash===null) {
+      const price=v3num(o.average_price);
+      if(price!==null&&fee!==null)
+        cash=q*price+(o.side==="buy"?fee:-fee);
+    }
+
+    if(!book.has(asset)) book.set(asset,[]);
+    const lots=book.get(asset);
+
+    if(o.side==="buy") {
+      lots.push({q,cash,fee,date:o.created_at});
+      continue;
+    }
+    if(o.side!=="sell") continue;
+
+    let left=q,cost=0,buyFee=0,known=true,feeKnown=true;
+    const dates=[];
+
+    while(left>1e-12&&lots.length) {
+      const lot=lots[0];
+      const take=Math.min(left,lot.q);
+      const fraction=take/lot.q;
+
+      if(lot.cash===null) known=false;
+      else {
+        const used=lot.cash*fraction;
+        cost+=used;
+        lot.cash-=used;
+      }
+
+      if(lot.fee===null) feeKnown=false;
+      else {
+        const used=lot.fee*fraction;
+        buyFee+=used;
+        lot.fee-=used;
+      }
+
+      dates.push(lot.date);
+      lot.q-=take;
+      left-=take;
+      if(lot.q<1e-12) lots.shift();
+    }
+
+    known=known&&left<=1e-12;
+    const net=known&&cash!==null?cash-cost:null;
+
+    trades.push({
+      asset,
+      buy:known?[...new Set(dates)].join(" / "):"Unreconciled",
+      sell:o.created_at,q,
+      cost:known?cost:null,
+      cash,
+      price:v3num(o.average_price),
+      net,
+      buyFee:feeKnown&&left<=1e-12?buyFee:null,
+      sellFee:fee
+    });
+  }
+
+  const quotes=new Map((d.quotes||[]).map(q=>[
+    String(q.symbol).replaceAll("-",""),q
+  ]));
+
+  const positions=(d.positions||[])
+    .filter(p=>v3num(p.quantity)>0)
+    .map(p=>{
+      const asset=p.symbol||p.currency?.code;
+      const q=v3num(p.quantity);
+      const lots=book.get(asset)||[];
+      const matched=
+        Math.abs(lots.reduce((s,l)=>s+l.q,0)-q)<1e-12&&
+        lots.every(l=>l.cash!==null);
+
+      let cost=matched?lots.reduce((s,l)=>s+l.cash,0):null;
+      const source=matched
+        ?"FIFO net acquisition debits"
+        :"Broker basis; acquisition-fee treatment unverified";
+
+      if(cost===null) {
+        const bases=p.cost_bases||[];
+        if(crypto&&bases.length===1&&
+           v3num(bases[0].direct_quantity)===q&&
+           v3num(bases[0].direct_cost_basis)>0) {
+          cost=v3num(bases[0].direct_cost_basis);
+        } else if(!crypto&&v3num(p.average_buy_price)>0) {
+          cost=q*v3num(p.average_buy_price);
+        }
+      }
+
+      const quote=quotes.get(asset+"USD");
+      const age=quote
+        ?(Date.now()-Date.parse(quote.updated_at))/1000
+        :Infinity;
+
+      let price=quote?v3num(quote.mark_price):null;
+
+      if(!(age>=0&&age<=180&&price>0&&
+           v3num(quote.bid_price)>0&&
+           v3num(quote.ask_price)>0&&
+           Number(quote.bid_price)<=Number(quote.ask_price))) {
+        price=null;
+      }
+
+      const value=price===null?null:q*price;
+      const net=matched&&value!==null?value-cost:null;
+
+      return {
+        asset,q,cost,price,value,net,source,
+        date:matched
+          ?[...new Set(lots.map(l=>l.date))].join(" / ")
+          :"Unavailable",
+        quoteAt:quote?.updated_at||"Quote unavailable"
+      };
+    });
+
+  const today=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"America/New_York",
+    year:"numeric",month:"2-digit",day:"2-digit"
+  }).format(new Date());
+
+  const closed=trades.filter(t=>(t.sell||"").slice(0,10)===today);
+
+  const realized=Array.isArray(d.orders)&&
+    closed.every(t=>t.net!==null)
+      ?closed.reduce((s,t)=>s+t.net,0):null;
+
+  const unrealized=Array.isArray(d.positions)&&
+    positions.every(p=>p.net!==null)
+      ?positions.reduce((s,p)=>s+p.net,0):null;
+
+  return {
+    positions,trades,today,realized,unrealized,
+    current:realized!==null&&unrealized!==null
+      ?realized+unrealized:null
+  };
+}
+
+
+
+const ID="si-pnl-recovery";
+let snapshot=null;
+let requestError="";
+let loading=false;
+let lastSignature="";
+
+const usd=(v,perUnit=false)=>{
+  if(v===null||v===undefined||!Number.isFinite(Number(v)))
+    return "Unavailable";
+  const n=Math.abs(Number(v))<0.0000001?0:Number(v);
+  return new Intl.NumberFormat("en-US",{
+    style:"currency",currency:"USD",
+    minimumFractionDigits:2,
+    maximumFractionDigits:perUnit?6:2
+  }).format(n);
+};
+
+const percentage=(net,cost)=>
+  net===null||cost===null||cost<=0
+    ?"Unavailable":(net/cost*100).toFixed(2)+"%";
+
+function add(parent,tag,text) {
+  const e=document.createElement(tag);
+  if(text!==undefined) e.textContent=text;
+  parent.append(e);
+  return e;
+}
+
+function rootPanel() {
+  let root=document.getElementById(ID);
+  if(!root) {
+    const main=document.querySelector("body > .layout > main");
+    if(!main) throw Error("Dashboard main container not found");
+    root=document.createElement("section");
+    root.id=ID;
+    root.className="panel";
+    const botBoxes=document.getElementById("bots");
+    if(botBoxes) botBoxes.after(root);
+    else main.append(root);
+    lastSignature="";
+  }
+  return root;
+}
+
+function makeTable(parent,title,headers,rows) {
+  add(parent,"h3",title);
+  const wrap=add(parent,"div");
+  wrap.style.overflowX="auto";
+  const table=add(wrap,"table");
+  const head=add(add(table,"thead"),"tr");
+  headers.forEach(h=>add(head,"th",h));
+  const body=add(table,"tbody");
+
+  if(!rows.length) {
+    const cell=add(add(body,"tr"),"td","No records in this snapshot.");
+    cell.colSpan=headers.length;
+  }
+
+  rows.forEach(values=>{
+    const row=add(body,"tr");
+    values.forEach(value=>{
+      const cell=add(row,"td",value??"Unavailable");
+      if(String(value).startsWith("-$"))
+        cell.style.color="#b91c1c";
+    });
+  });
+}
+
+function updateExisting(model,stale) {
+  document.querySelectorAll(
+    "main .box, main .detail-row, #si-financial-row > div"
+  ).forEach(box=>{
+    if(box.closest("#"+ID)) return;
+
+    const label=box.querySelector(".label, small, span");
+    if(!label) return;
+
+    const name=label.textContent.toLowerCase();
+    let amount;
+
+    if(name.includes("unrealized")) amount=model.unrealized;
+    else if(name.includes("realized")) amount=model.realized;
+    else if(/current.*(?:p&l|pnl)/i.test(name))
+      amount=model.current;
+    else return;
+
+    const value=box.querySelector(".value, strong")||
+      label.nextElementSibling;
+
+    if(value&&value!==label)
+      value.textContent=usd(amount)+(stale?" · stale":"");
+  });
+}
+
+function paint() {
+  const root=rootPanel();
+  const id=typeof selected==="string"?selected:"crypto";
+  const currentPage=typeof page==="string"?page:"Dashboard";
+
+  root.hidden=
+    !["crypto","equity"].includes(id)||
+    !["Dashboard","Positions","Trade History"].includes(currentPage);
+
+  if(root.hidden) return;
+
+  const d=snapshot?.bots?.[id];
+
+  if(!d||requestError) {
+    root.replaceChildren();
+    add(root,"h3","Live account P&L and trade details");
+    add(root,"p",requestError||"Waiting for broker snapshot.");
+    lastSignature="";
+    return;
+  }
+
+  const model=v3calc(d,id);
+  const age=(Date.now()-Date.parse(d.fetched_at))/1000;
+  const stale=d.status!=="READ_OK"||
+    !Number.isFinite(age)||age<0||age>180;
+
+  updateExisting(model,stale);
+
+  const signature=JSON.stringify([
+    id,model,d.fetched_at,stale,d.quote_error
+  ]);
+
+  if(signature===lastSignature&&root.childElementCount) return;
+  lastSignature=signature;
+  root.replaceChildren();
+
+  add(root,"h3",
+    (id==="crypto"?"Crypto":"US Equity")+
+    " · Live account P&L and trade details"
+  );
+
+  const status=add(root,"p",
+    (stale?"STALE / READ FAILED":"Broker snapshot available")+
+    " · "+d.fetched_at
+  );
+  status.style.color=stale?"#b45309":"#15803d";
+
+  const cards=add(root,"div");
+  cards.style.display="flex";
+  cards.style.flexWrap="wrap";
+  cards.style.gap="3px";
+
+  [
+    ["Realized Net P&L",model.realized],
+    ["Unrealized Net P&L",model.unrealized],
+    ["Current Net P&L",model.current]
+  ].forEach(([label,value])=>{
+    const box=add(cards,"div");
+    box.className="box";
+    add(box,"div",label);
+    add(box,"strong",usd(value));
+  });
+
+  add(root,"p",
+    "Scope: this account's selected asset class, including manual activity. "+
+    "Realized summary covers sales on "+model.today+
+    " (US Eastern). Trade matching is reconstructed FIFO, not "+
+    "broker-confirmed tax-lot reconciliation. Open P&L is mark value "+
+    "minus known net acquisition cost, before future selling fees. "+
+    "Current P&L combines today's realized result with all open-position "+
+    "P&L; it is not daily account return."
+  );
+
+  makeTable(root,"Existing Positions",[
+    "Asset","Buy Date","Quantity",
+    "Actual Price / Unit","Current Price / Unit",
+    "Net P&L / Unit","Net P&L %",
+    "Total Actual Cost","Total Current Value","Total Net P&L",
+    "Quote Timestamp","Cost Source"
+  ],model.positions.map(x=>[
+    x.asset,x.date,x.q,
+    usd(x.cost===null?null:x.cost/x.q,true),
+    usd(x.price,true),
+    usd(x.net===null?null:x.net/x.q,true),
+    percentage(x.net,x.cost),
+    usd(x.cost),usd(x.value),usd(x.net),
+    x.quoteAt,x.source
+  ]));
+
+  makeTable(root,"Completed Trade Results — FIFO",[
+    "Asset","Buy Date","Sell Date","Matched Quantity",
+    "Actual Price / Unit","Sold Price / Unit",
+    "Net P&L / Unit","Net P&L %",
+    "Total Actual Cost","Total Sold Value","Total Net P&L",
+    "Buy Fee — included","Sell Fee — included"
+  ],[...model.trades].reverse().map(x=>[
+    x.asset,x.buy,x.sell,x.q,
+    usd(x.cost===null?null:x.cost/x.q,true),
+    usd(x.price,true),
+    usd(x.net===null?null:x.net/x.q,true),
+    percentage(x.net,x.cost),
+    usd(x.cost),usd(x.cash),usd(x.net),
+    usd(x.buyFee),usd(x.sellFee)
+  ]));
+
+  add(root,"p",
+    "Acquisition price per unit includes matched acquisition costs. "+
+    "Sold price per unit is the reported fill price; Total Sold Value "+
+    "is actual net credit. Fees shown separately are already included "+
+    "in the net cash amounts and are not deducted again. "+
+    "Unavailable means missing quote or unreconciled acquisition data."+
+    (d.quote_error?" Quote error: "+d.quote_error:"")
+  );
+}
+
+function safePaint() {
+  try {
+    paint();
+  } catch(error) {
+    const root=rootPanel();
+    root.hidden=false;
+    root.replaceChildren();
+    add(root,"h3","P&L calculation/display error");
+    add(root,"pre",String(error.stack||error.message||error));
+    lastSignature="";
+  }
+}
+
+async function refresh() {
+  if(loading) return;
+  loading=true;
+  try {
+    const response=await fetch("/api/v1/live",{
+      cache:"no-store",
+      signal:AbortSignal.timeout(10000)
+    });
+    if(!response.ok) throw Error("Broker feed HTTP "+response.status);
+    const data=await response.json();
+    if(!data.bots) throw Error("Broker feed has no bots object");
+    snapshot=data;
+    requestError="";
+  } catch(error) {
+    requestError="Live data request failed: "+error.message;
+  } finally {
+    loading=false;
+    safePaint();
+  }
+}
+
+refresh();
+setInterval(refresh,10000);
+setInterval(safePaint,2000);
+})();
+</script>
+
+<!-- SI_PNL_RECOVERY_END -->
+
+<!-- SI_STRATEGY_SETTINGS_LINK_V1 -->
+<div style="padding:16px;text-align:center"><a href="/strategy-settings" style="color:#60a5fa">Strategy configuration — saved settings, not live activation</a></div>
+</body>
+</html>
