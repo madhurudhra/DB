@@ -1,0 +1,14 @@
+[Unit]
+Description=Super Intelligence Master API Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/super-intelligence-dashboard
+ExecStart=/usr/bin/python3 /opt/super-intelligence-dashboard/unified_control_api.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

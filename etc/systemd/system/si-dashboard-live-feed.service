@@ -1,0 +1,17 @@
+[Unit]
+Description=Read-only Robinhood dashboard data collector
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=botuser
+WorkingDirectory=/home/botuser/si-bots
+Environment=HOME=/home/botuser
+UMask=0077
+ExecStart=/home/botuser/si-mcp-auth-venv/bin/python /home/botuser/si-bots/dashboard_live_feed.py
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
