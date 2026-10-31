@@ -1,0 +1,38 @@
+test_auto_off_blocks_sell (test_equity_worker.ControlTests.test_auto_off_blocks_sell) ... ok
+test_buy_does_not_default_on (test_equity_worker.ControlTests.test_buy_does_not_default_on) ... ok
+test_buy_on_queue_and_ack (test_equity_worker.ControlTests.test_buy_on_queue_and_ack) ... ok
+test_conflicting_reuse (test_equity_worker.ControlTests.test_conflicting_reuse) ... ok
+test_idempotent (test_equity_worker.ControlTests.test_idempotent) ... ok
+test_complete_buy_cycle (test_equity_worker.CycleTests.test_complete_buy_cycle) ... ok
+test_complete_exit_cycle (test_equity_worker.CycleTests.test_complete_exit_cycle) ... ok
+test_stale_settings_do_not_disable_owned_exits (test_equity_worker.CycleTests.test_stale_settings_do_not_disable_owned_exits) ... ok
+test_bad_numbers (test_equity_worker.PureTests.test_bad_numbers) ... ok
+test_broker_cash_bound (test_equity_worker.PureTests.test_broker_cash_bound) ... ok
+test_budget (test_equity_worker.PureTests.test_budget) ... ok
+test_flat_score (test_equity_worker.PureTests.test_flat_score) ... ok
+test_history_length (test_equity_worker.PureTests.test_history_length) ... ok
+test_loss_reduces_owned_cash (test_equity_worker.PureTests.test_loss_reduces_owned_cash) ... ok
+test_no_ticker_cap (test_equity_worker.PureTests.test_no_ticker_cap) ... ok
+test_owned_basis (test_equity_worker.PureTests.test_owned_basis) ... ok
+test_pending_reservation (test_equity_worker.PureTests.test_pending_reservation) ... ok
+test_score (test_equity_worker.PureTests.test_score) ... ok
+test_zero_utilization (test_equity_worker.PureTests.test_zero_utilization) ... ok
+test_alert_blocks (test_equity_worker.WorkerTests.test_alert_blocks) ... ok
+test_app_approval_not_bypassed (test_equity_worker.WorkerTests.test_app_approval_not_bypassed) ... ok
+test_buy_off_cycle_has_no_submission (test_equity_worker.WorkerTests.test_buy_off_cycle_has_no_submission) ... ok
+test_external_owned_quantity_change_blocks (test_equity_worker.WorkerTests.test_external_owned_quantity_change_blocks) ... ok
+test_floor_arms_strictly_above_threshold (test_equity_worker.WorkerTests.test_floor_arms_strictly_above_threshold) ... ok
+test_partial_fill_reconciled (test_equity_worker.WorkerTests.test_partial_fill_reconciled) ... ok
+test_permission_changes_after_review (test_equity_worker.WorkerTests.test_permission_changes_after_review) ... ok
+test_permission_off_no_broker_write (test_equity_worker.WorkerTests.test_permission_off_no_broker_write) ... ok
+test_policy_change_blocks (test_equity_worker.WorkerTests.test_policy_change_blocks) ... ok
+test_recovery_blocks_entry (test_equity_worker.WorkerTests.test_recovery_blocks_entry) ... ok
+test_stop_signal (test_equity_worker.WorkerTests.test_stop_signal) ... ok
+test_submission_records_broker_identity (test_equity_worker.WorkerTests.test_submission_records_broker_identity) ... ok
+test_unknown_does_not_resubmit (test_equity_worker.WorkerTests.test_unknown_does_not_resubmit) ... ok
+test_unknown_without_match_remains_reserved (test_equity_worker.WorkerTests.test_unknown_without_match_remains_reserved) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 0.064s
+
+OK

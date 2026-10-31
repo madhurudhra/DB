@@ -1,0 +1,17 @@
+{
+  "live_enabled": false,
+  "programmatic_execution_authorized": false,
+  "account_number": "REPLACE_WITH_FULL_AUTHORIZED_EQUITY_ACCOUNT_NUMBER",
+  "state_directory": "/var/lib/si-equity-buy-worker",
+  "controls_module_path": "/opt/si-equity-buy-worker/equity_commands_v1.py",
+  "controls_database": "/var/lib/si-equity-buy-worker/controls.sqlite3",
+  "broker_monitor_path": "/opt/si-equity-r1/broker_monitor.py",
+  "legacy_guard_database": "/var/lib/si-equity-stop-guard/guard.sqlite3",
+  "settings_origin": "http://127.0.0.1:8000",
+  "funding_authorization_file": "/var/lib/si-equity-buy-worker/funding-authorization.json",
+  "universe_file": "/var/lib/si-equity-buy-worker/universe.json",
+  "universe_max_age_seconds": 300,
+  "universe_max_symbols": 100,
+  "cost_buffer_pct": 2,
+  "minimum_order_usd": 1
+}

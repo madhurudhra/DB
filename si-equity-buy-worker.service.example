@@ -1,0 +1,18 @@
+[Unit]
+Description=Equity buying worker reference implementation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=botuser
+WorkingDirectory=/opt/si-equity-buy-worker
+ExecStart=/home/botuser/si-mcp-auth-venv/bin/python -B /opt/si-equity-buy-worker/equity_worker.py --config /etc/si-equity-buy-worker/config.json
+UMask=0077
+StateDirectory=si-equity-buy-worker
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

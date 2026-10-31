@@ -1,63 +1,16 @@
 {
-  "created_at": "2026-10-30T20:42:39.597350+00:00",
-  "purpose": "Source review for dashboard and worker integration",
-  "files": [
-    {
-      "path": "super-intelligence-dashboard/index.html",
-      "bytes": 82608,
-      "sha256": "44dbaef5bf62ea8f03ba51bf2f3072a9e712ee5cabff599c6048dfd71e61934e"
-    },
-    {
-      "path": "super-intelligence-dashboard/unified_control_api.py",
-      "bytes": 8944,
-      "sha256": "945001d52d6de45bfc2cd4a7ad9339cfcf124ccb9f8a69d7c58a02a06cb0accd"
-    },
-    {
-      "path": "super-intelligence-dashboard/strategy_settings_v1.py",
-      "bytes": 18329,
-      "sha256": "31be1e0cc3520a17132e759a1ca961548bde845a73d05059bacda94c5f3a03e0"
-    },
-    {
-      "path": "super-intelligence-dashboard/crypto_worker_view.py",
-      "bytes": 2787,
-      "sha256": "6813aad47946fed928a154c5ebf19a08225a6a92c1dfdd045ba1879834927e16"
-    },
-    {
-      "path": "si-crypto-r1/bot.py",
-      "bytes": 29717,
-      "sha256": "b8a89463747dc45dc4e853d60cc3cadbb9be9fd084076d1bf9f522b19a9d1a09"
-    },
-    {
-      "path": "si-equity-stop-guard/guard.py",
-      "bytes": 16755,
-      "sha256": "d4bacfe89c33a80381a10e746288b5b8ec459808a515f7b70572eae41bce3e4c"
-    },
-    {
-      "path": "si-equity-r1/broker_monitor.py",
-      "bytes": 10135,
-      "sha256": "fc071d3e0e2f998b446f7125e8fe23b0ffa2c67446508a5af14bc50ec977fc08"
-    },
-    {
-      "path": "si-equity-r1/entry_signals_v1.py",
-      "bytes": 10761,
-      "sha256": "daee0ce1057d4a17ee793904c32da0e23a09544745aaeebcb98fdd272d8d0948"
-    },
-    {
-      "path": "si-equity-r1/market_context_v1.py",
-      "bytes": 8611,
-      "sha256": "bf9ed8dee1c412d29f72b8556f147a5a351eea24dae5f6b894fb877d2bddd723"
-    },
-    {
-      "path": "si-equity-r1/earnings_collector_v1.py",
-      "bytes": 5890,
-      "sha256": "49d89babe477873b16e65692fed298c87981d8b49791bd4861dd5d00064f45a9"
-    },
-    {
-      "path": "si-trading-policy-v1/exit_policy_v1.py",
-      "bytes": 2647,
-      "sha256": "98e5fb2fc0eec27115fec5a87a7fa837dd551c53b1aa4fc4c083b7e8ad175c60"
-    }
-  ],
-  "missing_or_skipped": [],
-  "warning": "Source files may contain embedded credentials. Review before sharing. No configuration, token, database, log, or environment files were intentionally included."
+  "status": "OFFLINE_TESTED_NOT_DEPLOYED",
+  "tests_passed": 33,
+  "real_broker_calls": 0,
+  "files": {
+    "README.md": "4dbdd37094ded4330091b9c072011e1f213452bc1ad14a389753d3dc589e0725",
+    "config.example.json": "f08340c38a366ad1988e0a276b1433579a1c8efeed2f1e815170cb1234322f51",
+    "equity_commands_v1.py": "694acaf7bfb48e699b97e8621d90509a86c85c0b1aa4f05a9212121723a81760",
+    "equity_worker.py": "e47268dc32ac3907a6d7c9f061ed517f829166fbc269df4188bd77b761e4966c",
+    "funding-authorization.example.json": "fb08f86a5367e3689000388da14d904892250fee5dc68704b682b5f545ab2fb1",
+    "publish_universe.py": "c1ad6c06ffc450dece2963ca021194f2f93c238079fc3b7a7525fcfa90a1475e",
+    "si-equity-buy-worker.service.example": "797ef8113144a12302adc50938d725fe4026e865c92c8e3d18dcae2a55a28a98",
+    "test-results.txt": "a68cfb7401c35f9e2946f621998b3a52072317379c5b86cfd1b9544af535e7be",
+    "test_equity_worker.py": "b9040c9d6055ee877de17977b9ffcbe32a0da1ab38b8afdeb9bcfee4f26d7397"
+  }
 }
