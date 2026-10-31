@@ -567,6 +567,339 @@ body > .layout > main {
 /* SI_SINGLE_ACCOUNT_PANEL_END */
 
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- SI_UNIFORM_COMPACT_LAYOUT_START -->
+<style>
+/* Same font size for tabs, panel headings, labels and values. */
+body .nav button,
+body header button,
+body main h2,
+body main h3,
+body main h4,
+body main .label,
+body main .value,
+body main .hint,
+body main .control,
+body main .control button,
+body main .detail-row > span,
+body #si-unified-financial .detail-row > span,
+body #si-inline-broker-metrics small,
+body #si-inline-broker-metrics strong,
+body #si-financial-row small,
+body #si-financial-row strong,
+body main th,
+body main td {
+    font-size: 6.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    letter-spacing: normal !important;
+}
+
+/* Tighter spaces between boxes and tabs. */
+body main .summary,
+body main .metrics,
+body main .bots,
+body #bots.bots,
+body main .details,
+body main .details > div:first-child,
+body #si-financial-row,
+body .nav,
+body .header-actions {
+    gap: 3px !important;
+}
+
+body .layout > main {
+    padding: 5px !important;
+}
+
+body .layout > aside {
+    padding: 5px 3px !important;
+}
+
+body .nav button,
+body header button {
+    padding: 4px 5px !important;
+    border-radius: 4px !important;
+}
+
+/* Smaller panels and boxes. */
+body main .box,
+body main .bot,
+body main .panel,
+body #bots .bot,
+body #dashboard-page .metrics > .box,
+body #dashboard-page .panel,
+body #si-unified-financial {
+    padding: 5px !important;
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
+    min-height: 0 !important;
+    border-radius: 5px !important;
+}
+
+body main .detail-row,
+body #dashboard-page .detail-row,
+body #si-inline-broker-metrics > div {
+    padding: 4px 5px !important;
+    gap: 3px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+}
+
+body #si-financial-row {
+    grid-template-columns: repeat(10, minmax(85px, 1fr)) !important;
+    min-width: 850px !important;
+}
+
+body main .details > div:first-child {
+    padding-bottom: 3px !important;
+}
+
+body main .value,
+body #dashboard-page .metrics .value,
+body #dashboard-page .detail-row > span:last-child,
+body #si-inline-broker-metrics strong {
+    margin-top: 3px !important;
+}
+
+body main h2,
+body main h3,
+body main h4,
+body #dashboard-page h2,
+body #dashboard-page .panel h3 {
+    margin: 3px 0 !important;
+    padding-bottom: 3px !important;
+}
+
+body main .control,
+body #bots .control {
+    gap: 3px !important;
+    margin-top: 3px !important;
+    padding-top: 3px !important;
+    grid-template-columns: 45px minmax(0,1fr) minmax(0,1fr) !important;
+}
+
+body main .control button,
+body #bots .control button {
+    padding: 3px !important;
+    min-height: 16px !important;
+    border-radius: 4px !important;
+}
+
+body main th,
+body main td,
+body #dashboard-page th,
+body #dashboard-page td {
+    padding: 4px 5px !important;
+}
+</style>
+<!-- SI_UNIFORM_COMPACT_LAYOUT_END -->
+
+
+<style id="SI_VIBRANT_PORTAL_V1">
+:root{
+ --ink:#e9f1ff;
+ --muted:#a2b4ce;
+ --line:#344568;
+ --teal:#29e1c5;
+ --red:#ff859c;
+ color-scheme:dark;
+}
+html body{
+ background:
+ radial-gradient(ellipse at 8% 0%,#07516a65,transparent 45%),
+ radial-gradient(ellipse at 95% 20%,#6433ba50,transparent 48%),
+ linear-gradient(135deg,#080e1c,#10192d 65%,#111a30);
+ color:#e9f1ff;
+ font-family:Inter,"Segoe UI",Arial,sans-serif!important;
+}
+html body header{
+ background:linear-gradient(110deg,#102337,#1c2147,#30214f)!important;
+ border-bottom:1px solid #6578b0!important;
+ box-shadow:0 8px 32px #0005;
+}
+html body .brand{
+ color:#f4fbff!important;
+ text-shadow:0 0 24px #57d9ff55;
+ font-size:23px!important;
+ letter-spacing:.2px;
+}
+html body aside{
+ background:linear-gradient(180deg,#101c31,#11182a)!important;
+ border-right:1px solid #344568!important;
+}
+html body .nav button{
+ color:#c3d3eb!important;
+ font-size:13px!important;
+ padding:10px 12px!important;
+ border-radius:9px!important;
+ margin:2px 0;
+}
+html body .nav button.active{
+ background:linear-gradient(100deg,#126d825e,#6550ba5e)!important;
+ color:#a5fff1!important;
+ border:1px solid #56d7e980!important;
+ box-shadow:inset 3px 0 #39e2c2,0 0 16px #29c7e316;
+}
+html body .layout > main{padding:14px!important}
+html body main .box,
+html body main .panel,
+html body main .bot{
+ background:linear-gradient(145deg,#19283e,#111d32)!important;
+ border:1px solid #3b5277!important;
+ box-shadow:0 9px 25px #0003,inset 0 1px #ffffff09!important;
+ border-radius:13px!important;
+ padding:13px!important;
+ margin-top:10px!important;
+ margin-bottom:10px!important;
+}
+html body main .label,
+html body main .hint,
+html body main .detail-row > span:first-child,
+html body #si-inline-broker-metrics small{
+ color:#adc1db!important;
+ font-size:12px!important;
+ line-height:1.5!important;
+}
+html body main h2,
+html body main h3,
+html body main h4{
+ color:#e8f6ff!important;
+ font-size:17px!important;
+ line-height:1.35!important;
+ margin:8px 0!important;
+ letter-spacing:.2px!important;
+ border-color:#3b5277!important;
+}
+html body main .value,
+html body main .detail-row > span:last-child,
+html body #si-inline-broker-metrics strong{
+ color:#f0f6ff!important;
+ font-size:21px!important;
+ line-height:1.3!important;
+ font-weight:700!important;
+ font-variant-numeric:tabular-nums;
+ letter-spacing:.1px!important;
+}
+html body main .summary,
+html body main .metrics,
+html body main .bots{gap:12px!important}
+html body .header-summary .box{
+ background:#ffffff09!important;
+ border:1px solid #9baee73b!important;
+ border-radius:10px!important;
+}
+html body .header-summary .label{color:#c3d5ef!important}
+html body .header-summary .value{
+ color:#f3f9ff!important;
+ font-size:22px!important;
+}
+html body #bots .bot:nth-child(1){
+ border-top:3px solid #2ae4c7!important;
+ background:linear-gradient(140deg,#103c48,#13213a)!important;
+}
+html body #bots .bot:nth-child(2){
+ border-top:3px solid #ffba66!important;
+ background:linear-gradient(140deg,#49301e,#22213b)!important;
+}
+html body #bots .bot:nth-child(3){
+ border-top:3px solid #bd99ff!important;
+ background:linear-gradient(140deg,#332653,#17233d)!important;
+}
+html body #bots .bot.selected{
+ outline:1px solid #e3f1ff!important;
+ box-shadow:0 0 22px #69c5ff24!important;
+}
+html body #bots .bot h3{
+ color:#fff!important;
+ font-size:17px!important;
+}
+html body main .control,
+html body #bots .control{
+ grid-template-columns:88px minmax(0,1fr) minmax(0,1fr)!important;
+ gap:7px!important;
+ padding-top:8px!important;
+}
+html body main .control > span{
+ color:#d6e5f8!important;
+ font-size:12px!important;
+}
+html body main .control button,
+html body #bots .control button{
+ min-height:33px!important;
+ padding:7px!important;
+ font-size:12px!important;
+ font-weight:650!important;
+ border-radius:8px!important;
+}
+html body button:disabled{opacity:.45!important}
+html body button:focus-visible,
+html body a:focus-visible{
+ outline:3px solid #ffe093!important;
+ outline-offset:3px!important;
+}
+html body main th{
+ background:#253c5a!important;
+ color:#cceaff!important;
+ font-size:12px!important;
+ padding:11px!important;
+}
+html body main td{
+ color:#d5e1f2!important;
+ font-size:12px!important;
+ padding:11px!important;
+ border-color:#304561!important;
+}
+html body tbody tr:hover{background:#34577b38!important}
+html body .notice,
+html body #action-result{
+ background:#142b43!important;
+ color:#d3e8ff!important;
+ border:1px solid #41658a!important;
+ border-radius:10px!important;
+ padding:12px!important;
+ font-size:13px!important;
+ line-height:1.6!important;
+}
+html body .detail-row{border-color:#344b6a!important}
+html body #connection{color:#bdd4f0!important}
+html body .si-green{color:#55efa7!important}
+html body .si-red{color:#ff91a4!important}
+html body .si-orange{color:#ffcb78!important}
+html body .si-grey{color:#b4bdd0!important}
+html body .header-actions button{
+ font-size:12px!important;
+ padding:8px 11px!important;
+ color:#e8f1ff!important;
+ border:1px solid #96b8f347!important;
+ background:#ffffff09!important;
+}
+@media(max-width:700px){
+ html body .brand{font-size:19px!important}
+ html body .layout > main{padding:8px!important}
+ html body main .value{font-size:19px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{
+  animation:none!important;
+  transition:none!important;
+ }
+}
+</style>
+
 </head>
 <body>
 <header>
@@ -1061,7 +1394,212 @@ render();refresh();setInterval(refresh,10000);
    }
    wrap.append(t);panel.append(wrap);
  }
- function render() {
+ 
+// SI_BROKER_PNL_V3
+function v3num(v) {
+  if(v===null||v===undefined||v==="") return null;
+  const n=Number(v);
+  return Number.isFinite(n)?n:null;
+}
+
+function v3calc(d,id) {
+  const crypto=id==="crypto",book=new Map(),trades=[],seen=new Set();
+  const orders=[...(d.orders||[])].sort(
+    (a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)
+  );
+
+  for(const o of orders) {
+    const q=v3num(o.cumulative_quantity);
+    const asset=o.currency_code||o.symbol;
+
+    if(!o.id||seen.has(o.id)||q===null||q<=0||!asset) continue;
+    seen.add(o.id);
+
+    if(!["filled","canceled","cancelled",
+         "partially_filled_rest_cancelled"].includes(o.state)) continue;
+
+    let cash=v3num(o.net_rounded_executed_notional);
+    const fee=v3num(o.fee??(
+      typeof o.fees==="string"?o.fees:null
+    ));
+
+    if(!crypto&&cash===null) {
+      const price=v3num(o.average_price);
+      if(price!==null&&fee!==null)
+        cash=q*price+(o.side==="buy"?fee:-fee);
+    }
+
+    if(!book.has(asset)) book.set(asset,[]);
+    const lots=book.get(asset);
+
+    if(o.side==="buy") {
+      lots.push({q,cash,fee,date:o.created_at});
+      continue;
+    }
+    if(o.side!=="sell") continue;
+
+    let left=q,cost=0,buyFee=0,known=true,feeKnown=true;
+    const dates=[];
+
+    while(left>1e-12&&lots.length) {
+      const lot=lots[0];
+      const take=Math.min(left,lot.q);
+      const fraction=take/lot.q;
+
+      if(lot.cash===null) known=false;
+      else {
+        const used=lot.cash*fraction;
+        cost+=used;
+        lot.cash-=used;
+      }
+
+      if(lot.fee===null) feeKnown=false;
+      else {
+        const used=lot.fee*fraction;
+        buyFee+=used;
+        lot.fee-=used;
+      }
+
+      dates.push(lot.date);
+      lot.q-=take;
+      left-=take;
+      if(lot.q<1e-12) lots.shift();
+    }
+
+    known=known&&left<=1e-12;
+    const net=known&&cash!==null?cash-cost:null;
+
+    trades.push({
+      asset,
+      buy:known?[...new Set(dates)].join(" / "):"Unreconciled",
+      sell:o.created_at,q,
+      cost:known?cost:null,
+      cash,
+      price:v3num(o.average_price),
+      net,
+      buyFee:feeKnown&&left<=1e-12?buyFee:null,
+      sellFee:fee
+    });
+  }
+
+  const quotes=new Map((d.quotes||[]).map(q=>[
+    String(q.symbol).replaceAll("-",""),q
+  ]));
+
+  const positions=(d.positions||[])
+    .filter(p=>v3num(p.quantity)>0)
+    .map(p=>{
+      const asset=p.symbol||p.currency?.code;
+      const q=v3num(p.quantity);
+      const lots=book.get(asset)||[];
+      const matched=
+        Math.abs(lots.reduce((s,l)=>s+l.q,0)-q)<1e-12&&
+        lots.every(l=>l.cash!==null);
+
+      let cost=matched?lots.reduce((s,l)=>s+l.cash,0):null;
+      const source=matched
+        ?"FIFO net acquisition debits"
+        :"Broker basis; acquisition-fee treatment unverified";
+
+      if(cost===null) {
+        const bases=p.cost_bases||[];
+        if(crypto&&bases.length===1&&
+           v3num(bases[0].direct_quantity)===q&&
+           v3num(bases[0].direct_cost_basis)>0) {
+          cost=v3num(bases[0].direct_cost_basis);
+        } else if(!crypto&&v3num(p.average_buy_price)>0) {
+          cost=q*v3num(p.average_buy_price);
+        }
+      }
+
+      const quote=quotes.get(asset+"USD");
+      const age=quote
+        ?(Date.now()-Date.parse(quote.updated_at))/1000
+        :Infinity;
+
+      let price=quote?v3num(quote.mark_price):null;
+
+      if(!(age>=0&&age<=180&&price>0&&
+           v3num(quote.bid_price)>0&&
+           v3num(quote.ask_price)>0&&
+           Number(quote.bid_price)<=Number(quote.ask_price))) {
+        price=null;
+      }
+
+      const value=price===null?null:q*price;
+      const net=matched&&value!==null?value-cost:null;
+
+      return {
+        asset,q,cost,price,value,net,source,
+        date:matched
+          ?[...new Set(lots.map(l=>l.date))].join(" / ")
+          :"Unavailable",
+        quoteAt:quote?.updated_at||"Quote unavailable"
+      };
+    });
+
+  const today=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"America/New_York",
+    year:"numeric",month:"2-digit",day:"2-digit"
+  }).format(new Date());
+
+  const closed=trades.filter(t=>(t.sell||"").slice(0,10)===today);
+
+  const realized=Array.isArray(d.orders)&&
+    closed.every(t=>t.net!==null)
+      ?closed.reduce((s,t)=>s+t.net,0):null;
+
+  const unrealized=Array.isArray(d.positions)&&
+    positions.every(p=>p.net!==null)
+      ?positions.reduce((s,p)=>s+p.net,0):null;
+
+  return {
+    positions,trades,today,realized,unrealized,
+    current:realized!==null&&unrealized!==null
+      ?realized+unrealized:null
+  };
+}
+
+function v3money(value) {
+  if(value===null||value===undefined) return "Unavailable";
+  if(Math.abs(value)<0.0000001) value=0;
+  return new Intl.NumberFormat("en-US",{
+    style:"currency",currency:"USD",
+    minimumFractionDigits:2,maximumFractionDigits:6
+  }).format(value);
+}
+
+function v3percent(net,cost) {
+  return net===null||cost===null||cost<=0
+    ?"Unavailable":(net/cost*100).toFixed(2)+"%";
+}
+
+function v3table(sectionId,title,headers,rows) {
+  const section=document.getElementById(sectionId);
+
+  if(!section) {
+    table(title,headers,rows);
+    return;
+  }
+
+  section.querySelectorAll(
+    ":scope > table, :scope > .si-v3-table"
+  ).forEach(node=>node.remove());
+
+  table(title,headers,rows);
+
+  const wrap=panel.lastElementChild;
+  const heading=wrap.previousElementSibling;
+  if(heading?.tagName==="H4") heading.remove();
+
+  wrap.classList.add("si-v3-table");
+  section.append(wrap);
+
+  const titleNode=section.querySelector("h3");
+  if(titleNode) titleNode.textContent=title;
+}
+
+function render() {
    const id = typeof selected !== "undefined" ? selected : "crypto";
    panel.hidden = typeof page !== "undefined" &&
       !["Dashboard","Positions","Trade History"].includes(page);
@@ -1130,36 +1668,102 @@ render();refresh();setInterval(refresh,10000);
      }
    });
 
-   const positions = Array.isArray(d.positions) ? d.positions : [];
-   table("Broker positions",[
-     "Asset","Quantity","Sellable","Average cost / unit",
-     "Reported crypto cost basis","Current price"
-   ],positions.map(x=>[
-     x.symbol || x.currency?.code,
-     x.quantity,
-     x.quantity_transferable ?? x.shares_available_for_sells,
-     x.average_buy_price == null ? "—" : usd(x.average_buy_price),
-     Array.isArray(x.cost_bases)
-       ? x.cost_bases.map(c => usd(c.direct_cost_basis)).join("; ") : "—",
-     "Not fetched"
+
+   const model=v3calc(d,id);
+   const title=id==="crypto"?"Crypto":"US Equity";
+
+   document.querySelectorAll(
+     "#dashboard-page .metrics .box"
+   ).forEach(box=>{
+     const label=box.querySelector(".label");
+     const value=box.querySelector(".value");
+     if(!label||!value) return;
+
+     const name=label.textContent.toLowerCase();
+     let number;
+     if(name.includes("unrealized")) {
+       number=model.unrealized;
+     } else if(name.includes("realized")) {
+       number=model.realized;
+     } else if(/current.*(?:p&l|pnl)/i.test(name)) {
+       number=model.current;
+     } else return;
+
+     value.textContent=v3money(number)+(healthy?"":" · stale");
+     value.title="Account asset-class calculation; not bot-attributed.";
+   });
+
+   document.querySelectorAll(
+     "#dashboard-page .detail-row, #si-unified-financial .detail-row"
+   ).forEach(row=>{
+     const cells=row.querySelectorAll("span");
+     if(cells.length!==2) return;
+     const name=cells[0].textContent.toLowerCase();
+     if(name.includes("unrealized"))
+       cells[1].textContent=v3money(model.unrealized);
+     else if(name.includes("realized"))
+       cells[1].textContent=v3money(model.realized);
+     else if(/current.*(?:p&l|pnl)/i.test(name))
+       cells[1].textContent=v3money(model.current);
+   });
+
+   v3table("positions-page",title+" · Existing Positions",[
+     "Asset","Buy Date","Quantity",
+     "Actual Price / Unit","Current Price / Unit",
+     "Unrealized P&L / Unit","Unrealized P&L %",
+     "Total Actual Cost","Total Current Value",
+     "Total Unrealized P&L","Quote Timestamp","Basis"
+   ],model.positions.map(p=>[
+     p.asset,p.date,p.q,
+     v3money(p.cost===null?null:p.cost/p.q),
+     v3money(p.price),
+     v3money(p.net===null?null:p.net/p.q),
+     v3percent(p.net,p.cost),
+     v3money(p.cost),v3money(p.value),v3money(p.net),
+     p.quoteAt,p.source
    ]));
 
-   const orders = Array.isArray(d.orders) ? d.orders : [];
-   table("Broker order history — not a realized P&L ledger",[
+   v3table("trades-page",title+" · Completed Trades — FIFO",[
+     "Asset","Buy Date","Sell Date","Matched Quantity",
+     "Actual Price / Unit","Sold Price / Unit",
+     "Net P&L / Unit","Net P&L %",
+     "Total Actual Cost","Total Sold Value","Total Net P&L",
+     "Buy Fee — included","Sell Fee — included"
+   ],[...model.trades].reverse().map(t=>[
+     t.asset,t.buy,t.sell,t.q,
+     v3money(t.cost===null?null:t.cost/t.q),
+     v3money(t.price),
+     v3money(t.net===null?null:t.net/t.q),
+     v3percent(t.net,t.cost),
+     v3money(t.cost),v3money(t.cash),v3money(t.net),
+     v3money(t.buyFee),v3money(t.sellFee)
+   ]));
+
+   const orders=Array.isArray(d.orders)?d.orders:[];
+   table("Raw broker order history — separate from matched trades",[
      "Created","Asset","Side","State","Filled quantity",
-     "Average fill price","Reported fee"
+     "Average fill price","Actual Net Debit / Credit","Reported fee"
    ],orders.map(x=>[
-     x.created_at,x.symbol || x.currency_code,x.side,x.state,
-     x.cumulative_quantity,
-     x.average_price == null ? "—" : usd(x.average_price),
-     x.fee != null ? usd(x.fee) :
-       typeof x.fees === "string" ? usd(x.fees) : "Unavailable"
+     x.created_at,x.symbol||x.currency_code,x.side,x.state,
+     x.cumulative_quantity,usd(x.average_price),
+     usd(x.net_rounded_executed_notional),
+     x.fee!=null?usd(x.fee):
+       typeof x.fees==="string"?usd(x.fees):"Unavailable"
    ]));
 
    add(panel,"small",
-     "Broker holdings may include manual or external activity. "+
-     "Saved bot allocations are not broker balances. "+
-     "Per-position quotes, reconciled P&L and worker controls are not supplied by this feed.");
+     "Scope: selected asset class in this brokerage account, including "+
+     "manual activity—not exclusively the bot. Realized summary: sales on "+
+     model.today+" (US Eastern). Matching is a FIFO reconstruction, "+
+     "not broker-confirmed tax-lot accounting. Acquisition cost and sold "+
+     "total use net cash debits/credits; listed fees are not charged again. "+
+     "Open P&L is mark value minus net acquisition cost, before future "+
+     "selling fees. Current P&L combines today's realized result with "+
+     "all open-position P&L; it is not daily account return. "+
+     "Missing quotes or unmatched costs remain unavailable. "+
+     (d.quote_error?"Quote collection error: "+d.quote_error:"")
+   );
+
  }
  async function refresh() {
    if (loading) return;
@@ -1700,6 +2304,1040 @@ header .header-actions button {
 })();
 </script>
 <!-- SI_NET_SUMMARY_LAYOUT_END -->
+
+
+<!-- SI_CRYPTO_WORKER_VIEW_V1 -->
+<script>
+(() => {
+  const main=document.querySelector("body > .layout > main");
+  if(!main)return;
+  const panel=document.createElement("section");
+  panel.className="panel";
+  panel.id="si-crypto-worker-view";
+  const cards=document.getElementById("bots");
+  if(cards)cards.after(panel);else main.prepend(panel);
+
+  let data=null,error="",busy=false;
+
+  function add(parent,tag,text){
+    const n=document.createElement(tag);
+    n.textContent=text;
+    parent.append(n);
+    return n;
+  }
+  function show(v){
+    return v===null||v===undefined?"Unknown":String(v);
+  }
+  function paint(){
+    const current=typeof page==="string"?page:"Dashboard";
+    panel.hidden=!["Dashboard","Bot Status"].includes(current);
+    panel.replaceChildren();
+    add(panel,"h3","BTC Worker — Live Status");
+
+    if(error||!data){
+      const n=add(panel,"p",error||"Loading worker state…");
+      n.style.color="#b45309";
+      return;
+    }
+
+    const state=data.display_state;
+    const active=data.process==="active"&&data.heartbeat_fresh;
+    const processing=active&&state==="PROCESSING"&&
+      data.applied_entries_enabled===true&&
+      typeof data.status.score==="number";
+
+    const banner=add(panel,"p",state.replaceAll("_"," "));
+    banner.style.color=processing?"#15803d":
+      state==="ENTRIES_PAUSED"?"#b91c1c":"#b45309";
+    banner.style.fontWeight="700";
+
+    const table=document.createElement("table");
+    const body=table.createTBody();
+    const s=data.status;
+    const rows=[
+      ["Account / instrument",data.account+" / "+data.symbol],
+      ["Worker process",data.process],
+      ["Heartbeat age",show(data.heartbeat_age_seconds)+" seconds"],
+      ["Applied new-entry permission",
+        data.applied_entries_enabled===true?"ON":
+        data.applied_entries_enabled===false?"OFF":"UNKNOWN"],
+      ["Last completed cycle",s.last_cycle_completed],
+      ["Samples / score",show(s.sample_count)+" / "+show(s.score)],
+      ["Factors",JSON.stringify(s.factors||{})],
+      ["Last decision",s.decision],
+      ["Blocking reason",s.reason||"None reported"],
+      ["Managed quantity",s.managed_quantity],
+      ["Pricing source",s.quote_source],
+      ["Source timestamp",s.source_quote_timestamp],
+      ["Capital / entry budget",
+        "$"+show(data.configuration.capital_usd)+" / $"+
+        show(data.configuration.entry_budget_usd)],
+      ["Trading execution",
+        "Installed path; this status endpoint does not verify fills"]
+    ];
+    for(const [label,value] of rows){
+      const row=body.insertRow();
+      add(row,"th",label);add(row,"td",show(value));
+    }
+    panel.append(table);
+
+    add(panel,"h4","Recent worker events");
+    const history=add(panel,"pre",data.recent_events.map(e=>
+      e.at+" "+e.kind+" "+JSON.stringify(e.data)
+    ).join("\n"));
+    history.style.whiteSpace="pre-wrap";
+    history.style.overflowWrap="anywhere";
+    history.style.maxHeight="220px";
+    history.style.overflow="auto";
+
+    add(panel,"p",
+      "Read-only worker evidence. Existing dashboard buttons are not "+
+      "connected to this worker yet. Use the authorized CLI for commands.");
+  }
+
+  async function refresh(){
+    if(busy)return;
+    busy=true;
+    try{
+      const r=await fetch("/api/v1/workers/crypto",{
+        cache:"no-store",signal:AbortSignal.timeout(8000)
+      });
+      const body=await r.json();
+      if(!r.ok)throw new Error(body.message||body.error||("HTTP "+r.status));
+      data=body;error="";
+    }catch(e){
+      error="Current worker status unavailable: "+e.message+
+        ". No previous state is being presented as current.";
+    }finally{busy=false;paint();}
+  }
+
+  document.addEventListener("click",()=>setTimeout(paint,0));
+  refresh();
+  setInterval(refresh,10000);
+})();
+</script>
+
+
+<!-- SI_POSITION_TRADE_AMOUNTS_V1 -->
+<style>
+#si-amounts-view { margin:18px 0; padding:18px; }
+#si-amounts-view .si-scroll { overflow-x:auto; margin:12px 0 22px; }
+#si-amounts-view table { width:100%; border-collapse:collapse; }
+#si-amounts-view th,#si-amounts-view td {
+  padding:9px; text-align:right; white-space:nowrap;
+  border-bottom:1px solid #cbd5e1;
+}
+#si-amounts-view th:first-child,#si-amounts-view td:first-child {
+  text-align:left;
+}
+#si-amounts-view .si-note { font-size:13px; line-height:1.5; }
+#si-amounts-view .si-loss { color:#dc2626; }
+#si-amounts-view .si-gain { color:#16a34a; }
+#si-amounts-view label { display:inline-block; margin:8px 18px 8px 0; }
+</style>
+
+
+
+
+
+
+<!-- SI_UNIFORM_9PX_COMPACT_START -->
+<style>
+:is(#siFontA#siFontB#siFontC#siFontD, body),
+:is(#siFontA#siFontB#siFontC#siFontD, body) * {
+    font-size: 10.8px !important;
+    line-height: 1.2 !important;
+    letter-spacing: normal !important;
+}
+
+body > header {
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+body .box,
+body .bot,
+body .control button,
+body .nav button,
+body #si-inline-broker-metrics > div {
+    min-height: 0 !important;
+}
+</style>
+
+<script>
+(() => {
+    const processed = new WeakSet();
+    const skipped = new Set([
+        "SCRIPT", "STYLE", "LINK", "META", "NOSCRIPT",
+        "SVG", "PATH"
+    ]);
+
+    const spacing = [
+        "padding-top", "padding-right",
+        "padding-bottom", "padding-left",
+        "margin-top", "margin-right",
+        "margin-bottom", "margin-left",
+        "row-gap", "column-gap"
+    ];
+
+    function compact(element) {
+        if (!(element instanceof HTMLElement)) return;
+        if (skipped.has(element.tagName)) return;
+
+        element.style.setProperty("font-size", "10.8px", "important");
+        element.style.setProperty("line-height", "1.2", "important");
+        element.style.setProperty("letter-spacing", "normal", "important");
+
+        if (processed.has(element)) return;
+        processed.add(element);
+
+        const computed = getComputedStyle(element);
+        const original = spacing.map(property => [
+            property, computed.getPropertyValue(property).trim()
+        ]);
+
+        for (const [property, value] of original) {
+            if (/^-?(?:\d+|\d*\.\d+)px$/.test(value)) {
+                const smaller = Number.parseFloat(value) * 0.1;
+                element.style.setProperty(
+                    property,
+                    smaller.toFixed(3) + "px",
+                    "important"
+                );
+            }
+        }
+    }
+
+    function apply(root) {
+        compact(root);
+        root.querySelectorAll("*").forEach(compact);
+    }
+
+    apply(document.body);
+
+    const pending = new Set();
+    let scheduled = false;
+
+    new MutationObserver(records => {
+        for (const record of records) {
+            for (const node of record.addedNodes) {
+                if (node instanceof HTMLElement) pending.add(node);
+            }
+        }
+
+        if (!pending.size || scheduled) return;
+        scheduled = true;
+
+        requestAnimationFrame(() => {
+            scheduled = false;
+            const roots = [...pending];
+            pending.clear();
+            roots.forEach(root => {
+                if (root.isConnected) apply(root);
+            });
+        });
+    }).observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+})();
+</script>
+<!-- SI_UNIFORM_9PX_COMPACT_END -->
+
+<!-- SI_PNL_RECOVERY_START -->
+
+<script>
+(() => {
+"use strict";
+
+function v3num(v) {
+  if(v===null||v===undefined||v==="") return null;
+  const n=Number(v);
+  return Number.isFinite(n)?n:null;
+}
+
+function v3calc(d,id) {
+  const crypto=id==="crypto",book=new Map(),trades=[],seen=new Set();
+  const orders=[...(d.orders||[])].sort(
+    (a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)
+  );
+
+  for(const o of orders) {
+    const q=v3num(o.cumulative_quantity);
+    const asset=o.currency_code||o.symbol;
+
+    if(!o.id||seen.has(o.id)||q===null||q<=0||!asset) continue;
+    seen.add(o.id);
+
+    if(!["filled","canceled","cancelled",
+         "partially_filled_rest_cancelled"].includes(o.state)) continue;
+
+    let cash=v3num(o.net_rounded_executed_notional);
+    const fee=v3num(o.fee??(
+      typeof o.fees==="string"?o.fees:null
+    ));
+
+    if(!crypto&&cash===null) {
+      const price=v3num(o.average_price);
+      if(price!==null&&fee!==null)
+        cash=q*price+(o.side==="buy"?fee:-fee);
+    }
+
+    if(!book.has(asset)) book.set(asset,[]);
+    const lots=book.get(asset);
+
+    if(o.side==="buy") {
+      lots.push({q,cash,fee,date:o.created_at});
+      continue;
+    }
+    if(o.side!=="sell") continue;
+
+    let left=q,cost=0,buyFee=0,known=true,feeKnown=true;
+    const dates=[];
+
+    while(left>1e-12&&lots.length) {
+      const lot=lots[0];
+      const take=Math.min(left,lot.q);
+      const fraction=take/lot.q;
+
+      if(lot.cash===null) known=false;
+      else {
+        const used=lot.cash*fraction;
+        cost+=used;
+        lot.cash-=used;
+      }
+
+      if(lot.fee===null) feeKnown=false;
+      else {
+        const used=lot.fee*fraction;
+        buyFee+=used;
+        lot.fee-=used;
+      }
+
+      dates.push(lot.date);
+      lot.q-=take;
+      left-=take;
+      if(lot.q<1e-12) lots.shift();
+    }
+
+    known=known&&left<=1e-12;
+    const net=known&&cash!==null?cash-cost:null;
+
+    trades.push({
+      asset,
+      buy:known?[...new Set(dates)].join(" / "):"Unreconciled",
+      sell:o.created_at,q,
+      cost:known?cost:null,
+      cash,
+      price:v3num(o.average_price),
+      net,
+      buyFee:feeKnown&&left<=1e-12?buyFee:null,
+      sellFee:fee
+    });
+  }
+
+  const quotes=new Map((d.quotes||[]).map(q=>[
+    String(q.symbol).replaceAll("-",""),q
+  ]));
+
+  const positions=(d.positions||[])
+    .filter(p=>v3num(p.quantity)>0)
+    .map(p=>{
+      const asset=p.symbol||p.currency?.code;
+      const q=v3num(p.quantity);
+      const lots=book.get(asset)||[];
+      const matched=
+        Math.abs(lots.reduce((s,l)=>s+l.q,0)-q)<1e-12&&
+        lots.every(l=>l.cash!==null);
+
+      let cost=matched?lots.reduce((s,l)=>s+l.cash,0):null;
+      const source=matched
+        ?"FIFO net acquisition debits"
+        :"Broker basis; acquisition-fee treatment unverified";
+
+      if(cost===null) {
+        const bases=p.cost_bases||[];
+        if(crypto&&bases.length===1&&
+           v3num(bases[0].direct_quantity)===q&&
+           v3num(bases[0].direct_cost_basis)>0) {
+          cost=v3num(bases[0].direct_cost_basis);
+        } else if(!crypto&&v3num(p.average_buy_price)>0) {
+          cost=q*v3num(p.average_buy_price);
+        }
+      }
+
+      const quote=quotes.get(asset+"USD");
+      const age=quote
+        ?(Date.now()-Date.parse(quote.updated_at))/1000
+        :Infinity;
+
+      let price=quote?v3num(quote.mark_price):null;
+
+      if(!(age>=0&&age<=180&&price>0&&
+           v3num(quote.bid_price)>0&&
+           v3num(quote.ask_price)>0&&
+           Number(quote.bid_price)<=Number(quote.ask_price))) {
+        price=null;
+      }
+
+      const value=price===null?null:q*price;
+      const net=matched&&value!==null?value-cost:null;
+
+      return {
+        asset,q,cost,price,value,net,source,
+        date:matched
+          ?[...new Set(lots.map(l=>l.date))].join(" / ")
+          :"Unavailable",
+        quoteAt:quote?.updated_at||"Quote unavailable"
+      };
+    });
+
+  const today=new Intl.DateTimeFormat("en-CA",{
+    timeZone:"America/New_York",
+    year:"numeric",month:"2-digit",day:"2-digit"
+  }).format(new Date());
+
+  const closed=trades.filter(t=>(t.sell||"").slice(0,10)===today);
+
+  const realized=Array.isArray(d.orders)&&
+    closed.every(t=>t.net!==null)
+      ?closed.reduce((s,t)=>s+t.net,0):null;
+
+  const unrealized=Array.isArray(d.positions)&&
+    positions.every(p=>p.net!==null)
+      ?positions.reduce((s,p)=>s+p.net,0):null;
+
+  return {
+    positions,trades,today,realized,unrealized,
+    current:realized!==null&&unrealized!==null
+      ?realized+unrealized:null
+  };
+}
+
+
+
+const ID="si-pnl-recovery";
+let snapshot=null;
+let requestError="";
+let loading=false;
+let lastSignature="";
+
+const usd=(v,perUnit=false)=>{
+  if(v===null||v===undefined||!Number.isFinite(Number(v)))
+    return "Unavailable";
+  const n=Math.abs(Number(v))<0.0000001?0:Number(v);
+  return new Intl.NumberFormat("en-US",{
+    style:"currency",currency:"USD",
+    minimumFractionDigits:2,
+    maximumFractionDigits:perUnit?6:2
+  }).format(n);
+};
+
+const percentage=(net,cost)=>
+  net===null||cost===null||cost<=0
+    ?"Unavailable":(net/cost*100).toFixed(2)+"%";
+
+function add(parent,tag,text) {
+  const e=document.createElement(tag);
+  if(text!==undefined) e.textContent=text;
+  parent.append(e);
+  return e;
+}
+
+function rootPanel() {
+  let root=document.getElementById(ID);
+  if(!root) {
+    const main=document.querySelector("body > .layout > main");
+    if(!main) throw Error("Dashboard main container not found");
+    root=document.createElement("section");
+    root.id=ID;
+    root.className="panel";
+    const botBoxes=document.getElementById("bots");
+    if(botBoxes) botBoxes.after(root);
+    else main.append(root);
+    lastSignature="";
+  }
+  return root;
+}
+
+function makeTable(parent,title,headers,rows) {
+  add(parent,"h3",title);
+  const wrap=add(parent,"div");
+  wrap.style.overflowX="auto";
+  const table=add(wrap,"table");
+  const head=add(add(table,"thead"),"tr");
+  headers.forEach(h=>add(head,"th",h));
+  const body=add(table,"tbody");
+
+  if(!rows.length) {
+    const cell=add(add(body,"tr"),"td","No records in this snapshot.");
+    cell.colSpan=headers.length;
+  }
+
+  rows.forEach(values=>{
+    const row=add(body,"tr");
+    values.forEach(value=>{
+      const cell=add(row,"td",value??"Unavailable");
+      if(String(value).startsWith("-$"))
+        cell.style.color="#b91c1c";
+    });
+  });
+}
+
+function updateExisting(model,stale) {
+  document.querySelectorAll(
+    "main .box, main .detail-row, #si-financial-row > div"
+  ).forEach(box=>{
+    if(box.closest("#"+ID)) return;
+
+    const label=box.querySelector(".label, small, span");
+    if(!label) return;
+
+    const name=label.textContent.toLowerCase();
+    let amount;
+
+    if(name.includes("unrealized")) amount=model.unrealized;
+    else if(name.includes("realized")) amount=model.realized;
+    else if(/current.*(?:p&l|pnl)/i.test(name))
+      amount=model.current;
+    else return;
+
+    const value=box.querySelector(".value, strong")||
+      label.nextElementSibling;
+
+    if(value&&value!==label)
+      value.textContent=usd(amount)+(stale?" · stale":"");
+  });
+}
+
+function paint() {
+  const root=rootPanel();
+  const id=typeof selected==="string"?selected:"crypto";
+  const currentPage=typeof page==="string"?page:"Dashboard";
+
+  root.hidden=
+    !["crypto","equity"].includes(id)||
+    !["Dashboard","Positions","Trade History"].includes(currentPage);
+
+  if(root.hidden) return;
+
+  const d=snapshot?.bots?.[id];
+
+  if(!d||requestError) {
+    root.replaceChildren();
+    add(root,"h3","Live account P&L and trade details");
+    add(root,"p",requestError||"Waiting for broker snapshot.");
+    lastSignature="";
+    return;
+  }
+
+  const model=v3calc(d,id);
+  const age=(Date.now()-Date.parse(d.fetched_at))/1000;
+  const stale=d.status!=="READ_OK"||
+    !Number.isFinite(age)||age<0||age>180;
+
+  updateExisting(model,stale);
+
+  const signature=JSON.stringify([
+    id,model,d.fetched_at,stale,d.quote_error
+  ]);
+
+  if(signature===lastSignature&&root.childElementCount) return;
+  lastSignature=signature;
+  root.replaceChildren();
+
+  add(root,"h3",
+    (id==="crypto"?"Crypto":"US Equity")+
+    " · Live account P&L and trade details"
+  );
+
+  const status=add(root,"p",
+    (stale?"STALE / READ FAILED":"Broker snapshot available")+
+    " · "+d.fetched_at
+  );
+  status.style.color=stale?"#b45309":"#15803d";
+
+  const cards=add(root,"div");
+  cards.style.display="flex";
+  cards.style.flexWrap="wrap";
+  cards.style.gap="3px";
+
+  [
+    ["Realized Net P&L",model.realized],
+    ["Unrealized Net P&L",model.unrealized],
+    ["Current Net P&L",model.current]
+  ].forEach(([label,value])=>{
+    const box=add(cards,"div");
+    box.className="box";
+    add(box,"div",label);
+    add(box,"strong",usd(value));
+  });
+
+  add(root,"p",
+    "Scope: this account's selected asset class, including manual activity. "+
+    "Realized summary covers sales on "+model.today+
+    " (US Eastern). Trade matching is reconstructed FIFO, not "+
+    "broker-confirmed tax-lot reconciliation. Open P&L is mark value "+
+    "minus known net acquisition cost, before future selling fees. "+
+    "Current P&L combines today's realized result with all open-position "+
+    "P&L; it is not daily account return."
+  );
+
+  makeTable(root,"Existing Positions",[
+    "Asset","Buy Date","Quantity",
+    "Actual Price / Unit","Current Price / Unit",
+    "Net P&L / Unit","Net P&L %",
+    "Total Actual Cost","Total Current Value","Total Net P&L",
+    "Quote Timestamp","Cost Source"
+  ],model.positions.map(x=>[
+    x.asset,x.date,x.q,
+    usd(x.cost===null?null:x.cost/x.q,true),
+    usd(x.price,true),
+    usd(x.net===null?null:x.net/x.q,true),
+    percentage(x.net,x.cost),
+    usd(x.cost),usd(x.value),usd(x.net),
+    x.quoteAt,x.source
+  ]));
+
+  makeTable(root,"Completed Trade Results — FIFO",[
+    "Asset","Buy Date","Sell Date","Matched Quantity",
+    "Actual Price / Unit","Sold Price / Unit",
+    "Net P&L / Unit","Net P&L %",
+    "Total Actual Cost","Total Sold Value","Total Net P&L",
+    "Buy Fee — included","Sell Fee — included"
+  ],[...model.trades].reverse().map(x=>[
+    x.asset,x.buy,x.sell,x.q,
+    usd(x.cost===null?null:x.cost/x.q,true),
+    usd(x.price,true),
+    usd(x.net===null?null:x.net/x.q,true),
+    percentage(x.net,x.cost),
+    usd(x.cost),usd(x.cash),usd(x.net),
+    usd(x.buyFee),usd(x.sellFee)
+  ]));
+
+  add(root,"p",
+    "Acquisition price per unit includes matched acquisition costs. "+
+    "Sold price per unit is the reported fill price; Total Sold Value "+
+    "is actual net credit. Fees shown separately are already included "+
+    "in the net cash amounts and are not deducted again. "+
+    "Unavailable means missing quote or unreconciled acquisition data."+
+    (d.quote_error?" Quote error: "+d.quote_error:"")
+  );
+}
+
+function safePaint() {
+  try {
+    paint();
+  } catch(error) {
+    const root=rootPanel();
+    root.hidden=false;
+    root.replaceChildren();
+    add(root,"h3","P&L calculation/display error");
+    add(root,"pre",String(error.stack||error.message||error));
+    lastSignature="";
+  }
+}
+
+async function refresh() {
+  if(loading) return;
+  loading=true;
+  try {
+    const response=await fetch("/api/v1/live",{
+      cache:"no-store",
+      signal:AbortSignal.timeout(10000)
+    });
+    if(!response.ok) throw Error("Broker feed HTTP "+response.status);
+    const data=await response.json();
+    if(!data.bots) throw Error("Broker feed has no bots object");
+    snapshot=data;
+    requestError="";
+  } catch(error) {
+    requestError="Live data request failed: "+error.message;
+  } finally {
+    loading=false;
+    safePaint();
+  }
+}
+
+refresh();
+setInterval(refresh,10000);
+setInterval(safePaint,2000);
+})();
+</script>
+
+<!-- SI_PNL_RECOVERY_END -->
+
+<!-- SI_STRATEGY_SETTINGS_LINK_V1 -->
+<div style="padding:16px;text-align:center"><a href="/strategy-settings" style="color:#60a5fa">Strategy configuration — saved settings, not live activation</a></div>
+
+<!-- SI_CRYPTO_CONTROL_LINK_V1 -->
+<a href="/worker-controls"
+style="position:fixed;right:16px;bottom:16px;z-index:99999;
+background:linear-gradient(110deg,#126c82,#6845a7);
+border:1px solid #9ed9ff;color:white;padding:12px 16px;
+border-radius:10px;font:14px system-ui;text-decoration:none">
+Crypto · Worker Controls
+</a>
+
+<!-- SI_MAIN_WORKER_INTEGRATION_V2 -->
+<script>
+(function(){
+"use strict";
+let model=null, polling=false, sending=false, csrf=null;
+const byId=id=>document.getElementById(id);
+
+function message(text){
+ const target=byId("si-v2-message");
+ if(target)target.textContent=text;
+ const old=document.getElementById("action-result");
+ if(old)old.textContent=text;
+}
+
+async function request(path, options={}){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),15000);
+ try{
+  const response=await fetch(path,{
+   ...options,cache:"no-store",credentials:"same-origin",
+   signal:controller.signal
+  });
+  const data=await response.json();
+  if(!response.ok)throw Error(data.error||data.message||response.status);
+  return data;
+ }finally{clearTimeout(timer)}
+}
+
+function lockLegacyButtons(){
+ const root=document.getElementById("bots");
+ if(!root)return;
+ root.querySelectorAll(".control button").forEach(button=>{
+  button.disabled=true;
+  button.classList.remove("chosen");
+  button.title="Legacy control disabled. Use worker-backed controls above.";
+ });
+}
+
+function render(){
+ const host=byId("si-v2-crypto-controls");
+ if(!host)return;
+ host.replaceChildren();
+ const crypto=model?.crypto;
+ const fresh=crypto?.heartbeat_fresh===true &&
+  crypto?.runtime?.process==="active";
+ const status=byId("si-v2-crypto-health");
+ status.textContent=fresh?
+  "Fresh worker heartbeat · applied permissions below":
+  "Worker unavailable/stale · applied state is unverified";
+ status.className=fresh?"si-green":"si-grey";
+
+ for(const key of ["bot","auto_trade","buy","sell"]){
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:9px 0";
+  const label=document.createElement("span");
+  label.style.minWidth="110px";label.textContent=key;
+  const state=document.createElement("span");
+  state.style.minWidth="110px";
+  const value=crypto?.worker_controls?.[key];
+  const known=fresh&&typeof value==="boolean";
+  state.textContent=known?(value?"ON":"OFF"):"UNVERIFIED";
+  state.className=!known?"si-grey":value?"si-green":"si-red";
+  row.append(label,state);
+  for(const desired of [true,false]){
+   const button=document.createElement("button");
+   button.type="button";
+   button.textContent=desired?"ON":"OFF";
+   button.style.cssText="padding:8px 17px;border-radius:8px;background:#293e60;color:#edf5ff;border:1px solid #6684b2";
+   button.disabled=sending||!csrf;
+   button.onclick=()=>command(key,desired);
+   row.append(button);
+  }
+  host.append(row);
+ }
+
+ byId("si-v2-crypto-data").textContent=JSON.stringify({
+  account:crypto?.runtime?.account,
+  process:crypto?.runtime?.process,
+  heartbeat_age_seconds:crypto?.heartbeat_age_seconds,
+  entries_enabled:crypto?.entries_enabled,
+  worker_status:crypto?.worker_status,
+  configuration:crypto?.runtime?.configuration,
+  last_acknowledgement:crypto?.worker_acknowledgement,
+  recent_commands:crypto?.commands
+ },null,2);
+ byId("si-v2-equity-data").textContent=
+  JSON.stringify(model?.equity||{status:"UNKNOWN"},null,2);
+ byId("si-v2-zerodha-data").textContent=
+  JSON.stringify(model?.zerodha||{status:"UNKNOWN"},null,2);
+ lockLegacyButtons();
+}
+
+async function poll(){
+ if(polling)return;
+ polling=true;
+ try{
+  model=await request("/api/v1/integration-v2");
+  csrf=model.csrf;render();
+ }catch(error){
+  csrf=null;
+  const health=byId("si-v2-crypto-health");
+  if(health){
+   health.className="si-grey";
+   health.textContent="Connection failed: "+error.message+
+    " · previous display is not current";
+  }
+  const controls=byId("si-v2-crypto-controls");
+  if(controls)controls.querySelectorAll("button")
+   .forEach(button=>button.disabled=true);
+ }finally{polling=false}
+}
+
+async function command(key,value){
+ if(sending||!csrf)return;
+ const warning=!value&&["bot","auto_trade","sell"].includes(key)?
+  "\nThis blocks new automatic stop-loss exits. Existing orders are not cancelled.":"";
+ if(!confirm("Crypto: set "+key+" = "+value+"?"+warning))return;
+ sending=true;render();
+ const requestId=window.crypto.randomUUID();
+ message("Submitting Crypto command "+requestId+"; not yet acknowledged.");
+ try{
+  const result=await request("/api/v1/worker-controls",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","X-SI-CSRF":csrf},
+   body:JSON.stringify({
+    bot:"crypto",updates:{[key]:value},request_id:requestId
+   })
+  });
+  message(JSON.stringify(result,null,2)+
+   "\nQUEUED is not APPLIED. Check the worker acknowledgement/history.");
+ }catch(error){
+  message("Outcome uncertain: "+error.message+
+   ". Check command history before retrying.\nRequest: "+requestId);
+ }finally{sending=false;render();await poll()}
+}
+
+function start(){
+ const main=document.querySelector("main");
+ if(!main)return;
+ if(byId("si-main-worker-integration-v2"))return;
+ const panel=document.createElement("section");
+ panel.id="si-main-worker-integration-v2";
+ panel.className="panel";
+ panel.innerHTML=`
+  <h2>Worker &amp; Brokerage Integration</h2>
+  <p class="hint">Worker permissions, order acknowledgements and broker fills
+  are different states. No trade is implied by an ON permission.</p>
+  <h3>Crypto · Actual worker controls</h3>
+  <p id="si-v2-crypto-health">Connecting…</p>
+  <div id="si-v2-crypto-controls"></div>
+  <pre id="si-v2-message" role="status"
+   style="white-space:pre-wrap;overflow-wrap:anywhere">No request sent.</pre>
+  <details><summary>Crypto runtime and command history</summary>
+   <pre id="si-v2-crypto-data"
+    style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
+  <h3>US Equity · Broker monitor</h3>
+  <p class="hint">Read-only account snapshot. Execution controls and automatic
+  entries are not connected by this dashboard patch. Freshness is shown below.</p>
+  <details><summary>Portfolio, positions, orders and freshness</summary>
+   <pre id="si-v2-equity-data"
+    style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
+  <h3>Zerodha</h3>
+  <pre id="si-v2-zerodha-data"></pre>
+  <p class="hint">The old configuration-only buttons below are disabled.
+  Working Crypto controls are above. Equity/Zerodha buttons will not report
+  success without their own execution adapters.</p>`;
+ main.prepend(panel);
+
+ const root=document.getElementById("bots");
+ if(root){
+  root.addEventListener("click",event=>{
+   if(event.target.closest(".control button")){
+    event.preventDefault();event.stopImmediatePropagation();
+    message("Legacy button blocked. Use worker-backed controls above.");
+   }
+  },true);
+  new MutationObserver(lockLegacyButtons).observe(root,{
+   childList:true,subtree:true
+  });
+ }
+ lockLegacyButtons();
+ poll();setInterval(poll,5000);
+}
+if(document.readyState==="loading"){
+ document.addEventListener("DOMContentLoaded",start,{once:true});
+}else{start()}
+})();
+</script>
+
+
+<!-- SI_ACCOUNT_HISTORY_TABLES_V1 -->
+<script>
+(function(){
+"use strict";
+let data=null,reading=false,lastSelection=null,observerPending=false;
+const names={crypto:"Crypto",equity:"US Equity",zerodha:"Zerodha"};
+const el=id=>document.getElementById(id);
+function selection(){
+ return typeof selected==="string"&&selected in names?selected:"crypto";
+}
+function shown(value){
+ return value===null||value===undefined||value===""?"—":String(value);
+}
+function fillTable(sectionId,columns,rows,empty){
+ const section=el(sectionId);
+ if(!section)return;
+ let table=section.querySelector("table");
+ if(!table){table=document.createElement("table");section.append(table)}
+ let head=table.querySelector("thead"),body=table.querySelector("tbody");
+ if(!head){head=document.createElement("thead");table.prepend(head)}
+ if(!body){body=document.createElement("tbody");table.append(body)}
+
+ const newHead=document.createElement("thead");
+ const header=document.createElement("tr");
+ for(const [label] of columns){
+  const cell=document.createElement("th");cell.textContent=label;
+  header.append(cell);
+ }
+ newHead.append(header);
+ if(head.innerHTML!==newHead.innerHTML)head.replaceChildren(header);
+
+ const newBody=document.createElement("tbody");
+ if(!rows.length){
+  const row=document.createElement("tr"),cell=document.createElement("td");
+  cell.colSpan=columns.length;cell.textContent=empty;
+  row.append(cell);newBody.append(row);
+ }else{
+  for(const item of rows){
+   const row=document.createElement("tr");
+   for(const [,key] of columns){
+    const cell=document.createElement("td");
+    cell.textContent=shown(item[key]);row.append(cell);
+   }
+   newBody.append(row);
+  }
+ }
+ if(body.innerHTML!==newBody.innerHTML){
+  body.replaceChildren(...Array.from(newBody.childNodes));
+ }
+}
+function render(){
+ if(!data)return;
+ const bot=selection(),item=data.bots?.[bot]||{};
+ const title=names[bot];
+ const source=[
+  title,item.account,item.source,item.status,
+  item.snapshot_at,
+  item.heartbeat_fresh===false?"Worker heartbeat stale/unknown":null,
+  item.scope
+ ].filter(Boolean).join(" · ");
+
+ const note=el("si-history-source");
+ if(note&&note.textContent!==source)note.textContent=source;
+
+ const ptitle=el("positions-title");
+ const ttitle=el("trades-title");
+ const ptext=title+" · Positions";
+ const ttext=title+" · Filled-order history — not closed-trade P&L";
+ if(ptitle&&ptitle.textContent!==ptext)ptitle.textContent=ptext;
+ if(ttitle&&ttitle.textContent!==ttext)ttitle.textContent=ttext;
+
+ const unavailable="Data unavailable — not a zero balance. "+
+  (item.status||"No readable source.");
+ const noPositions=bot==="crypto"?
+  "No bot-managed Crypto position is recorded. This is not a statement about all brokerage holdings.":
+  "The broker snapshot contains no current equity positions.";
+
+ fillTable("positions-page",[
+  ["Instrument","symbol"],["Quantity","quantity"],
+  ["Average purchase price","average_purchase_price"],
+  ["Cost basis","cost_basis"],
+  ["Estimated net value","estimated_net_value"],["Scope","scope"]
+ ],item.positions||[],
+ item.positions_available?noPositions:unavailable);
+
+ fillTable("trades-page",[
+  ["Order created (UTC)","created_at"],["Instrument","symbol"],
+  ["Side","side"],["State","state"],
+  ["Filled quantity","filled_quantity"],
+  ["Average fill price","average_fill_price"],
+  ["Filled gross amount","filled_gross_amount"],["Fees","fees"]
+ ],item.filled_orders||[],
+ Array.isArray(item.filled_orders)?
+  "No positive-fill orders in the returned history window.":unavailable);
+
+ fillTable("si-order-history-v1",[
+  ["Order created (UTC)","created_at"],["Instrument","symbol"],
+  ["Side","side"],["State","state"],
+  ["Requested qty","requested_quantity"],
+  ["Filled qty","filled_quantity"],
+  ["Average fill","average_fill_price"],["Fees","fees"],
+  ["Order/reference","reference"]
+ ],item.orders||[],
+ Array.isArray(item.orders)?"No orders in the returned history window.":unavailable);
+
+ const count=el("si-order-history-count");
+ if(count){
+  const text="Recorded order rows: "+shown(item.order_rows_total)+
+   " · Display limit: "+shown(item.history_display_limit)+
+   " · Unknown values are shown as —, not zero.";
+  if(count.textContent!==text)count.textContent=text;
+ }
+ lastSelection=bot;
+}
+function schedule(){
+ if(observerPending)return;
+ observerPending=true;
+ requestAnimationFrame(()=>{observerPending=false;render()});
+}
+async function refresh(){
+ if(reading)return;reading=true;
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),15000);
+ try{
+  const response=await fetch("/api/v1/account-history-v1",{
+   cache:"no-store",credentials:"same-origin",signal:controller.signal
+  });
+  if(!response.ok)throw Error("HTTP "+response.status);
+  data=await response.json();render();
+ }catch(error){
+  const note=el("si-history-source");
+  if(note)note.textContent=
+   "History refresh failed: "+error.message+
+   " · any previously displayed rows are not verified current.";
+ }finally{clearTimeout(timer);reading=false}
+}
+function start(){
+ const main=document.querySelector("main");
+ if(!main||el("si-order-history-v1"))return;
+ const panel=document.createElement("section");
+ panel.id="si-order-history-v1";panel.className="panel";
+ panel.innerHTML=`
+  <h3>Order History · selected bot</h3>
+  <p id="si-history-source" class="hint">Reading history…</p>
+  <p id="si-order-history-count" class="hint"></p>
+  <p class="hint">Read-only records. Order creation time is not necessarily
+  execution time. Filled orders are not paired closed trades;
+  realized P&amp;L and rebuy execution are not claimed here.</p>
+  <table><thead></thead><tbody></tbody></table>`;
+ const trades=el("trades-page");
+ if(trades)trades.after(panel);else main.append(panel);
+
+ const observer=new MutationObserver(schedule);
+ for(const id of ["positions-page","trades-page","bots"]){
+  const section=el(id);
+  if(section)observer.observe(section,{
+   childList:true,subtree:true,characterData:true
+  });
+ }
+ refresh();setInterval(refresh,5000);
+ setInterval(()=>{if(selection()!==lastSelection)render()},300);
+ const refreshButton=el("refresh");
+ if(refreshButton)refreshButton.addEventListener("click",refresh);
+}
+if(document.readyState==="loading"){
+ document.addEventListener("DOMContentLoaded",start,{once:true});
+}else{start()}
+})();
+</script>
 
 </body>
 </html>
