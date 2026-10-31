@@ -1,215 +1,90 @@
 {
-  "captured_at": "2026-10-25T23:37:03.591852+00:00",
+  "created_at": "2026-10-31T17:34:03.209920+00:00",
+  "purpose": "SOURCE REVIEW ONLY; NOT AN INSTALLABLE RELEASE",
+  "source_normalized_by_ast": true,
+  "redaction": "Best effort; manually review before sharing.",
+  "services": {
+    "si-crypto-r1.service": {
+      "WorkingDirectory": "/opt/si-crypto-r1",
+      "User": "botuser",
+      "ActiveState": "active",
+      "python_entrypoints": [
+        "/opt/si-crypto-r1/bot.py"
+      ]
+    },
+    "si-equity-r1.service": {
+      "WorkingDirectory": "/opt/si-equity-r1",
+      "User": "botuser",
+      "ActiveState": "active",
+      "python_entrypoints": [
+        "/opt/si-equity-r1/broker_monitor.py"
+      ]
+    },
+    "si-equity-stop-guard.service": {
+      "WorkingDirectory": "/opt/si-equity-stop-guard",
+      "User": "botuser",
+      "ActiveState": "active",
+      "python_entrypoints": [
+        "/opt/si-equity-stop-guard/guard.py"
+      ]
+    }
+  },
   "files": [
     {
-      "path": "backend/app/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "path": "/opt/si-crypto-r1/bot.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "8f7a4d561c46b27e95db3e69004c956a9b08f1133f3a2b78e8a7bd92623894bc"
     },
     {
-      "path": "backend/app/api/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "path": "/opt/si-equity-r1/broker_monitor.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "fc071d3e0e2f998b446f7125e8fe23b0ffa2c67446508a5af14bc50ec977fc08"
     },
     {
-      "path": "backend/app/api/bot_configuration.py",
-      "bytes": 11128,
-      "sha256": "2aa05269469a1834eae963ecdee8e79c9c2f5c7ad69fcd7187b97ea4f0f79fe3"
+      "path": "/opt/si-equity-r1/entry_signals_v1.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "daee0ce1057d4a17ee793904c32da0e23a09544745aaeebcb98fdd272d8d0948"
     },
     {
-      "path": "backend/app/api/capital_api_v1.py",
-      "bytes": 906,
-      "sha256": "1b54f0fb4efac31cea5f5ed26d3f2e733dd3780dfba90bedc0db819341991702"
+      "path": "/opt/si-equity-r1/equity_commands_v1.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "77ed8469d7a6b49e591ed7f066847c8cc358618f4fe3555213359049438a0a12"
     },
     {
-      "path": "backend/app/api/dashboard_bridge_v2.py",
-      "bytes": 6087,
-      "sha256": "0ff4341f3852998c0db503f9fb930423be4040054c989539728c9cea25023fed"
+      "path": "/opt/si-equity-stop-guard/guard.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "298523a0af68aa9b0af14ac0c7d95bc25a0b40369807c1475d87dce78debb35e"
     },
     {
-      "path": "backend/app/api/dashboard_data_v1.py",
-      "bytes": 12052,
-      "sha256": "af8d48b6e84f338e69c2ecf48ba4cde68013b47990302009448f08a52f78371a"
+      "path": "/opt/si-equity-stop-guard/profit_policy_draft.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "1e85814ca0c6d09bcd547aee4012c2ba03d6b642fcb85660f134ac2b800ad38d"
     },
     {
-      "path": "backend/app/api/position_metrics_v1.py",
-      "bytes": 14604,
-      "sha256": "42d079c3f7ad4885254c29e1ab4bef8c8191cc56b156b2c20c17e5a23df16b46"
+      "path": "/opt/si-equity-stop-guard/rally_reader_draft.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "a20a0d7fdf04dfa1f2377e742ef11399747e06ca7418ece9ad00655bc71f5f94"
     },
     {
-      "path": "backend/app/api/status.py",
-      "bytes": 3503,
-      "sha256": "cb2c751d1ce5cba50146a36214fd74fc6adc552b05aa67ae847918053bc46059"
+      "path": "/opt/super-intelligence-dashboard/dashboard_integration_v2.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "deda74a28fa12cf6f9a4b49eb80e76cc76190895693a8b849af9c58c0e132164"
     },
     {
-      "path": "backend/app/api/trading_controls.py",
-      "bytes": 6104,
-      "sha256": "f13a8a8dfeafccdedce4c9543f3e05e52361727f1be14c7256cda0489fc659e0"
+      "path": "/opt/super-intelligence-dashboard/strategy_settings_v1.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "31be1e0cc3520a17132e759a1ca961548bde845a73d05059bacda94c5f3a03e0"
     },
     {
-      "path": "backend/app/brokers/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "path": "/opt/super-intelligence-dashboard/unified_control_api.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "434ac1c14a50bdef7a4af3806bf4afefe6b39bab0c6b638260a14868d5b37f72"
     },
     {
-      "path": "backend/app/brokers/healthcheck.py",
-      "bytes": 1502,
-      "sha256": "a7fc1a53a75824261a22ed75b06a9f4d1e84a9cbabae513f81450d9243871d2d"
-    },
-    {
-      "path": "backend/app/brokers/robinhood/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "backend/app/brokers/robinhood/crypto.py",
-      "bytes": 5248,
-      "sha256": "5d9c12e2a6fc4ed45119cf3125132a8b2018a5728f1116c197a3d6f7d3c801ff"
-    },
-    {
-      "path": "backend/app/brokers/robinhood/dashboard_crypto_reader_v1.py",
-      "bytes": 5819,
-      "sha256": "3cb6b194020119aafaac222932aa06729eb67493555893c9db8b6200bfe1900f"
-    },
-    {
-      "path": "backend/app/brokers/robinhood/equity.py",
-      "bytes": 1120,
-      "sha256": "774f728253a4d6dbf75ce22d1fe5768034dc320666983eeac38d84cadc118473"
-    },
-    {
-      "path": "backend/app/brokers/robinhood/readonly_client.py",
-      "bytes": 2172,
-      "sha256": "01f544a4b94982ca409e5a2e6bef7ad9d900a5d4c93866b62c9aa5e7ee610272"
-    },
-    {
-      "path": "backend/app/brokers/zerodha/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "backend/app/brokers/zerodha/kite.py",
-      "bytes": 3229,
-      "sha256": "372304841f86c6f80e2fb78d3384f230de1d8b866fb27e3804441283af3ab7ba"
-    },
-    {
-      "path": "backend/app/core/__init__.py",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    {
-      "path": "backend/app/core/automatic_order_guard.py",
-      "bytes": 5705,
-      "sha256": "ca9d58c3357fd596aa7677c0aea8f157c7fec9ec392da570469c42e18b29902c"
-    },
-    {
-      "path": "backend/app/core/capital_ledger_v1.py",
-      "bytes": 8675,
-      "sha256": "38289c4018a1d93305fd9215b1c346420fed1fabbba3edfb54bbfa10510d0cc9"
-    },
-    {
-      "path": "backend/app/core/config.py",
-      "bytes": 921,
-      "sha256": "7a1a95d22edbe23a1e6ee56502c6cd2081aedd919c294c56a67e43329e1caf29"
-    },
-    {
-      "path": "backend/app/core/crypto_buy_budget_v1.py",
-      "bytes": 5045,
-      "sha256": "ec8a905dcbb6369c7b793069587fecd53aea6954a26d519566b4267beab25fd2"
-    },
-    {
-      "path": "backend/app/core/database.py",
-      "bytes": 5470,
-      "sha256": "a3871d19fc1198cc307a26fa3bc4c0266932a07ff34b8f82467382c661388f87"
-    },
-    {
-      "path": "backend/app/core/equity_reads_v1.py",
-      "bytes": 12335,
-      "sha256": "6b555d92abbb0b4faff23aa6f1167e1d4736dae156a06465fbf2e229b5956d92"
-    },
-    {
-      "path": "backend/app/core/index_holding_policy.py",
-      "bytes": 9012,
-      "sha256": "d89f57efb82df67ba7fbae5dec6dd95f8d36789ae177620e4523890dc89bbb26"
-    },
-    {
-      "path": "backend/app/core/order_intents.py",
-      "bytes": 3647,
-      "sha256": "1e6aa68cbafded10a822381702c0614d58481ada4bfc519edea7d917a46564b1"
-    },
-    {
-      "path": "backend/app/core/readiness.py",
-      "bytes": 1522,
-      "sha256": "39763f3ea23db210b6cf71dd2fb19ae8b760f633ac3a6c544f0b4c08135440ec"
-    },
-    {
-      "path": "backend/app/core/safety.py",
-      "bytes": 1522,
-      "sha256": "092e63cf4a617c99cbe2600add0e82723434054a129b191b18f475c62a3797d9"
-    },
-    {
-      "path": "backend/app/core/trading_policy_config.py",
-      "bytes": 3574,
-      "sha256": "3dcc5adf0215615c54e9d6e50043b6b44d1f3b60549a1c66af2d3d326f9a3dec"
-    },
-    {
-      "path": "backend/app/core/write_policy.py",
-      "bytes": 3485,
-      "sha256": "79c7cedab2204fb4c9e4d95c157680966974d95c7e32a6c042678b31f3177595"
-    },
-    {
-      "path": "backend/app/main.py",
-      "bytes": 1081,
-      "sha256": "b5e907d24fb73ca1d6dd0c01420593b93c7a5ed32f230f8a7ad0485f9cca9be8"
-    },
-    {
-      "path": "backend/app/runner.py",
-      "bytes": 11697,
-      "sha256": "989adf33f348c1c687b0d8052ee343d0fe0dce50f074bab5059a1b6cebc66b12"
-    },
-    {
-      "path": "backend/broker_contract_check.py",
-      "bytes": 3978,
-      "sha256": "b4ab36670a3a63bc3579f4f049bb4d172376dd1ec189fd5937d5551c075a9e27"
-    },
-    {
-      "path": "backend/manual_broker_order.py",
-      "bytes": 13311,
-      "sha256": "74beee5d8bf314c5828c206a454ed90681280613629093c9981851511165f73f"
-    },
-    {
-      "path": "backend/rh_equity_review.py",
-      "bytes": 2213,
-      "sha256": "1fbd6e8d0019c790c0b31a80e2729cd3ab02944e87c5bf86d71263f35eac9060"
-    },
-    {
-      "path": "frontend/app.js",
-      "bytes": 23082,
-      "sha256": "7b503fbc4b391f44b8fdcbe7026aa0ee0ddbe5adc7f8e4366faed93c26e09487"
-    },
-    {
-      "path": "frontend/configurations.js",
-      "bytes": 8007,
-      "sha256": "4a0e2d2221270311fd022b4677de1271becb5ab9a65e1468a79420008567c646"
-    },
-    {
-      "path": "frontend/index.html",
-      "bytes": 5464,
-      "sha256": "f2af4d9c9b68f4f36499dcb73b37a5dfcce10df438fbc8277bfcc8c1c9965e64"
-    },
-    {
-      "path": "frontend/metrics.js",
-      "bytes": 5923,
-      "sha256": "9b2e96784eee822b48e35483a9ecd7586b8741480e15ec25cf9141ee5a937c20"
-    },
-    {
-      "path": "frontend/server.py",
-      "bytes": 11199,
-      "sha256": "dd3256c56770f5496c23a9a0ac74a7ae159236f67687f643969a89a10632c656"
-    },
-    {
-      "path": "frontend/styles.css",
-      "bytes": 24782,
-      "sha256": "f4537fc4c8f897f34dddb98fae8bcbadeba617c702fe26996b20561cb3a4b7da"
+      "path": "/opt/super-intelligence-dashboard/worker_controls_v1.py",
+      "status": "SANITIZED_SOURCE_INCLUDED",
+      "original_sha256": "cab059c528cffb116d4c010869945547da3469f8540d0e9cdbc7a589af58a955"
     }
-  ]
+  ],
+  "databases_or_credential_files_included": false
 }
