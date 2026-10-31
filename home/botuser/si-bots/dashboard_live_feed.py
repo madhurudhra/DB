@@ -201,6 +201,46 @@ async def collect():
                             ))
                             for o in orders
                         ]
+
+                        # SI_POSITION_QUOTES_V3
+                        display_quotes = []
+                        display_quote_error = None
+                        if crypto and safe_positions:
+                            try:
+                                quote_tool = tools.get("getcryptoquotes")
+                                if not quote_tool:
+                                    raise RuntimeError("Missing quote read tool")
+                                schema = quote_tool.get(
+                                    "inputSchema",
+                                    quote_tool.get("input_schema")
+                                )
+                                symbols = sorted({
+                                    p["currency"]["code"] + "-USD"
+                                    for p in safe_positions
+                                    if p.get("currency", {}).get("type")
+                                    == "cryptocurrency"
+                                })
+                                args = {}
+                                for key in schema.get("properties", {}):
+                                    if norm(key) == "symbols":
+                                        args[key] = symbols
+                                    elif norm(key) == "rhsaccountnumber":
+                                        args[key] = field(account, "rhsaccountnumber")
+                                if set(schema.get("required", [])) - set(args):
+                                    raise RuntimeError("Unsupported quote schema")
+                                if symbols:
+                                    response = await call("getcryptoquotes", args)
+                                    if not isinstance(response.get("results"), list):
+                                        raise RuntimeError("Invalid quote response")
+                                    display_quotes = [
+                                        pick(q, (
+                                            "symbol", "bid_price", "ask_price",
+                                            "mark_price", "updated_at"
+                                        ))
+                                        for q in response["results"]
+                                    ]
+                            except Exception as exc:
+                                display_quote_error = type(exc).__name__
                         snapshot["bots"][bot] = {
                             "status": "READ_OK",
                             "account": "****" + required[-4:],
@@ -213,6 +253,8 @@ async def collect():
                             )),
                             "positions": safe_positions,
                             "orders": safe_orders,
+                            "quotes": display_quotes,
+                            "quote_error": display_quote_error,
                         }
                     except Exception as exc:
                         snapshot["bots"][bot] = {
