@@ -188,7 +188,15 @@ def candidate_context(symbol, market):
         ),
         "intelligence_score": None,
         "hybrid_score": None,
-        "classification": "AWAITING_NEWS_EARNINGS_AND_RISK_AUTHORIZATION",
+        # SI_EXPLICIT_ENTRY_BLOCKERS_V1
+        "classification": "BLOCKED_INCOMPLETE_ENTRY_AUTHORIZATION",
+        "missing_gates": list(dict.fromkeys([
+            *scan.get("missing_gates", []),
+            "Verified news-risk assessment",
+            "Verified earnings-risk assessment",
+            "Approved complete entry-decision policy",
+            "Integrated exit ownership for newly acquired positions",
+        ])),
         "entry_authorized": False,
         "orders_submitted": False,
     }

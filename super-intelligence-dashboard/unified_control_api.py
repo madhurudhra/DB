@@ -39,6 +39,15 @@ class MasterAPIHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        from account_history_v1 import handle as history_handle
+        if history_handle(self):
+            return
+        from dashboard_integration_v2 import handle as integration_handle
+        if integration_handle(self):
+            return
+        from worker_controls_v1 import handle as worker_control_handle
+        if worker_control_handle(self):
+            return
         # SI_STRATEGY_SETTINGS_ROUTE_V1
         from strategy_settings_v1 import handle as settings_handle
         if settings_handle(self):
@@ -151,6 +160,12 @@ class MasterAPIHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
+        from dashboard_integration_v2 import handle as integration_handle
+        if integration_handle(self):
+            return
+        from worker_controls_v1 import handle as worker_control_handle
+        if worker_control_handle(self):
+            return
         # SI_STRATEGY_SETTINGS_ROUTE_V1
         from strategy_settings_v1 import handle as settings_handle
         if settings_handle(self):
@@ -173,8 +188,8 @@ class MasterAPIHandler(BaseHTTPRequestHandler):
             # SI_EXECUTION_STATUS_FIX_V1
             state = load_state()
             auto_trade_val = body.get("auto_trade")
-            buy_val = body.get("buy_toggle") or body.get("buy")
-            sell_val = body.get("sell_toggle") or body.get("sell")
+            buy_val = body["buy_toggle"] if "buy_toggle" in body else body.get("buy")
+            sell_val = body["sell_toggle"] if "sell_toggle" in body else body.get("sell")
             
             for bot in body.get("bots", []):
                 if bot not in state["bot_allocations"]: continue
