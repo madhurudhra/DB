@@ -1,90 +1,160 @@
 {
-  "created_at": "2026-10-31T17:34:03.209920+00:00",
-  "purpose": "SOURCE REVIEW ONLY; NOT AN INSTALLABLE RELEASE",
-  "source_normalized_by_ast": true,
-  "redaction": "Best effort; manually review before sharing.",
-  "services": {
-    "si-crypto-r1.service": {
-      "WorkingDirectory": "/opt/si-crypto-r1",
-      "User": "botuser",
-      "ActiveState": "active",
+  "purpose": "Event-risk integration source inspection",
+  "utc": "2026-11-01T15:51:21+00:00",
+  "services": [
+    {
+      "unit": "si-crypto-r1.service",
+      "active_state": "active",
+      "sub_state": "running",
+      "main_pid": "77649",
       "python_entrypoints": [
         "/opt/si-crypto-r1/bot.py"
       ]
     },
-    "si-equity-r1.service": {
-      "WorkingDirectory": "/opt/si-equity-r1",
-      "User": "botuser",
-      "ActiveState": "active",
+    {
+      "unit": "si-equity-broker-link-offhours.service",
+      "active_state": "failed",
+      "sub_state": "failed",
+      "main_pid": "0",
+      "python_entrypoints": [
+        "/opt/si-equity-buy-worker/research_session_v1.py"
+      ]
+    },
+    {
+      "unit": "si-equity-buy-worker.service",
+      "active_state": "active",
+      "sub_state": "running",
+      "main_pid": "87515",
+      "python_entrypoints": [
+        "/opt/si-equity-buy-worker/equity_worker.py"
+      ]
+    },
+    {
+      "unit": "si-equity-google-news.service",
+      "active_state": "inactive",
+      "sub_state": "dead",
+      "main_pid": "0",
+      "python_entrypoints": [
+        "/opt/si-equity-buy-worker/google_news_v1.py"
+      ]
+    },
+    {
+      "unit": "si-equity-listing-catalog.service",
+      "active_state": "inactive",
+      "sub_state": "dead",
+      "main_pid": "0",
+      "python_entrypoints": [
+        "/opt/si-equity-buy-worker/listing_catalog_v1.py"
+      ]
+    },
+    {
+      "unit": "si-equity-r1.service",
+      "active_state": "active",
+      "sub_state": "running",
+      "main_pid": "28588",
       "python_entrypoints": [
         "/opt/si-equity-r1/broker_monitor.py"
       ]
     },
-    "si-equity-stop-guard.service": {
-      "WorkingDirectory": "/opt/si-equity-stop-guard",
-      "User": "botuser",
-      "ActiveState": "active",
+    {
+      "unit": "si-equity-stop-guard.service",
+      "active_state": "active",
+      "sub_state": "running",
+      "main_pid": "62501",
       "python_entrypoints": [
         "/opt/si-equity-stop-guard/guard.py"
       ]
     }
-  },
+  ],
   "files": [
     {
       "path": "/opt/si-crypto-r1/bot.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "8f7a4d561c46b27e95db3e69004c956a9b08f1133f3a2b78e8a7bd92623894bc"
+      "bytes": 29963,
+      "sha256": "8f7a4d561c46b27e95db3e69004c956a9b08f1133f3a2b78e8a7bd92623894bc",
+      "archive_member": "source/opt/si-crypto-r1/bot.py",
+      "status": "INCLUDED"
+    },
+    {
+      "path": "/opt/si-equity-buy-worker/equity_commands_v1.py",
+      "bytes": 7006,
+      "sha256": "b07f4fe186fd7c514dffc6f382bdf7fcf55404674a3f00c0bce04e95472ad97c",
+      "archive_member": "source/opt/si-equity-buy-worker/equity_commands_v1.py",
+      "status": "INCLUDED"
+    },
+    {
+      "path": "/opt/si-equity-buy-worker/equity_worker.py",
+      "bytes": 37609,
+      "sha256": "1089d92a3f2a8d278eb96de4e0c2062c3bab0b09efa4bb7213537127b66c1db7",
+      "archive_member": "source/opt/si-equity-buy-worker/equity_worker.py",
+      "status": "INCLUDED"
+    },
+    {
+      "path": "/opt/si-equity-buy-worker/google_news_v1.py",
+      "bytes": 6507,
+      "sha256": "9ff4bf66fd4bac7fd444bb32b03caa2123bb9853e42948e25564e4533f53975c",
+      "archive_member": "source/opt/si-equity-buy-worker/google_news_v1.py",
+      "status": "INCLUDED"
+    },
+    {
+      "path": "/opt/si-equity-buy-worker/listing_catalog_v1.py",
+      "bytes": 6635,
+      "sha256": "c3b75ee3dba5bbee8a79654ec673a6e337f124141cd173290d4228a051cd9fa2",
+      "archive_member": "source/opt/si-equity-buy-worker/listing_catalog_v1.py",
+      "status": "INCLUDED"
+    },
+    {
+      "path": "/opt/si-equity-buy-worker/research_session_v1.py",
+      "bytes": 10257,
+      "sha256": "4b777fa2177a6934bb916c17de4538094c4a9ee3348a8017cec6053aa3124ef6",
+      "archive_member": "source/opt/si-equity-buy-worker/research_session_v1.py",
+      "status": "INCLUDED"
     },
     {
       "path": "/opt/si-equity-r1/broker_monitor.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "fc071d3e0e2f998b446f7125e8fe23b0ffa2c67446508a5af14bc50ec977fc08"
+      "bytes": 10135,
+      "sha256": "fc071d3e0e2f998b446f7125e8fe23b0ffa2c67446508a5af14bc50ec977fc08",
+      "archive_member": "source/opt/si-equity-r1/broker_monitor.py",
+      "status": "INCLUDED"
     },
     {
-      "path": "/opt/si-equity-r1/entry_signals_v1.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "daee0ce1057d4a17ee793904c32da0e23a09544745aaeebcb98fdd272d8d0948"
+      "path": "/opt/si-equity-r1/entry_policy_v2.py",
+      "bytes": 5272,
+      "sha256": "25a22a86dc6e0d4ff2bb48a4aa9ed440521ae8eaa2d0587b285ea877b1eb44ae",
+      "archive_member": "source/opt/si-equity-r1/entry_policy_v2.py",
+      "status": "INCLUDED"
     },
     {
       "path": "/opt/si-equity-r1/equity_commands_v1.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "77ed8469d7a6b49e591ed7f066847c8cc358618f4fe3555213359049438a0a12"
+      "bytes": 9063,
+      "sha256": "242238bbc4e549ba16efd3f341baafa7eb9801e1b36446477cb185a7e66e8171",
+      "archive_member": "source/opt/si-equity-r1/equity_commands_v1.py",
+      "status": "INCLUDED"
     },
     {
       "path": "/opt/si-equity-stop-guard/guard.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "298523a0af68aa9b0af14ac0c7d95bc25a0b40369807c1475d87dce78debb35e"
+      "bytes": 31752,
+      "sha256": "298523a0af68aa9b0af14ac0c7d95bc25a0b40369807c1475d87dce78debb35e",
+      "archive_member": "source/opt/si-equity-stop-guard/guard.py",
+      "status": "INCLUDED"
     },
     {
-      "path": "/opt/si-equity-stop-guard/profit_policy_draft.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "1e85814ca0c6d09bcd547aee4012c2ba03d6b642fcb85660f134ac2b800ad38d"
-    },
-    {
-      "path": "/opt/si-equity-stop-guard/rally_reader_draft.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "a20a0d7fdf04dfa1f2377e742ef11399747e06ca7418ece9ad00655bc71f5f94"
-    },
-    {
-      "path": "/opt/super-intelligence-dashboard/dashboard_integration_v2.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "deda74a28fa12cf6f9a4b49eb80e76cc76190895693a8b849af9c58c0e132164"
-    },
-    {
-      "path": "/opt/super-intelligence-dashboard/strategy_settings_v1.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "31be1e0cc3520a17132e759a1ca961548bde845a73d05059bacda94c5f3a03e0"
-    },
-    {
-      "path": "/opt/super-intelligence-dashboard/unified_control_api.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "434ac1c14a50bdef7a4af3806bf4afefe6b39bab0c6b638260a14868d5b37f72"
+      "path": "/opt/si-trading-policy-v1/exit_policy_v1.py",
+      "bytes": 2647,
+      "sha256": "98e5fb2fc0eec27115fec5a87a7fa837dd551c53b1aa4fc4c083b7e8ad175c60",
+      "archive_member": "source/opt/si-trading-policy-v1/exit_policy_v1.py",
+      "status": "INCLUDED"
     },
     {
       "path": "/opt/super-intelligence-dashboard/worker_controls_v1.py",
-      "status": "SANITIZED_SOURCE_INCLUDED",
-      "original_sha256": "cab059c528cffb116d4c010869945547da3469f8540d0e9cdbc7a589af58a955"
+      "bytes": 38586,
+      "sha256": "fe110e2d02309e4a23d31cc7d0bd684c735e05e9c662e4b7f67fa7f58a40816b",
+      "archive_member": "source/opt/super-intelligence-dashboard/worker_controls_v1.py",
+      "status": "INCLUDED"
     }
   ],
-  "databases_or_credential_files_included": false
+  "changes": "New local source ZIP only",
+  "services_restarted": false,
+  "orders_submitted": false,
+  "credential_or_configuration_files_included": false,
+  "secret_scan": "Limited literal-assignment check only; not a guarantee that source contains no secrets"
 }
